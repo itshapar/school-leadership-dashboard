@@ -175,9 +175,9 @@ export default async function ClassPage({ params }: Props) {
                 <div className={`rank-badge rank-${rank <= 3 ? rank : ""}`}>{rank}</div>
                 <div style={{ fontSize: "1.8rem" }}>{student.avatar_emoji}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 800, fontSize: "1.05rem", color: "#000000" }}>{displayName}</div>
+                  <div style={{ fontWeight: 800, fontSize: "0.79rem", color: "#000000" }}>{displayName}</div>
                   {student.nickname && (
-                    <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", fontWeight: 600 }}>
+                    <div style={{ color: "var(--color-text-muted)", fontSize: "0.64rem", fontWeight: 600 }}>
                       {student.full_name}
                     </div>
                   )}
