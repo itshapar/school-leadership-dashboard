@@ -78,22 +78,17 @@ export default async function ClassPage({ params }: Props) {
         <h1 style={{ fontSize: "2.8rem", fontWeight: 900 }}>{cls.name}</h1>
       </div>
 
+      {/* Total Class Stars Counter (Prominent) */}
       <div className="star-card" style={{ 
         textAlign: "center", 
         marginBottom: "24px", 
-        padding: "20px",
+        padding: "32px",
         background: "#ffffff",
         border: "3px solid #000000",
         boxShadow: "4px 4px 0px #000000"
       }}>
-        <div style={{ 
-          fontSize: "clamp(2.2rem, 10vw, 3.8rem)", 
-          fontWeight: 950, 
-          color: "var(--color-star)", 
-          lineHeight: 1, 
-          letterSpacing: "-2px" 
-        }}>
-          {totalClassStars} <StarFilled style={{ fontSize: "clamp(1.6rem, 7vw, 2.8rem)", verticalAlign: "middle", marginTop: "-5px" }} />
+        <div style={{ fontSize: "5rem", fontWeight: 950, color: "var(--color-star)", lineHeight: 1, letterSpacing: "-2px" }}>
+          {totalClassStars} <StarFilled style={{ fontSize: "3.5rem", verticalAlign: "middle", marginTop: "-10px" }} />
         </div>
       </div>
 

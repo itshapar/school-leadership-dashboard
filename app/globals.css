@@ -200,9 +200,3 @@ html, body {
   box-shadow: 0 0 0px var(--color-border) !important;
   transform: translate(2px, 2px);
 }
-
-@media (max-width: 600px) {
-  .page-header h1 {
-    font-size: 1.8rem;
-  }
-}

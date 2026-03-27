@@ -122,22 +122,22 @@ export default function PersonalDashboardClient({
           <div>
             <div
               style={{
-                fontSize: "2.6rem",
+                fontSize: "3.5rem",
                 fontWeight: 950,
                 color: "var(--color-star)",
                 lineHeight: 1,
                 display: "flex",
                 alignItems: "center",
-                gap: "8px"
+                gap: "12px"
               }}
             >
-              {displayed} <StarFilled style={{ fontSize: "2rem" }} />
+              {displayed} <StarFilled style={{ fontSize: "2.5rem" }} />
             </div>
           </div>
 
           <div>
             <div style={{
-              fontSize: "2.6rem",
+              fontSize: "3.5rem",
               fontWeight: 950,
               lineHeight: 1,
               color: "#adb5bd"

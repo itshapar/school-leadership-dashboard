@@ -407,18 +407,6 @@ export default function ManagementTable({
           box-shadow: none !important;
           border: 2px solid var(--color-border) !important;
         }
-        @media (max-width: 600px) {
-          .management-grid .ant-table-thead > tr > th {
-            font-size: 0.7rem !important;
-            padding: 10px 4px !important;
-          }
-          .ant-table-bordered .ant-table-cell {
-            padding: 8px 4px !important;
-          }
-          .management-grid .ant-table-cell-fix-left {
-            padding: 8px 6px !important;
-          }
-        }
       `}</style>
     </div>
   );
