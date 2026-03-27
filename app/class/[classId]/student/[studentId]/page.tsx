@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import PersonalDashboardClient from "@/components/PersonalDashboardClient";
 import { resolveClassIdByCode } from "@/lib/classCodes";
-import { LeftOutlined } from "@ant-design/icons";
 
 interface Props {
   params: Promise<{ classId: string; studentId: string }>;
@@ -124,8 +123,7 @@ export default async function StudentDashboardPage({ params }: Props) {
             background: "#ffffff",
           }}
         >
-          <LeftOutlined style={{ fontSize: "1.1rem", fontWeight: 900, marginRight: "8px" }} />
-          {cls.name}
+          ← {cls.name}
         </Link>
       </div>
 
