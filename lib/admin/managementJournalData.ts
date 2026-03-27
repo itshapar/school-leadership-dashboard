@@ -28,7 +28,7 @@ export interface ManagementJournalData {
 }
 
 interface StarEntryRow {
-  student_id: string;
+  student_id: string | null;
   lesson_id: string | null;
   amount: number;
   type: string;
@@ -89,15 +89,24 @@ export async function loadManagementJournalData(
 
   const entryMap: Record<string, Record<string, number>> = {};
   const totals: Record<string, number> = {};
+  let classWideBonus = 0;
 
-  (enData as StarEntryRow[] | null)?.forEach((e) => {
-    if (!e.student_id) return;
-    totals[e.student_id] = (totals[e.student_id] ?? 0) + e.amount;
-    if (e.type === "lesson" && e.lesson_id) {
-      if (!entryMap[e.student_id]) entryMap[e.student_id] = {};
-      entryMap[e.student_id][e.lesson_id] = e.amount;
+  const entries = (enData as StarEntryRow[] | null) ?? [];
+  
+  // First pass: sum class-wide bonuses and individual entries separately
+  entries.forEach((e) => {
+    if (!e.student_id) {
+      classWideBonus += e.amount;
+    } else {
+      totals[e.student_id] = (totals[e.student_id] ?? 0) + e.amount;
+      if (e.type === "lesson" && e.lesson_id) {
+        if (!entryMap[e.student_id]) entryMap[e.student_id] = {};
+        entryMap[e.student_id][e.lesson_id] = e.amount;
+      }
     }
   });
+
+  // Second pass: removed. Class-wide bonus is NOT added to individual totals anymore.
 
   const givenMap: Record<string, Record<string, boolean>> = {};
   (gvData ?? []).forEach((g) => {

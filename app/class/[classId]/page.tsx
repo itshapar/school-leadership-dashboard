@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ClassProgressBars from "@/components/ClassProgress";
 import { resolveClassIdByCode } from "@/lib/classCodes";
+import { StarFilled } from "@ant-design/icons";
 
 interface Props {
   params: Promise<{ classId: string }>;
@@ -46,7 +47,7 @@ export default async function ClassPage({ params }: Props) {
     .eq("class_id", classId)
     .is("student_id", null);
 
-  // Calculate per-student totals
+  // Calculate per-student totals (personal stars only)
   const starMap: Record<string, number> = {};
   for (const entry of starEntries ?? []) {
     if (entry.student_id) {
@@ -54,37 +55,40 @@ export default async function ClassPage({ params }: Props) {
     }
   }
 
-  // Add class-wide bonuses to every student
+  // Calculate global class bonus/penalty
   const classBonus = (classEntries ?? []).reduce((sum, e) => sum + e.amount, 0);
 
+  // Ranked students (individual stars only)
   const ranked = (students ?? [])
     .map((s) => ({
       ...s,
-      stars: (starMap[s.id] ?? 0) + classBonus,
+      stars: starMap[s.id] ?? 0,
     }))
     .sort((a, b) => b.stars - a.stars);
 
-  const totalClassStars = ranked.reduce((s, r) => s + r.stars, 0);
+  // Total class progress: sum of individual efforts + the class pool
+  const totalPersonalStars = ranked.reduce((s, r) => s + r.stars, 0);
+  const totalClassStars = totalPersonalStars + classBonus;
 
   return (
     <div className="page-container">
       <div style={{ marginBottom: "24px" }} />
 
       <div className="page-header">
-        <h1>{cls.name}</h1>
-        <div
-          style={{
-            display: "inline-block",
-            marginTop: "8px",
-            padding: "10px 16px",
-            border: "2px solid var(--color-border)",
-            borderRadius: "12px",
-            fontSize: "1.05rem",
-            fontWeight: 800,
-            background: "#ffffff",
-          }}
-        >
-          {totalClassStars}
+        <h1 style={{ fontSize: "2.8rem", fontWeight: 900 }}>{cls.name}</h1>
+      </div>
+
+      {/* Total Class Stars Counter (Prominent) */}
+      <div className="star-card" style={{ 
+        textAlign: "center", 
+        marginBottom: "24px", 
+        padding: "32px",
+        background: "#ffffff",
+        border: "3px solid #000000",
+        boxShadow: "4px 4px 0px #000000"
+      }}>
+        <div style={{ fontSize: "5rem", fontWeight: 950, color: "var(--color-star)", lineHeight: 1, letterSpacing: "-2px" }}>
+          {totalClassStars} <StarFilled style={{ fontSize: "3.5rem", verticalAlign: "middle", marginTop: "-10px" }} />
         </div>
       </div>
 
@@ -99,6 +103,62 @@ export default async function ClassPage({ params }: Props) {
           pizzaDayThreshold={cls.pizza_day_threshold}
         />
       </div>
+
+      {/* Collective History Card (NEW) */}
+      {(classBonus !== 0 || (classEntries ?? []).length > 0) && (
+        <div className="star-card" style={{ 
+          marginBottom: "24px", 
+          background: "#ffffff", 
+          border: "3px solid #000000",
+          boxShadow: "4px 4px 0px #000000"
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div style={{ fontWeight: 900, fontSize: "1.1rem", textTransform: "uppercase" }}>
+              Колективні бонуси та штрафи
+            </div>
+            <div style={{ 
+              fontSize: "1.5rem", 
+              fontWeight: 950, 
+              color: classBonus < 0 ? "#E03131" : "var(--color-star)",
+              padding: "4px 12px",
+              background: "#fff",
+              borderRadius: "8px",
+              border: "2px solid #000",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}>
+              {classBonus > 0 ? "+" : ""}{classBonus} <StarFilled style={{ fontSize: "1.1rem" }} />
+            </div>
+          </div>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {(classEntries ?? []).slice(0, 5).map((entry: any, idx: number) => (
+              <div key={idx} style={{ 
+                fontSize: "0.95rem", 
+                color: "var(--color-text)", 
+                fontWeight: 700, 
+                display: "flex", 
+                justifyContent: "space-between",
+                padding: "8px 12px",
+                background: entry.amount < 0 ? "#FFF5F5" : "#F8F9FA",
+                border: "2px solid #000",
+                borderRadius: "8px"
+              }}>
+                <span>{entry.note || (entry.amount > 0 ? "Бонус класу" : "Штраф класу")}</span>
+                <span style={{ color: entry.amount < 0 ? "#E03131" : "var(--color-star)" }}>
+                  {entry.amount > 0 ? "+" : ""}{entry.amount}
+                </span>
+              </div>
+            ))}
+            {(classEntries ?? []).length > 5 && (
+              <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", textAlign: "center", fontStyle: "italic" }}>
+                та ще {(classEntries ?? []).length - 5} записів...
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Leaderboard */}
       <div className="star-card" style={{ padding: "24px 16px" }}>
@@ -124,12 +184,15 @@ export default async function ClassPage({ params }: Props) {
                 </div>
                 <div
                   style={{
-                    fontWeight: 900,
-                    fontSize: "1.2rem",
-                    color: "var(--color-text)",
+                    fontSize: "1.4rem",
+                    fontWeight: 950,
+                    color: "var(--color-star)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px"
                   }}
                 >
-                  {student.stars}
+                  {student.stars} <StarFilled style={{ fontSize: "1rem" }} />
                 </div>
               </div>
             </Link>

@@ -167,15 +167,17 @@ export default function ManagementTable({
 
   const columns = [
     {
-      title: <div style={{ fontSize: "0.8rem", color: "#888" }}>#</div>,
+      title: <div style={{ fontWeight: 950, color: "#000" }}>#</div>,
       key: "index",
       width: 50,
-      render: (_: any, __: any, index: number) => index + 1,
+      render: (_: any, __: any, index: number) => (
+        <span style={{ color: "#adb5bd", fontWeight: 700 }}>{index + 1}</span>
+      ),
       fixed: "left" as const,
       align: "center" as const,
     },
     {
-      title: <Space><UserOutlined /> УЧЕНЬ</Space>,
+      title: <div style={{ fontWeight: 950, color: "#000" }}>УЧЕНЬ</div>,
       key: "student",
       fixed: "left" as const,
       width: 220,
@@ -183,7 +185,7 @@ export default function ManagementTable({
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ fontSize: "1.4rem", flexShrink: 0 }}>{record.avatar_emoji}</span>
           <div style={{ lineHeight: "1.2" }}>
-            <div style={{ fontWeight: 850, fontSize: "0.95rem" }}>{record.full_name}</div>
+            <div style={{ fontWeight: 850, fontSize: "1rem" }}>{record.full_name}</div>
             {record.nickname && (
               <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontWeight: 700 }}>
                 {record.nickname}
@@ -200,9 +202,9 @@ export default function ManagementTable({
       fixed: "left" as const,
       align: "center" as const,
       render: (_: any, record: Student) => (
-        <div style={{ 
-          fontSize: "1.2rem", 
-          fontWeight: 900, 
+        <div style={{
+          fontSize: "1.2rem",
+          fontWeight: 900,
           color: "var(--color-text)",
           background: "#fff9db",
           padding: "4px 8px",
@@ -213,35 +215,72 @@ export default function ManagementTable({
         </div>
       )
     },
-    ...prizes.map(prize => ({
-      title: <div style={{ fontSize: "1.2rem" }} title={prize.name}>{prize.emoji}</div>,
-      key: `prize_${prize.id}`,
-      width: 60,
-      align: "center" as const,
-      render: (_: any, record: Student) => (
-        <Checkbox 
-          checked={givenPrizes[record.id]?.[prize.id] ?? false}
-          onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
-          style={{ transform: "scale(1.2)" }}
-        />
-      )
-    })),
-    ...lessons.map(lesson => ({
-      title: <div style={{ fontWeight: 800 }}>{dayjs(lesson.date).format("DD.MM")}</div>,
-      key: lesson.id,
-      width: 90,
-      align: "center" as const,
-      render: (_: any, record: Student) => (
-        <Select
-          value={entries[record.id]?.[lesson.id] ?? 0}
-          onChange={(val) => handleStarChange(record.id, lesson.id, val)}
-          options={STAR_OPTIONS}
-          variant="borderless"
-          popupMatchSelectWidth={false}
-          style={{ width: "100%", fontWeight: 700, fontSize: "1rem", color: "#000000" }}
-        />
-      )
-    }))
+    ...prizes.map((prize, idx) => {
+      const names = ["Кіндер", "Стікер", "Пін", "3D-друк"];
+      const titleText = names[idx] || prize.name;
+      return {
+        title: <div style={{ fontSize: "0.8rem", fontWeight: 900, whiteSpace: "nowrap" }} title={prize.name}>{titleText}</div>,
+        key: `prize_${prize.id}`,
+        width: 100,
+        align: "center" as const,
+        render: (_: any, record: Student) => (
+          <Checkbox
+            checked={givenPrizes[record.id]?.[prize.id] ?? false}
+            onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
+            style={{ transform: "scale(1.2)" }}
+          />
+        )
+      };
+    }),
+    ...lessons.map((lesson, idx) => {
+      const lessonDate = dayjs(lesson.date);
+      const isToday = dayjs().isSame(lessonDate, "day");
+      // Fallback: highlight the most recent past lesson if today is not a lesson day 
+      // (only for the last recorded lesson or today)
+      const isHighlighted = isToday || (idx === lessons.length - 1 && lessonDate.isBefore(dayjs()));
+      
+      return {
+        title: (
+          <div style={{
+            fontWeight: 950,
+            color: isHighlighted ? "var(--color-star)" : "#000",
+            borderBottom: isHighlighted ? "2px solid var(--color-star)" : "none"
+          }}>
+            {lessonDate.format("DD.MM")}
+          </div>
+        ),
+        key: lesson.id,
+        width: 80,
+        align: "center" as const,
+        onCell: () => ({
+          style: {
+            background: isHighlighted ? "#FFF9DB" : "inherit"
+          }
+        }),
+        render: (_: any, record: Student) => {
+          const score = entries[record.id]?.[lesson.id] ?? 0;
+          return (
+            <Select
+              value={score}
+              onChange={(val) => handleStarChange(record.id, lesson.id, val)}
+              bordered={false}
+              className="score-select"
+              style={{
+                width: "100%",
+                fontWeight: 800,
+                color: score > 0 ? "var(--color-star)" : "inherit"
+              }}
+              options={[
+                { value: 0, label: "0" },
+                { value: 1, label: "1" },
+                { value: 2, label: "2" },
+                { value: 3, label: "3" },
+              ]}
+            />
+          );
+        }
+      };
+    }),
   ];
 
   if (loading) {
@@ -265,6 +304,45 @@ export default function ManagementTable({
           bordered
           sticky
           className="management-grid"
+          summary={() => {
+            return (
+              <Table.Summary fixed="bottom">
+                <Table.Summary.Row style={{ background: "#f1f3f5" }}>
+                  <Table.Summary.Cell index={0}>
+                    <div style={{ textAlign: "center", fontWeight: 950 }}>Σ</div>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={1}>
+                    <div style={{ fontWeight: 950, textTransform: "uppercase", fontSize: "0.8rem" }}>За урок:</div>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={2}>
+                    <div style={{ textAlign: "center", fontWeight: 950 }}>-</div>
+                  </Table.Summary.Cell>
+                  {/* Prize columns (empty sum) */}
+                  {prizes.map((_, i) => (
+                    <Table.Summary.Cell key={i} index={3 + i}>
+                      <div style={{ textAlign: "center" }}>-</div>
+                    </Table.Summary.Cell>
+                  ))}
+                  {/* Lesson sum columns */}
+                  {lessons.map((lesson, i) => {
+                    const lessonTotal = students.reduce((sum, st) => sum + (entries[st.id]?.[lesson.id] ?? 0), 0);
+                    return (
+                      <Table.Summary.Cell key={lesson.id} index={3 + prizes.length + i}>
+                        <div style={{ 
+                          textAlign: "center", 
+                          fontWeight: 950, 
+                          fontSize: "1.1rem",
+                          color: lessonTotal > 0 ? "var(--color-star)" : "#adb5bd"
+                        }}>
+                          {lessonTotal}
+                        </div>
+                      </Table.Summary.Cell>
+                    );
+                  })}
+                </Table.Summary.Row>
+              </Table.Summary>
+            );
+          }}
         />
       </div>
 
@@ -278,8 +356,8 @@ export default function ManagementTable({
           color: var(--color-text) !important;
           font-family: 'Montserrat', sans-serif !important;
           text-transform: uppercase;
-          font-size: 0.75rem;
-          padding: 12px 8px !important;
+          font-size: 0.85rem;
+          padding: 16px 8px !important;
           letter-spacing: 0.5px;
         }
         .management-grid .ant-table-container,
@@ -287,20 +365,17 @@ export default function ManagementTable({
         .management-grid .ant-table-body {
           border-radius: 0 !important;
         }
-        .management-grid .ant-table-wrapper,
-        .management-grid .ant-table {
-          border-radius: 0 !important;
-        }
         .management-grid .ant-table-cell-fix-left {
           background: #ffffff !important;
-          border-right: 2px solid #eee !important;
+          border-right: 1px solid #eee !important;
         }
         .management-grid .ant-table-cell-fix-left-last {
-          border-right: 3px solid var(--color-border) !important;
+          border-right: 1px solid #eee !important;
         }
         .ant-table-bordered .ant-table-cell {
           border-right: 1px solid #eee !important;
           border-bottom: 1px solid #eee !important;
+          padding: 12px 8px !important;
         }
         .ant-checkbox-inner {
           width: 22px;
@@ -311,27 +386,26 @@ export default function ManagementTable({
           background-color: #51cf66;
           border-color: #2b8a3e;
         }
-        .full-width-table .ant-table-body {
-          scrollbar-width: thin;
-        }
-        .management-grid .ant-select-selector {
-          border: 1px solid #d9d9d9 !important;
-          border-radius: 0 !important;
+        .score-select .ant-select-selector {
+          border: none !important;
           box-shadow: none !important;
-          background: #fff !important;
+          background: transparent !important;
+          padding: 0 !important;
         }
-        .management-grid .ant-select-focused .ant-select-selector,
-        .management-grid .ant-select-open .ant-select-selector {
-          border-color: #1677ff !important;
+        .score-select:hover, .score-select:focus, .score-select-focused, .score-select-open {
+          border: none !important;
           box-shadow: none !important;
+          outline: none !important;
         }
-        .management-grid .ant-select {
-          border-radius: 0 !important;
+        .score-select .ant-select-selection-item {
+          font-size: 1.1rem;
+          font-weight: 800;
         }
         .management-grid .ant-select-dropdown,
         .management-grid .ant-select-item {
           border-radius: 0 !important;
           box-shadow: none !important;
+          border: 2px solid var(--color-border) !important;
         }
       `}</style>
     </div>

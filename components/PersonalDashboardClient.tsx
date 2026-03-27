@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Progress } from "antd";
 import { format } from "date-fns";
 import { uk } from "date-fns/locale";
-import { CheckCircleFilled } from "@ant-design/icons";
+import { StarFilled, CheckCircleFilled, HistoryOutlined, TrophyOutlined } from "@ant-design/icons";
 
 interface Prize {
   id: string;
@@ -14,12 +14,12 @@ interface Prize {
   sort_order: number;
 }
 
-interface LessonEntry {
+interface HistoryEntry {
   amount: number;
   type: string;
   note: string | null;
   created_at: string;
-  lesson_id: string | null;
+  lesson_id?: string | null;
 }
 
 interface Props {
@@ -34,7 +34,8 @@ interface Props {
   rank: number;
   totalStudents: number;
   prizes: Prize[];
-  last5Lessons: LessonEntry[];
+  givenPrizes: Record<string, boolean>;
+  history: HistoryEntry[];
   classId: string;
 }
 
@@ -52,13 +53,17 @@ export default function PersonalDashboardClient({
   rank,
   totalStudents,
   prizes,
-  last5Lessons,
+  givenPrizes,
+  history,
 }: Props) {
   const [displayed, setDisplayed] = useState(0);
 
   // Animated counter
   useEffect(() => {
-    if (totalStars === 0) return;
+    if (totalStars === 0) {
+      setDisplayed(0);
+      return;
+    }
     const duration = 1200;
     const steps = 60;
     const increment = totalStars / steps;
@@ -82,6 +87,13 @@ export default function PersonalDashboardClient({
     if (r === 2) return "🥈";
     if (r === 3) return "🥉";
     return `#${r}`;
+  }
+
+  function getEntryLabel(entry: HistoryEntry) {
+    if (entry.type === "lesson") return "Урок";
+    if (entry.type === "bonus") return "🎁 Бонус";
+    if (entry.type === "penalty") return "⚠️ Штраф";
+    return "Інше";
   }
 
   return (
@@ -112,55 +124,65 @@ export default function PersonalDashboardClient({
               style={{
                 fontSize: "3.5rem",
                 fontWeight: 950,
-                color: "#F08C00", // Gold-ish
+                color: "var(--color-star)",
                 lineHeight: 1,
+                display: "flex",
+                alignItems: "center",
+                gap: "12px"
               }}
             >
-              {displayed}
-            </div>
-            <div style={{ color: "var(--color-text-muted)", fontSize: "1rem", marginTop: "8px", fontWeight: 800 }}>
-              ЗІРОК
+              {displayed} <StarFilled style={{ fontSize: "2.5rem" }} />
             </div>
           </div>
 
           <div>
-            <div style={{ fontSize: "3.5rem", fontWeight: 950, lineHeight: 1 }}>
-              {rankMedal(rank)}
-            </div>
-            <div style={{ color: "var(--color-text-muted)", fontSize: "1rem", marginTop: "8px", fontWeight: 800 }}>
-              МІСЦЕ З {totalStudents}
+            <div style={{
+              fontSize: "3.5rem",
+              fontWeight: 950,
+              lineHeight: 1,
+              color: "#adb5bd"
+            }}>
+              #{rank}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Individual Prize Progress (NEW) */}
+      {/* Individual Prize Progress (NEW Logic) */}
       <div className="star-card" style={{ marginBottom: "24px" }}>
         <div style={{ fontWeight: 900, marginBottom: "20px", fontSize: "1.2rem" }}>
           ПРОГРЕС НАГОРОД
         </div>
-        
+
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {INDIVIDUAL_THRESHOLDS.map((pt) => {
-            const pct = Math.min(100, Math.round((individualStars / pt.target) * 100));
-            const isDone = pct >= 100;
+          {prizes.map((p, idx) => {
+            const pct = Math.min(100, Math.round((individualStars / p.stars_required) * 100));
+            const hasThreshold = individualStars >= p.stars_required;
+            const isGiven = givenPrizes[p.id] || false;
+            
+            const names = ["Кіндер", "Стікер", "Пін", "3D-друк"];
+            const titleText = names[idx] || p.name;
+            
             return (
-              <div key={pt.key}>
+              <div key={p.id}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontWeight: 800, fontSize: "0.95rem" }}>
-                  <span>{pt.name}</span>
-                  <span style={{ color: isDone ? "var(--color-primary)" : "inherit" }}>
-                    {isDone ? <CheckCircleFilled /> : `${pct}%`}
+                  <span>{titleText}</span>
+                  <span style={{ color: isGiven ? "#51cf66" : (hasThreshold ? "#fcc419" : "inherit") }}>
+                    {isGiven ? <CheckCircleFilled /> : `${pct}%`}
                   </span>
                 </div>
                 <Progress 
                   percent={pct} 
                   showInfo={false} 
-                  strokeColor={isDone ? "var(--color-primary)" : "var(--color-text)"}
+                  strokeColor={isGiven ? "#51cf66" : (hasThreshold ? "#fcc419" : "#000000")}
                   strokeWidth={12}
                   className="heavy-progress"
                 />
-                <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", marginTop: "4px", fontWeight: 700 }}>
-                  {isDone ? "ОТРИМАНО" : `ЗІБРАНО ${individualStars} З ${pt.target}`}
+                <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", marginTop: "4px", fontWeight: 700, textTransform: "uppercase" }}>
+                  {isGiven 
+                    ? "ОТРИМАНО" 
+                    : (hasThreshold ? "ОЧІКУЙ НА НАГОРОДУ" : `ЗІБРАНО ${individualStars} З ${p.stars_required}`)
+                  }
                 </div>
               </div>
             );
@@ -168,15 +190,14 @@ export default function PersonalDashboardClient({
         </div>
       </div>
 
-      {/* History (Renamed from Last 5 lessons) */}
-      {last5Lessons.length > 0 && (
+      {/* History */}
+      {history.length > 0 && (
         <div className="star-card" style={{ marginBottom: "24px" }}>
           <div style={{ fontWeight: 900, marginBottom: "16px", fontSize: "1.2rem" }}>
-            ІСТОРІЯ
+            ІСТОРІЯ ЗІРОК
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {last5Lessons.map((entry, idx) => {
-              const isBonus = entry.type === "bonus";
+            {history.map((entry, idx) => {
               const isPenalty = entry.type === "penalty" || entry.amount < 0;
               return (
                 <div
@@ -193,21 +214,22 @@ export default function PersonalDashboardClient({
                   }}
                 >
                   <div style={{ flex: 1 }}>
-                    <div style={{ color: "var(--color-text-muted)", fontSize: "0.75rem", fontWeight: 800 }}>
-                      {format(new Date(entry.created_at), "d MMM yyyy", { locale: uk }).toUpperCase()}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
+                      <div style={{ color: "var(--color-text-muted)", fontSize: "0.75rem", fontWeight: 800 }}>
+                        {format(new Date(entry.created_at), "d MMM yyyy", { locale: uk }).toUpperCase()}
+                      </div>
                     </div>
-                    {entry.note && (
-                      <div style={{ fontSize: "1rem", fontWeight: 700, marginTop: "2px" }}>{entry.note}</div>
-                    )}
+                    
+                    <div style={{ fontSize: "1rem", fontWeight: 700 }}>
+                      {entry.type === "lesson" 
+                        ? (entry.note || "Урок або домашнє")
+                        : (entry.type === "bonus" ? "🎁 БОНУС" : "⚠️ ШТРАФ")
+                      }
+                      {entry.type !== "lesson" && entry.note && `: ${entry.note}`}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      fontSize: "1.1rem",
-                      fontWeight: 900,
-                      color: isPenalty ? "#E03131" : "#F08C00",
-                    }}
-                  >
-                    {isPenalty ? "" : "+"}{entry.amount}
+                  <div style={{ fontWeight: 950, fontSize: "1.2rem", color: entry.amount < 0 ? "#E03131" : "var(--color-star)", display: "flex", alignItems: "center", gap: "4px" }}>
+                    {entry.amount > 0 ? "+" : ""}{entry.amount} <StarFilled style={{ fontSize: "0.9rem" }} />
                   </div>
                 </div>
               );

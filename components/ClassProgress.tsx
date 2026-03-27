@@ -23,8 +23,8 @@ export default function ClassProgressBars({
         </div>
         <Progress
           percent={gamePercent}
-          strokeColor="#52C41A"
-          trailColor="#eee"
+          strokeColor={gamePercent === 100 ? "#52C41A" : "#000000"}
+          trailColor="#e9ecef"
           strokeWidth={20}
           showInfo={false}
         />
@@ -40,8 +40,8 @@ export default function ClassProgressBars({
         </div>
         <Progress
           percent={pizzaPercent}
-          strokeColor="#F59F00"
-          trailColor="#eee"
+          strokeColor={pizzaPercent === 100 ? "#52C41A" : "#000000"}
+          trailColor="#e9ecef"
           strokeWidth={20}
           showInfo={false}
         />

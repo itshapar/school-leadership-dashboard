@@ -90,6 +90,14 @@ export default function QuickBonusPenalty({ classId, students }: { classId: stri
         cancelText="Скасувати"
         okButtonProps={{ size: "large", style: { fontWeight: 700 } }}
         cancelButtonProps={{ size: "large" }}
+        footer={[
+          <Button key="back" onClick={() => setIsOpen(false)} size="large">
+            Скасувати
+          </Button>,
+          <Button key="submit" type="primary" onClick={() => form.submit()} loading={loading} size="large" style={{ fontWeight: 700 }}>
+            Зберігти
+          </Button>,
+        ]}
       >
         <Form form={form} layout="vertical" onFinish={handleFinish} style={{ marginTop: "24px" }}>
           <Form.Item name="target" label={<span style={{ fontWeight: 700 }}>Кому призначити?</span>} initialValue="student">

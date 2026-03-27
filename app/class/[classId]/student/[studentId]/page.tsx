@@ -46,7 +46,7 @@ export default async function StudentDashboardPage({ params }: Props) {
     .eq("class_id", classId)
     .order("sort_order");
 
-  // Fetch all star entries for this student
+  // Fetch all star entries for this student (lessons, individual bonuses/penalties)
   const { data: studentEntries } = await supabase
     .from("star_entries")
     .select("amount, type, note, created_at, lesson_id")
@@ -56,16 +56,32 @@ export default async function StudentDashboardPage({ params }: Props) {
   // Fetch class-wide bonus entries
   const { data: classEntries } = await supabase
     .from("star_entries")
-    .select("amount")
+    .select("amount, type, note, created_at")
     .eq("class_id", classId)
-    .is("student_id", null);
+    .is("student_id", null)
+    .order("created_at", { ascending: false });
 
-  // Total stars
+  // Personal stars only
   const personalStars = (studentEntries ?? []).reduce((s, e) => s + e.amount, 0);
-  const classBonus = (classEntries ?? []).reduce((s, e) => s + e.amount, 0);
-  const totalStars = personalStars + classBonus;
+  const totalStars = personalStars;
 
-  // Leaderboard rank
+  // History: Personal only
+  const history = (studentEntries ?? [])
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 30);
+
+  // Prizes Given: Manual checkmarks from admin journal
+  const { data: gvData } = await supabase
+    .from("prizes_given")
+    .select("prize_id")
+    .eq("student_id", studentId);
+  
+  const givenPrizes: Record<string, boolean> = {};
+  (gvData ?? []).forEach(g => {
+    givenPrizes[g.prize_id] = true;
+  });
+
+  // Leaderboard rank (PErsonal ONLY)
   const { data: allStudents } = await supabase
     .from("students")
     .select("id")
@@ -80,20 +96,13 @@ export default async function StudentDashboardPage({ params }: Props) {
   const starMap: Record<string, number> = {};
   for (const e of allEntries ?? []) {
     if (e.student_id) {
-      starMap[e.student_id] = (starMap[e.student_id] ?? 0) + e.amount + classBonus;
+      starMap[e.student_id] = (starMap[e.student_id] ?? 0) + e.amount;
     }
   }
-  // Ensure this student is present even if 0 personal stars
-  starMap[studentId] = starMap[studentId] ?? classBonus;
 
   const sorted = Object.entries(starMap).sort((a, b) => b[1] - a[1]);
-  const rank = sorted.findIndex(([id]) => id === studentId) + 1;
-  const totalStudents = allStudents?.length ?? 1;
-
-  // Last 5 lesson entries
-  const last5 = (studentEntries ?? [])
-    .filter((e) => e.type === "lesson")
-    .slice(0, 5);
+  const rank = sorted.findIndex(([id]) => id === studentId) + 1 || allStudents?.length || 1;
+  const totalStudentsCount = allStudents?.length || 1;
 
   return (
     <div className="page-container">
@@ -123,9 +132,10 @@ export default async function StudentDashboardPage({ params }: Props) {
         totalStars={totalStars}
         individualStars={personalStars}
         rank={rank}
-        totalStudents={totalStudents}
+        totalStudents={totalStudentsCount}
         prizes={prizes ?? []}
-        last5Lessons={last5}
+        givenPrizes={givenPrizes}
+        history={history}
         classId={classId}
       />
     </div>

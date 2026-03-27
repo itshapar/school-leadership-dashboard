@@ -57,8 +57,10 @@ export default function NewLessonButton({
           fontWeight: 800,
           borderRadius: "10px",
           background: "#ffffff",
+          color: "var(--color-text)",
           border: "2px solid var(--color-border)",
           height: "44px",
+          boxShadow: "3px 3px 0px var(--color-border)"
         }}
       >
         Новий урок

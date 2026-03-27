@@ -1,7 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
-import { UserOutlined, ReadOutlined, StarOutlined } from "@ant-design/icons";
+import { UserOutlined, ReadOutlined, StarFilled } from "@ant-design/icons";
 import { Progress } from "antd";
 import { buildClassCodeMap } from "@/lib/classCodes";
 
@@ -55,72 +55,68 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {classData.map((cls) => {
-          const gamePercent = Math.min(100, Math.round((cls.totalStars / cls.game_day_threshold) * 100));
-          const pizzaPercent = Math.min(100, Math.round((cls.totalStars / cls.pizza_day_threshold) * 100));
           return (
-            <div key={cls.id} className="star-card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
-                <div>
-                  <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--color-text)" }}>
+            <div key={cls.id} className="star-card" style={{ padding: "16px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
+                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "32px" }}>
+                  <div style={{ fontSize: "1.8rem", fontWeight: 900, color: "var(--color-text)", width: "200px" }}>
                     {cls.name}
                   </div>
-                  <div style={{ marginTop: "10px", display: "flex", gap: "16px", fontSize: "0.85rem", fontWeight: 800 }}>
-                    <span>
-                      <UserOutlined /> {cls.studentCount}
-                    </span>
-                    <span>
-                      <ReadOutlined /> {cls.lessonCount}
-                    </span>
-                    <span>
-                      <StarOutlined /> {cls.totalStars}
-                    </span>
-                  </div>
-                  <div style={{ marginTop: "12px", display: "grid", gap: "8px" }}>
-                    <div style={{ fontSize: "0.8rem", fontWeight: 700 }}>Ігровий день</div>
-                    <Progress percent={gamePercent} showInfo={false} strokeColor="#1677ff" />
-                    <div style={{ fontSize: "0.8rem", fontWeight: 700 }}>Pizza Day</div>
-                    <Progress percent={pizzaPercent} showInfo={false} strokeColor="#fa8c16" />
+                  
+                  <div style={{ 
+                    display: "flex", 
+                    gap: "24px", 
+                    fontSize: "1rem", 
+                    fontWeight: 800, 
+                    color: "var(--color-text-muted)",
+                    flexWrap: "nowrap",
+                    alignItems: "center"
+                  }}>
+                    <div>{cls.studentCount} учнів</div>
+                    <div>{cls.lessonCount} уроків</div>
+                    <div style={{ color: "var(--color-star)", display: "flex", alignItems: "center", gap: "6px" }}>
+                      {cls.totalStars} <StarFilled style={{ fontSize: "0.9rem" }} />
+                    </div>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+
+                <div style={{ display: "flex", gap: "12px" }}>
                   <Link
                     href={`/admin/${codeMap[cls.id]}`}
                     style={{
-                      padding: "8px 24px",
+                      padding: "8px 20px",
                       background: "#000000",
                       color: "white",
                       borderRadius: "10px",
                       textDecoration: "none",
-                      fontSize: "0.9rem",
+                      fontSize: "0.85rem",
                       fontWeight: 800,
-                      border: "2px solid var(--color-border)",
-                      boxShadow: "3px 3px 0px var(--color-border)",
+                      border: "2px solid #000000",
+                      boxShadow: "3px 3px 0px #000000",
                       textTransform: "uppercase",
-                      letterSpacing: "0.5px"
                     }}
                   >
-                    Керувати
+                    Журнал
                   </Link>
                   <Link
                     href={`/class/${codeMap[cls.id]}`}
                     target="_blank"
                     style={{
-                      padding: "8px 18px",
+                      padding: "8px 20px",
                       background: "#FFFFFF",
                       border: "2px solid var(--color-border)",
                       color: "var(--color-text)",
                       borderRadius: "10px",
                       textDecoration: "none",
-                      fontSize: "0.9rem",
-                      fontWeight: 700,
+                      fontSize: "0.85rem",
+                      fontWeight: 800,
                       boxShadow: "3px 3px 0px var(--color-border)",
                       textTransform: "uppercase",
-                      letterSpacing: "0.5px"
                     }}
                   >
-                    Стіна
+                    Дашборд
                   </Link>
                 </div>
               </div>
