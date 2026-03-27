@@ -1,0 +1,201 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg-primary: #FFF9F0;
+  --bg-card: #FFFFFF;
+  --bg-elevated: #FFF0F6;
+  --color-primary: #52C41A;
+  --color-text: #2C2C2C;
+  --color-text-muted: #666666;
+  --color-border: #2C2C2C;
+  --border-width: 3px;
+  --box-shadow: 4px 4px 0px #2C2C2C;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-primary);
+  color: var(--color-text);
+  font-family: 'Montserrat', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Page container */
+.page-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.page-header {
+  text-align: center;
+  padding: 24px 0 16px;
+  margin-bottom: 8px;
+}
+
+.page-header h1 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  color: var(--color-text);
+  text-shadow: 3px 3px 0px rgba(0,0,0,0.05);
+}
+
+.page-header .subtitle {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Card styles */
+.star-card {
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--box-shadow);
+  transition: transform 0.1s ease;
+}
+
+.star-card:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px var(--color-border);
+}
+
+/* Prize card */
+.prize-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  background: #FFFFFF;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0px var(--color-border);
+  transition: all 0.1s ease;
+}
+
+.prize-card.unlocked {
+  background: #EBFBEE; /* Success light */
+  border-color: #2F9E44;
+  box-shadow: 3px 3px 0px #2F9E44;
+}
+
+.prize-card.locked {
+  opacity: 0.6;
+  background: #F1F3F5;
+  filter: grayscale(0.8);
+}
+
+/* Leaderboard row */
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #FFFFFF;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 3px 3px 0px var(--color-border);
+  transition: transform 0.1s ease;
+}
+
+.leaderboard-row:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--color-border);
+}
+
+.leaderboard-row.rank-1 { background: #FFF9DB; border-color: #F08C00; box-shadow: 3px 3px 0px #F08C00; }
+.leaderboard-row.rank-2 { background: #F1F3F5; border-color: #495057; box-shadow: 3px 3px 0px #495057; }
+.leaderboard-row.rank-3 { background: #FFF4E6; border-color: #D9480F; box-shadow: 3px 3px 0px #D9480F; }
+.leaderboard-row.current-student { border-color: #7048E8; background: #F3F0FF; box-shadow: 3px 3px 0px #7048E8; }
+
+/* Avatar */
+.avatar-emoji {
+  font-size: 2.8rem;
+  display: block;
+  text-align: center;
+}
+
+/* Rank badge */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  font-weight: 900;
+  font-size: 0.9rem;
+  background: #FFFFFF;
+  color: var(--color-text);
+  flex-shrink: 0;
+}
+
+.rank-badge.rank-1 { background: #FCC419; color: #000; border-color: #000; }
+.rank-badge.rank-2 { background: #ADB5BD; color: #000; border-color: #000; }
+.rank-badge.rank-3 { background: #E67E22; color: #fff; border-color: #000; }
+
+/* Progress section */
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(2deg); }
+}
+
+.avatar-emoji {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 10px; border: 2px solid var(--bg-primary); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* Ant Design overrides to match Illustration style */
+.ant-progress-inner {
+  background-color: transparent !important;
+  border: var(--border-width) solid var(--color-border) !important;
+  box-shadow: 2px 2px 0px var(--color-border) !important;
+  height: 20px !important;
+}
+
+.ant-progress-bg {
+  height: 20px !important;
+  border-right: var(--border-width) solid var(--color-border) !important;
+}
+
+.ant-btn {
+  border-width: var(--border-width) !important;
+  box-shadow: 3px 3px 0px var(--color-border) !important;
+}
+
+.ant-btn:active {
+  box-shadow: 0 0 0px var(--color-border) !important;
+  transform: translate(2px, 2px);
+}

@@ -1,0 +1,87 @@
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import ManagementTable from "@/components/Admin/ManagementTable";
+import AdminClassToolbar from "@/components/Admin/AdminClassToolbar";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { resolveClassIdByCode } from "@/lib/classCodes";
+import { loadManagementJournalData } from "@/lib/admin/managementJournalData";
+
+export const dynamic = "force-dynamic";
+
+interface Props {
+  params: Promise<{ classId: string }>;
+}
+
+export default async function AdminClassPage({ params }: Props) {
+  const { classId: classParam } = await params;
+  const supabase = await createSupabaseServerClient();
+  const isUuidLike = /^[0-9a-f-]{36}$/i.test(classParam);
+  let resolvedClassId = classParam;
+
+  if (!isUuidLike) {
+    const { data: allClasses } = await supabase.from("classes").select("id");
+    const byCode = resolveClassIdByCode(allClasses ?? [], classParam);
+    if (!byCode) return notFound();
+    resolvedClassId = byCode;
+  }
+
+  const { data: cls } = await supabase.from("classes").select("id, name").eq("id", resolvedClassId).maybeSingle();
+
+  if (!cls) return notFound();
+  const classId = resolvedClassId;
+
+  const { data: students } = await supabase
+    .from("students")
+    .select("id, full_name, nickname, avatar_emoji")
+    .eq("class_id", classId)
+    .order("full_name");
+
+  const journalInitial = await loadManagementJournalData(supabase, classId);
+
+  return (
+    <div style={{ padding: "0", minHeight: "100vh", background: "#f8f9fa" }}>
+      {/* Top Header Bar */}
+      <div style={{ 
+        background: "#ffffff", 
+        borderBottom: "3px solid var(--color-border)", 
+        padding: "16px 24px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        position: "sticky",
+        top: 0,
+        zIndex: 100
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+          <Link
+            href="/admin"
+            style={{
+              color: "var(--color-text)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontWeight: 700,
+              minHeight: "44px",
+              padding: "10px 14px",
+              border: "2px solid var(--color-border)",
+              borderRadius: "10px",
+              textDecoration: "none",
+            }}
+          >
+            <ArrowLeftOutlined /> Назад
+          </Link>
+          <div style={{ width: "2px", height: "24px", background: "#e9ecef" }} />
+          <h1 style={{ fontSize: "1.5rem", fontWeight: 900, margin: 0, textTransform: "uppercase" }}>{cls.name}</h1>
+        </div>
+
+        <AdminClassToolbar classId={classId} students={students ?? []} />
+      </div>
+
+      {/* Full Width Table Area */}
+      <div style={{ width: "100%", padding: "0" }}>
+        <ManagementTable key={classId} classId={classId} initialData={journalInitial} />
+      </div>
+    </div>
+  );
+}
