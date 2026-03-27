@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, supabaseForRls } = await getSupabaseForAdminApi(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const db = createSupabaseAdminClient() ?? supabaseForRls;
 
   let body: { student_id?: string; prize_id?: string; given?: boolean };
   try {
@@ -23,10 +23,10 @@ export async function POST(request: Request) {
   }
 
   if (given) {
-    const { error } = await supabase.from("prizes_given").insert({ student_id, prize_id });
+    const { error } = await db.from("prizes_given").insert({ student_id, prize_id });
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   } else {
-    const { error } = await supabase
+    const { error } = await db
       .from("prizes_given")
       .delete()
       .eq("student_id", student_id)

@@ -29,6 +29,12 @@ function isDateLike(header: unknown): boolean {
 
 export async function POST(request: NextRequest) {
   const supabase = createSupabaseAdminClient();
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Налаштуйте SUPABASE_SERVICE_ROLE_KEY на сервері (імпорт потребує service role)." },
+      { status: 500 }
+    );
+  }
 
   let formData: FormData;
   try {

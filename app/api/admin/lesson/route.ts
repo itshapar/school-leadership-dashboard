@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, supabaseForRls } = await getSupabaseForAdminApi(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const db = createSupabaseAdminClient() ?? supabaseForRls;
 
   let body: { class_id?: string; date?: string };
   try {
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from("lessons")
     .select("id")
     .eq("class_id", class_id)
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "lesson_exists" }, { status: 409 });
   }
 
-  const { data: newLesson, error } = await supabase
+  const { data: newLesson, error } = await db
     .from("lessons")
     .insert({ class_id, date })
     .select("id, date")

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Button, Modal, DatePicker, Space, message } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { getSupabaseClient } from "@/lib/supabase/client";
+import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 
 export default function NewLessonButton({
   classId,
@@ -15,12 +17,13 @@ export default function NewLessonButton({
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<dayjs.Dayjs>(dayjs());
   const [loading, setLoading] = useState(false);
+  const supabase = getSupabaseClient();
 
   async function addLesson() {
     const dateStr = date.format("YYYY-MM-DD");
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/lesson", {
+      const res = await adminApiFetch(supabase, "/api/admin/lesson", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ class_id: classId, date: dateStr }),

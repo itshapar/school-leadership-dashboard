@@ -5,6 +5,8 @@ import { Upload, Button, Select, Alert, Progress, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import type { UploadFile } from "antd";
 import Link from "next/link";
+import { getSupabaseClient } from "@/lib/supabase/client";
+import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 
 const CLASS_OPTIONS = [
   { value: "11111111-0000-0000-0000-000000000001", label: "7А" },
@@ -16,6 +18,7 @@ const CLASS_OPTIONS = [
 ];
 
 export default function ImportPage() {
+  const supabase = getSupabaseClient();
   const [classId, setClassId] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,7 +37,7 @@ export default function ImportPage() {
     formData.append("classId", classId);
 
     try {
-      const res = await fetch("/api/admin/import", { method: "POST", body: formData });
+      const res = await adminApiFetch(supabase, "/api/admin/import", { method: "POST", body: formData });
       const json = await res.json();
       if (res.ok) {
         setResult({ success: json.message });

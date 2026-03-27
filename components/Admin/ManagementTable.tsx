@@ -12,6 +12,7 @@ import {
   type ManagementJournalLesson,
   type ManagementJournalPrize,
 } from "@/lib/admin/managementJournalData";
+import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 
 type Student = ManagementJournalStudent;
 type Lesson = ManagementJournalLesson;
@@ -111,7 +112,7 @@ export default function ManagementTable({
     }));
 
     try {
-      const res = await fetch("/api/admin/star-entry", {
+      const res = await adminApiFetch(supabase, "/api/admin/star-entry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -147,7 +148,7 @@ export default function ManagementTable({
     }));
 
     try {
-      const res = await fetch("/api/admin/prize-given", {
+      const res = await adminApiFetch(supabase, "/api/admin/prize-given", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ student_id: studentId, prize_id: prizeId, given: checked }),

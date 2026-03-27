@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, supabaseForRls } = await getSupabaseForAdminApi(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const db = createSupabaseAdminClient() ?? supabaseForRls;
 
   let body: {
     student_id?: string;
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  const { error } = await supabase.from("star_entries").upsert(
+  const { error } = await db.from("star_entries").upsert(
     {
       student_id,
       lesson_id,

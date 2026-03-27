@@ -43,5 +43,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  // /api/admin — щоб оновлювати сесію Supabase на кожному запиті до API (без редіректу: шлях не під /admin)
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };
