@@ -114,30 +114,35 @@ export default function PersonalDashboardClient({
         <div
           style={{
             display: "flex",
-            justifyContent: "center",
-            gap: "48px",
-            marginTop: "32px",
+            justifyContent: "space-around",
+            alignItems: "center",
+            padding: "20px 0",
+            background: "#f8f9fa",
+            borderRadius: "16px",
+            border: "2px dashed #dee2e6",
+            flexWrap: "wrap",
+            gap: "16px"
           }}
         >
           <div>
             <div
               style={{
-                fontSize: "3.5rem",
+                fontSize: "2.6rem",
                 fontWeight: 950,
                 color: "var(--color-star)",
                 lineHeight: 1,
                 display: "flex",
                 alignItems: "center",
-                gap: "12px"
+                gap: "8px"
               }}
             >
-              {displayed} <StarFilled style={{ fontSize: "2.5rem" }} />
+              {displayed} <StarFilled style={{ fontSize: "2rem" }} />
             </div>
           </div>
 
           <div>
             <div style={{
-              fontSize: "3.5rem",
+              fontSize: "2.6rem",
               fontWeight: 950,
               lineHeight: 1,
               color: "#adb5bd"
