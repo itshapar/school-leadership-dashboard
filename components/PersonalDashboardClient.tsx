@@ -114,14 +114,9 @@ export default function PersonalDashboardClient({
         <div
           style={{
             display: "flex",
-            justifyContent: "space-around",
-            alignItems: "center",
-            padding: "20px 0",
-            background: "#f8f9fa",
-            borderRadius: "16px",
-            border: "2px dashed #dee2e6",
-            flexWrap: "wrap",
-            gap: "16px"
+            justifyContent: "center",
+            gap: "48px",
+            marginTop: "32px",
           }}
         >
           <div>

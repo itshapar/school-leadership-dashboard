@@ -87,13 +87,13 @@ export default async function ClassPage({ params }: Props) {
         boxShadow: "4px 4px 0px #000000"
       }}>
         <div style={{ 
-          fontSize: "clamp(2.5rem, 15vw, 3.8rem)", 
+          fontSize: "clamp(2.2rem, 10vw, 3.8rem)", 
           fontWeight: 950, 
           color: "var(--color-star)", 
           lineHeight: 1, 
           letterSpacing: "-2px" 
         }}>
-          {totalClassStars} <StarFilled style={{ fontSize: "clamp(1.8rem, 10vw, 2.8rem)", verticalAlign: "middle", marginTop: "-5px" }} />
+          {totalClassStars} <StarFilled style={{ fontSize: "clamp(1.6rem, 7vw, 2.8rem)", verticalAlign: "middle", marginTop: "-5px" }} />
         </div>
       </div>
 

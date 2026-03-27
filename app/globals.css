@@ -202,34 +202,7 @@ html, body {
 }
 
 @media (max-width: 600px) {
-  .page-container {
-    padding: 12px 12px 30px;
-  }
-  .page-header {
-    padding: 16px 0 8px;
-  }
   .page-header h1 {
-    font-size: 1.7rem;
-  }
-  .star-card {
-    padding: 16px;
-    border-radius: 12px;
-  }
-  .leaderboard-row {
-    padding: 8px 12px;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-  .avatar-emoji {
-    font-size: 2rem;
-  }
-  .rank-badge {
-    width: 28px;
-    height: 28px;
-    font-size: 0.8rem;
-  }
-  :root {
-    --border-width: 2px;
-    --box-shadow: 3px 3px 0px #2C2C2C;
+    font-size: 1.8rem;
   }
 }
