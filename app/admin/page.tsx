@@ -44,77 +44,43 @@ export default async function AdminPage() {
   );
 
   return (
-    <div className="page-container" style={{ maxWidth: "900px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800 }}>⭐ StarBoard Admin</h1>
-          <p style={{ color: "var(--color-text-muted)", margin: "4px 0 0" }}>Управління класами</p>
-        </div>
-        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-          <AdminLogoutButton />
-        </div>
+    <div className="page-container" style={{ maxWidth: "800px", paddingBottom: "80px" }}>
+      <div style={{ textAlign: "center", marginBottom: "32px" }}>
+        <h1 style={{ margin: 0, fontSize: "2.2rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "-1px" }}>
+          Список класів
+        </h1>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div className="admin-class-list" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {classData.map((cls) => {
           return (
-            <div key={cls.id} className="star-card" style={{ padding: "16px 20px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
-                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "32px" }}>
-                  <div style={{ fontSize: "1.8rem", fontWeight: 900, color: "var(--color-text)", width: "200px" }}>
+            <div key={cls.id} className="star-card admin-card" style={{ padding: "20px" }}>
+              <div className="admin-card-content">
+                <div className="admin-card-info">
+                  <div className="admin-class-name">
                     {cls.name}
                   </div>
                   
-                  <div style={{ 
-                    display: "flex", 
-                    gap: "24px", 
-                    fontSize: "1rem", 
-                    fontWeight: 800, 
-                    color: "var(--color-text-muted)",
-                    flexWrap: "nowrap",
-                    alignItems: "center"
-                  }}>
-                    <div>{cls.studentCount} учнів</div>
-                    <div>{cls.lessonCount} уроків</div>
-                    <div style={{ color: "var(--color-star)", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <div className="admin-class-stats">
+                    <span>{cls.studentCount} учнів</span>
+                    <span>{cls.lessonCount} уроків</span>
+                    <span className="admin-stars">
                       {cls.totalStars} <StarFilled style={{ fontSize: "0.9rem" }} />
-                    </div>
+                    </span>
                   </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "12px" }}>
+                <div className="admin-card-actions">
                   <Link
                     href={`/admin/${codeMap[cls.id]}`}
-                    style={{
-                      padding: "8px 20px",
-                      background: "#000000",
-                      color: "white",
-                      borderRadius: "10px",
-                      textDecoration: "none",
-                      fontSize: "0.85rem",
-                      fontWeight: 800,
-                      border: "2px solid #000000",
-                      boxShadow: "3px 3px 0px #000000",
-                      textTransform: "uppercase",
-                    }}
+                    className="admin-btn admin-btn-black"
                   >
                     Журнал
                   </Link>
                   <Link
                     href={`/class/${codeMap[cls.id]}`}
                     target="_blank"
-                    style={{
-                      padding: "8px 20px",
-                      background: "#FFFFFF",
-                      border: "2px solid var(--color-border)",
-                      color: "var(--color-text)",
-                      borderRadius: "10px",
-                      textDecoration: "none",
-                      fontSize: "0.85rem",
-                      fontWeight: 800,
-                      boxShadow: "3px 3px 0px var(--color-border)",
-                      textTransform: "uppercase",
-                    }}
+                    className="admin-btn admin-btn-white"
                   >
                     Дашборд
                   </Link>
@@ -124,6 +90,105 @@ export default async function AdminPage() {
           );
         })}
       </div>
+
+      <div style={{ marginTop: "48px", textAlign: "center" }}>
+        <AdminLogoutButton />
+      </div>
+
+      <style jsx>{`
+        .admin-card-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 24px;
+        }
+        .admin-card-info {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          gap: 32px;
+        }
+        .admin-class-name {
+          font-size: 1.8rem;
+          fontWeight: 900;
+          color: var(--color-text);
+          width: 180px;
+          flex-shrink: 0;
+        }
+        .admin-class-stats {
+          display: flex;
+          gap: 24px;
+          font-size: 1rem;
+          font-weight: 800;
+          color: var(--color-text-muted);
+          align-items: center;
+        }
+        .admin-stars {
+          color: var(--color-star);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .admin-card-actions {
+          display: flex;
+          gap: 12px;
+        }
+        .admin-btn {
+          padding: 10px 24px;
+          border-radius: 12px;
+          text-decoration: none;
+          font-size: 0.9rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          transition: transform 0.1s;
+        }
+        .admin-btn:active {
+          transform: translateY(2px);
+        }
+        .admin-btn-black {
+          background: #000000;
+          color: white;
+          border: 3px solid #000000;
+          box-shadow: 4px 4px 0px #000000;
+        }
+        .admin-btn-white {
+          background: #FFFFFF;
+          border: 3px solid var(--color-border);
+          color: var(--color-text);
+          box-shadow: 4px 4px 0px var(--color-border);
+        }
+
+        @media (max-width: 768px) {
+          .admin-card-content {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 20px;
+          }
+          .admin-card-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+          }
+          .admin-class-name {
+            width: 100%;
+            font-size: 1.5rem;
+          }
+          .admin-class-stats {
+            width: 100%;
+            justify-content: flex-start;
+            gap: 16px;
+            font-size: 0.9rem;
+          }
+          .admin-card-actions {
+            width: 100%;
+          }
+          .admin-btn {
+            flex: 1;
+            text-align: center;
+            padding: 12px 16px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
