@@ -59,12 +59,18 @@ export default async function ClassPage({ params }: Props) {
   const classBonus = (classEntries ?? []).reduce((sum, e) => sum + e.amount, 0);
 
   // Ranked students (individual stars only)
-  const ranked = (students ?? [])
+  const sortedByStars = (students ?? [])
     .map((s) => ({
       ...s,
       stars: starMap[s.id] ?? 0,
     }))
     .sort((a, b) => b.stars - a.stars);
+
+  // Dense ranking: students with equal stars share the same rank
+  const ranked = sortedByStars.map((s) => ({
+    ...s,
+    rank: sortedByStars.filter((o) => o.stars > s.stars).length + 1,
+  }));
 
   // Total class progress: sum of individual efforts + the class pool
   const totalPersonalStars = ranked.reduce((s, r) => s + r.stars, 0);

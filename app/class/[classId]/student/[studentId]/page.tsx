@@ -101,7 +101,9 @@ export default async function StudentDashboardPage({ params }: Props) {
   }
 
   const sorted = Object.entries(starMap).sort((a, b) => b[1] - a[1]);
-  const rank = sorted.findIndex(([id]) => id === studentId) + 1 || allStudents?.length || 1;
+  // Dense ranking: students with equal stars share the same rank
+  const myStars = starMap[studentId] ?? 0;
+  const rank = sorted.filter(([, stars]) => stars > myStars).length + 1;
   const totalStudentsCount = allStudents?.length || 1;
 
   return (
