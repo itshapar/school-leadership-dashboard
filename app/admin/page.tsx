@@ -54,84 +54,33 @@ export default async function AdminPage() {
       <div className="admin-class-list" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {classData.map((cls) => {
           return (
-            <div key={cls.id} className="star-card" style={{ padding: "0", overflow: "hidden" }}>
-              <div style={{ 
-                display: "flex", 
-                justifyContent: "space-between", 
-                alignItems: "center", 
-                gap: "24px",
-                padding: "20px",
-                flexWrap: "wrap"
-              }}>
-                <div style={{ 
-                  flex: "1 1 300px", 
-                  display: "flex", 
-                  alignItems: "center", 
-                  gap: "32px",
-                  flexWrap: "wrap"
-                }}>
-                  <div style={{ 
-                    fontSize: "1.8rem", 
-                    fontWeight: 900, 
-                    color: "var(--color-text)", 
-                    minWidth: "150px"
-                  }}>
+            <div key={cls.id} className="star-card" style={{ padding: "0" }}>
+              <div className="admin-card-row">
+                <div className="admin-card-info">
+                  <div className="admin-class-name">
                     {cls.name}
                   </div>
                   
-                  <div style={{ 
-                    display: "flex", 
-                    gap: "24px", 
-                    fontSize: "1rem", 
-                    fontWeight: 800, 
-                    color: "var(--color-text-muted)",
-                    alignItems: "center"
-                  }}>
+                  <div className="admin-class-stats">
                     <span>{cls.studentCount} учнів</span>
                     <span>{cls.lessonCount} уроків</span>
-                    <span style={{ color: "var(--color-star)", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span className="admin-stars-count">
                       {cls.totalStars} <StarFilled style={{ fontSize: "0.9rem" }} />
                     </span>
                   </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", flex: "0 0 auto" }}>
+                <div className="admin-btn-group">
                   <Link
                     href={`/admin/${codeMap[cls.id]}`}
-                    style={{
-                      padding: "10px 24px",
-                      background: "#000000",
-                      color: "white",
-                      borderRadius: "12px",
-                      textDecoration: "none",
-                      fontSize: "0.9rem",
-                      fontWeight: 800,
-                      border: "3px solid #000000",
-                      boxShadow: "4px 4px 0px #000000",
-                      textTransform: "uppercase",
-                      textAlign: "center",
-                      minWidth: "120px"
-                    }}
+                    className="admin-action-btn admin-btn-black"
                   >
                     Журнал
                   </Link>
                   <Link
                     href={`/class/${codeMap[cls.id]}`}
                     target="_blank"
-                    style={{
-                      padding: "10px 24px",
-                      background: "#FFFFFF",
-                      border: "3px solid var(--color-border)",
-                      color: "var(--color-text)",
-                      borderRadius: "12px",
-                      textDecoration: "none",
-                      fontSize: "0.9rem",
-                      fontWeight: 800,
-                      boxShadow: "4px 4px 0px var(--color-border)",
-                      textTransform: "uppercase",
-                      textAlign: "center",
-                      minWidth: "120px"
-                    }}
+                    className="admin-action-btn admin-btn-white"
                   >
                     Дашборд
                   </Link>
@@ -142,7 +91,7 @@ export default async function AdminPage() {
         })}
       </div>
 
-      <div style={{ marginTop: "48px", textAlign: "center" }}>
+      <div style={{ marginTop: "40px", textAlign: "center" }}>
         <AdminLogoutButton />
       </div>
     </div>

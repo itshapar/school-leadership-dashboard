@@ -200,3 +200,118 @@ html, body {
   box-shadow: 0 0 0px var(--color-border) !important;
   transform: translate(2px, 2px);
 }
+
+/* Admin Dashboard specific styles */
+.admin-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 20px;
+}
+
+.admin-card-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.admin-class-name {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--color-text);
+  min-width: 150px;
+}
+
+.admin-class-stats {
+  display: flex;
+  gap: 24px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  align-items: center;
+}
+
+.admin-stars-count {
+  color: var(--color-star);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-btn-group {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.admin-action-btn {
+  padding: 10px 24px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  text-align: center;
+  min-width: 120px;
+  transition: transform 0.1s;
+}
+
+.admin-action-btn:active {
+  transform: translateY(2px);
+}
+
+.admin-btn-black {
+  background: #000000;
+  color: #FFFFFF;
+  border: 3px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.admin-btn-white {
+  background: #FFFFFF;
+  border: 3px solid var(--color-border);
+  color: var(--color-text);
+  box-shadow: 4px 4px 0px var(--color-border);
+}
+
+@media (max-width: 768px) {
+  .admin-card-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .admin-card-info {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .admin-class-name {
+    font-size: 1.4rem;
+    min-width: auto;
+    margin-right: auto;
+  }
+
+  .admin-class-stats {
+    gap: 12px;
+    font-size: 0.85rem;
+  }
+
+  .admin-btn-group {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .admin-action-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 8px;
+    font-size: 0.8rem;
+  }
+}
