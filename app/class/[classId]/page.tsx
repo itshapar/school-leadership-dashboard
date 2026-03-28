@@ -171,8 +171,7 @@ export default async function ClassPage({ params }: Props) {
               href={`/class/${classParam}/student/${student.id}`}
               style={{ textDecoration: "none" }}
             >
-              <div className={`leaderboard-row rank-${rank <= 3 ? rank : ""}`}>
-                <div className={`rank-badge rank-${rank <= 3 ? rank : ""}`}>{rank}</div>
+              <div className="leaderboard-row">
                 <div style={{ fontSize: "1.8rem" }}>{student.avatar_emoji}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 800, fontSize: "1.05rem", color: "#000000" }}>{displayName}</div>
