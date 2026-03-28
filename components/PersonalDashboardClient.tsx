@@ -181,7 +181,7 @@ export default function PersonalDashboardClient({
                 <div style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginTop: "4px", fontWeight: 800, textTransform: "uppercase" }}>
                   {isGiven 
                     ? "ОТРИМАНО" 
-                    : (hasThreshold ? "ОЧІКУЙ НА НАГОРОДУ" : `ЦІЛЬ: ${p.stars_required} ЗІРОК`)
+                    : (hasThreshold ? "ОЧІКУЙ НА НАГОРОДУ" : `${p.stars_required} ЗІРОК`)
                   }
                 </div>
               </div>

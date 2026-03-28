@@ -29,7 +29,7 @@ export default function ClassProgressBars({
           showInfo={false}
         />
         <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: "4px", fontWeight: 700 }}>
-          ЦІЛЬ: {gameDayThreshold} ЗІРОК
+          {gameDayThreshold} ЗІРОК
         </div>
       </div>
 
@@ -46,7 +46,7 @@ export default function ClassProgressBars({
           showInfo={false}
         />
         <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: "4px", fontWeight: 700 }}>
-          ЦІЛЬ: {pizzaDayThreshold} ЗІРОК
+          {pizzaDayThreshold} ЗІРОК
         </div>
       </div>
     </div>
