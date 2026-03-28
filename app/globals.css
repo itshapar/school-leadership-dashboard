@@ -226,11 +226,12 @@ html, body {
 
 .admin-class-stats {
   display: flex;
-  gap: 24px;
+  gap: 20px;
   font-size: 1rem;
   font-weight: 800;
   color: var(--color-text-muted);
   align-items: center;
+  white-space: nowrap;
 }
 
 .admin-stars-count {
@@ -238,6 +239,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .admin-btn-group {
@@ -288,19 +290,20 @@ html, body {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     width: 100%;
   }
 
   .admin-class-name {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     min-width: auto;
     margin-right: auto;
   }
 
   .admin-class-stats {
     gap: 12px;
-    font-size: 0.85rem;
+    font-size: 1rem;
+    flex-wrap: nowrap;
   }
 
   .admin-btn-group {
@@ -311,7 +314,7 @@ html, body {
   .admin-action-btn {
     flex: 1;
     min-width: 0;
-    padding: 12px 8px;
-    font-size: 0.8rem;
+    padding: 12px 6px;
+    font-size: 0.85rem;
   }
 }
