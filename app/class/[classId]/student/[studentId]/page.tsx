@@ -115,18 +115,18 @@ export default async function StudentDashboardPage({ params }: Props) {
           style={{
             display: "inline-flex",
             alignItems: "center",
-            minHeight: "44px",
-            padding: "10px 16px",
-            border: "2px solid var(--color-border)",
+            justifyContent: "center",
+            width: "44px",
+            height: "44px",
             borderRadius: "10px",
-            color: "var(--color-text)",
-            fontSize: "1rem",
-            fontWeight: 800,
+            color: "#ffffff",
+            fontSize: "1.2rem",
             textDecoration: "none",
-            background: "#ffffff",
+            background: "#000000",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
           }}
         >
-          ДАШБОРД КЛАСУ
+          <ArrowLeftOutlined />
         </Link>
       </div>
 
