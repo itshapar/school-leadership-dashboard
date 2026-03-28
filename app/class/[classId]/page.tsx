@@ -178,10 +178,12 @@ export default async function ClassPage({ params }: Props) {
               <div className="leaderboard-row">
                 <div style={{ fontSize: "1.8rem" }}>{student.avatar_emoji}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 850, fontSize: "1.1rem", color: "#000000" }}>{student.full_name}</div>
+                  <div style={{ fontWeight: 850, fontSize: "1.1rem", color: "#000000" }}>
+                    {student.nickname || student.full_name}
+                  </div>
                   {student.nickname && (
                     <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", fontWeight: 700 }}>
-                      @{student.nickname}
+                      {student.full_name}
                     </div>
                   )}
                 </div>
