@@ -121,12 +121,12 @@ export default async function StudentDashboardPage({ params }: Props) {
             borderRadius: "10px",
             color: "var(--color-text)",
             fontSize: "1rem",
-            fontWeight: 700,
+            fontWeight: 800,
             textDecoration: "none",
             background: "#ffffff",
           }}
         >
-          <ArrowLeftOutlined /> {cls.name}
+          ДАШБОРД КЛАСУ
         </Link>
       </div>
 
