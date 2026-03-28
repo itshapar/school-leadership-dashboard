@@ -58,18 +58,18 @@ export default async function ClassPage({ params }: Props) {
   // Calculate global class bonus/penalty
   const classBonus = (classEntries ?? []).reduce((sum, e) => sum + e.amount, 0);
 
-  // Ranked students (individual stars only)
-  const sortedByStars = (students ?? [])
+  // Alphabetical sorting (A-Z) by full_name
+  const sortedAlphabetically = (students ?? [])
     .map((s) => ({
       ...s,
       stars: starMap[s.id] ?? 0,
     }))
-    .sort((a, b) => b.stars - a.stars);
+    .sort((a, b) => a.full_name.localeCompare(b.full_name, 'uk-UA'));
 
-  // Dense ranking: students with equal stars share the same rank
-  const ranked = sortedByStars.map((s) => ({
+  // Dense ranking (Still calculated for underlying data/total, but not used for sorting display)
+  const ranked = sortedAlphabetically.map((s) => ({
     ...s,
-    rank: sortedByStars.filter((o) => o.stars > s.stars).length + 1,
+    rank: sortedAlphabetically.filter((o) => o.stars > s.stars).length + 1,
   }));
 
   // Total class progress: sum of individual efforts + the class pool
@@ -110,7 +110,7 @@ export default async function ClassPage({ params }: Props) {
         />
       </div>
 
-      {/* Collective History Card (NEW) */}
+      {/* Collective History Card */}
       {(classBonus !== 0 || (classEntries ?? []).length > 0) && (
         <div className="star-card" style={{ 
           marginBottom: "24px", 
@@ -166,11 +166,9 @@ export default async function ClassPage({ params }: Props) {
         </div>
       )}
 
-      {/* Leaderboard */}
+      {/* Student List (Alphabetical, No Stars) */}
       <div className="star-card" style={{ padding: "24px 16px" }}>
-        {ranked.map((student, idx) => {
-          const rank = idx + 1;
-          const displayName = student.nickname || student.full_name.split(" ")[0];
+        {ranked.map((student) => {
           return (
             <Link
               key={student.id}
@@ -180,24 +178,12 @@ export default async function ClassPage({ params }: Props) {
               <div className="leaderboard-row">
                 <div style={{ fontSize: "1.8rem" }}>{student.avatar_emoji}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 800, fontSize: "1.05rem", color: "#000000" }}>{displayName}</div>
+                  <div style={{ fontWeight: 850, fontSize: "1.1rem", color: "#000000" }}>{student.full_name}</div>
                   {student.nickname && (
-                    <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", fontWeight: 600 }}>
-                      {student.full_name}
+                    <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", fontWeight: 700 }}>
+                      @{student.nickname}
                     </div>
                   )}
-                </div>
-                <div
-                  style={{
-                    fontSize: "1.4rem",
-                    fontWeight: 950,
-                    color: "var(--color-star)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px"
-                  }}
-                >
-                  {student.stars} <StarFilled style={{ fontSize: "1rem" }} />
                 </div>
               </div>
             </Link>
