@@ -19,7 +19,9 @@ export default function ClassProgressBars({
       <div>
         <div className="progress-label" style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontWeight: 800 }}>
           <span>Ігровий день</span>
-          <span>{gamePercent}%</span>
+          <span style={{ color: gamePercent === 100 ? "#52C41A" : "inherit" }}>
+            {gamePercent}%
+          </span>
         </div>
         <Progress
           percent={gamePercent}
@@ -36,7 +38,9 @@ export default function ClassProgressBars({
       <div>
         <div className="progress-label" style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontWeight: 800 }}>
           <span>Pizza Day</span>
-          <span>{pizzaPercent}%</span>
+          <span style={{ color: pizzaPercent === 100 ? "#52C41A" : "inherit" }}>
+            {pizzaPercent}%
+          </span>
         </div>
         <Progress
           percent={pizzaPercent}

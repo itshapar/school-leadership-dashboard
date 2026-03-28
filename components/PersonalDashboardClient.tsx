@@ -167,8 +167,8 @@ export default function PersonalDashboardClient({
               <div key={p.id}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontWeight: 800, fontSize: "0.95rem" }}>
                   <span>{titleText}</span>
-                  <span style={{ color: isGiven ? "#51cf66" : (hasThreshold ? "#fcc419" : "inherit") }}>
-                    {isGiven ? <CheckCircleFilled /> : `${pct}%`}
+                  <span style={{ color: isGiven || hasThreshold ? "#51cf66" : "inherit" }}>
+                    {isGiven || hasThreshold ? "100%" : `${pct}%`}
                   </span>
                 </div>
                 <Progress 
