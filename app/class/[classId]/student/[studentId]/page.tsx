@@ -76,7 +76,7 @@ export default async function StudentDashboardPage({ params }: Props) {
     .from("prizes_given")
     .select("prize_id")
     .eq("student_id", studentId);
-  
+
   const givenPrizes: Record<string, boolean> = {};
   (gvData ?? []).forEach(g => {
     givenPrizes[g.prize_id] = true;

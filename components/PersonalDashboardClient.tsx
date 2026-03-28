@@ -178,10 +178,10 @@ export default function PersonalDashboardClient({
                   strokeWidth={12}
                   className="heavy-progress"
                 />
-                <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", marginTop: "4px", fontWeight: 700, textTransform: "uppercase" }}>
+                <div style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginTop: "4px", fontWeight: 800, textTransform: "uppercase" }}>
                   {isGiven 
                     ? "ОТРИМАНО" 
-                    : (hasThreshold ? "ОЧІКУЙ НА НАГОРОДУ" : `ЗІБРАНО ${individualStars} З ${p.stars_required}`)
+                    : (hasThreshold ? "ОЧІКУЙ НА НАГОРОДУ" : `${individualStars} / ${p.stars_required}`)
                   }
                 </div>
               </div>

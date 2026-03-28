@@ -29,7 +29,7 @@ export default function ClassProgressBars({
           showInfo={false}
         />
         <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: "4px", fontWeight: 700 }}>
-          {Math.min(totalStars, gameDayThreshold)} / {gameDayThreshold}
+          {totalStars} / {gameDayThreshold}
         </div>
       </div>
 
@@ -46,7 +46,7 @@ export default function ClassProgressBars({
           showInfo={false}
         />
         <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: "4px", fontWeight: 700 }}>
-          {Math.min(totalStars, pizzaDayThreshold)} / {pizzaDayThreshold}
+          {totalStars} / {pizzaDayThreshold}
         </div>
       </div>
     </div>
