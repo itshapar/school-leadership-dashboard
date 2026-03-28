@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import PersonalDashboardClient from "@/components/PersonalDashboardClient";
 import { resolveClassIdByCode } from "@/lib/classCodes";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
 interface Props {
   params: Promise<{ classId: string; studentId: string }>;
@@ -125,7 +126,7 @@ export default async function StudentDashboardPage({ params }: Props) {
             background: "#ffffff",
           }}
         >
-          ← {cls.name}
+          <ArrowLeftOutlined /> {cls.name}
         </Link>
       </div>
 
