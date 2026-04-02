@@ -302,7 +302,7 @@ export default function ManagementTable({
           scroll={{ x: "max-content", y: "calc(100vh - 120px)" }}
           size="middle"
           bordered
-          sticky={{ offsetHeader: 79 }}
+          sticky={{ offsetHeader: 73 }}
           className="management-grid"
           summary={() => {
             return (
@@ -351,7 +351,7 @@ export default function ManagementTable({
           background: #ffffff !important;
         }
         .management-grid .ant-table-thead > tr > th {
-          background: #f8f9fa !important;
+          background: #ffffff !important;
           border-bottom: 2px solid var(--color-border) !important;
           color: var(--color-text) !important;
           font-family: 'Montserrat', sans-serif !important;
@@ -359,6 +359,17 @@ export default function ManagementTable({
           font-size: 0.85rem;
           padding: 16px 8px !important;
           letter-spacing: 0.5px;
+          z-index: 10 !important;
+        }
+        /* Ensure sticky holder has solid background */
+        .management-grid .ant-table-sticky-holder {
+          background: #ffffff !important;
+          z-index: 102 !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          border-bottom: 2px solid var(--color-border);
+        }
+        .management-grid .ant-table-header {
+          background: #ffffff !important;
         }
         .management-grid .ant-table-container,
         .management-grid .ant-table-content,
