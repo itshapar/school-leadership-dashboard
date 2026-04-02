@@ -57,19 +57,20 @@ export default async function AdminClassPage({ params }: Props) {
           <Link
             href="/admin"
             style={{
-              color: "var(--color-text)",
+              background: "#000000",
+              color: "#ffffff",
               display: "flex",
               alignItems: "center",
-              gap: "8px",
-              fontWeight: 700,
-              minHeight: "44px",
-              padding: "10px 14px",
-              border: "2px solid var(--color-border)",
+              justifyContent: "center",
+              width: "38px",
+              height: "38px",
               borderRadius: "10px",
               textDecoration: "none",
+              fontSize: "1.1rem",
+              boxShadow: "3px 3px 0px rgba(0,0,0,0.2)"
             }}
           >
-            <ArrowLeftOutlined /> Назад
+            <ArrowLeftOutlined />
           </Link>
           <div style={{ width: "2px", height: "24px", background: "#e9ecef" }} />
           <h1 style={{ fontSize: "1.5rem", fontWeight: 900, margin: 0, textTransform: "uppercase" }}>{cls.name}</h1>

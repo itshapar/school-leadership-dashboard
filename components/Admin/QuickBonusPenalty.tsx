@@ -51,14 +51,15 @@ export default function QuickBonusPenalty({ classId, students }: { classId: stri
       <Space size="middle">
         <Button 
           onClick={() => openModal("bonus")}
-          size="large"
+          size="middle"
           style={{ 
             background: "#ebfbee", 
             color: "#2f9e44", 
             border: "2px solid #2f9e44", 
             fontWeight: 800,
             borderRadius: "10px",
-            height: "44px",
+            height: "38px",
+            fontSize: "0.85rem",
             boxShadow: "2px 2px 0px #2f9e44"
           }}
         >
@@ -66,13 +67,14 @@ export default function QuickBonusPenalty({ classId, students }: { classId: stri
         </Button>
         <Button 
           onClick={() => openModal("penalty")}
-          size="large"
+          size="middle"
           danger
           style={{ 
             fontWeight: 800, 
             border: "2px solid #e03131", 
             borderRadius: "10px", 
-            height: "44px",
+            height: "38px",
+            fontSize: "0.85rem",
             boxShadow: "2px 2px 0px #e03131"
           }}
         >
@@ -91,17 +93,17 @@ export default function QuickBonusPenalty({ classId, students }: { classId: stri
         okButtonProps={{ size: "large", style: { fontWeight: 700 } }}
         cancelButtonProps={{ size: "large" }}
         footer={[
-          <Button key="back" onClick={() => setIsOpen(false)} size="large">
+          <Button key="back" onClick={() => setIsOpen(false)} size="middle">
             Скасувати
           </Button>,
-          <Button key="submit" type="primary" onClick={() => form.submit()} loading={loading} size="large" style={{ fontWeight: 700 }}>
+          <Button key="submit" type="primary" onClick={() => form.submit()} loading={loading} size="middle" style={{ fontWeight: 700 }}>
             Зберігти
           </Button>,
         ]}
       >
         <Form form={form} layout="vertical" onFinish={handleFinish} style={{ marginTop: "24px" }}>
           <Form.Item name="target" label={<span style={{ fontWeight: 700 }}>Кому призначити?</span>} initialValue="student">
-            <Select size="large" options={[
+            <Select size="middle" options={[
               { value: "student", label: "Конкретному учню" },
               { value: "class", label: "Усьому класу" }
             ]} />
@@ -111,7 +113,7 @@ export default function QuickBonusPenalty({ classId, students }: { classId: stri
             {({ getFieldValue }) => getFieldValue("target") === "student" && (
               <Form.Item name="studentId" label={<span style={{ fontWeight: 700 }}>Учень</span>} rules={[{ required: true, message: "Оберіть учня" }]}>
                 <Select
-                  size="large"
+                  size="middle"
                   showSearch
                   placeholder="Пошук учня за прізвищем..."
                   optionFilterProp="label"
@@ -125,7 +127,7 @@ export default function QuickBonusPenalty({ classId, students }: { classId: stri
           </Form.Item>
 
           <Form.Item name="amount" label={<span style={{ fontWeight: 700 }}>Кількість зірок</span>} rules={[{ required: true }]}>
-            <InputNumber min={1} max={50} size="large" addonAfter="⭐" style={{ width: "100%" }} />
+            <InputNumber min={1} max={50} size="middle" addonAfter="⭐" style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item name="note" label={<span style={{ fontWeight: 700 }}>Причина (необов'язково)</span>}>

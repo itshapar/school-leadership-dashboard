@@ -68,14 +68,14 @@ export default function DeleteLessonButton({
           setOpen(true);
           fetchLessons();
         }}
-        size="large"
+        size="middle"
         style={{
           fontWeight: 800,
           borderRadius: "10px",
           background: "#ffffff",
           color: "#000000",
           border: "2px solid var(--color-border)",
-          height: "44px",
+          height: "38px", fontSize: "0.85rem",
           boxShadow: "3px 3px 0px var(--color-border)"
         }}
       >
@@ -91,7 +91,7 @@ export default function DeleteLessonButton({
         open={open}
         onCancel={() => setOpen(false)}
         footer={[
-          <Button key="back" onClick={() => setOpen(false)} size="large">
+          <Button key="back" onClick={() => setOpen(false)} size="middle">
             Скасувати
           </Button>,
           <Popconfirm
@@ -103,7 +103,7 @@ export default function DeleteLessonButton({
             cancelText="Ні"
             okButtonProps={{ danger: true, loading }}
           >
-            <Button danger type="primary" size="large" disabled={!selectedLessonId} loading={loading}>
+            <Button danger type="primary" size="middle" disabled={!selectedLessonId} loading={loading}>
               Видалити
             </Button>
           </Popconfirm>
@@ -116,7 +116,7 @@ export default function DeleteLessonButton({
           <Select
             placeholder="Оберіть урок"
             style={{ width: "100%" }}
-            size="large"
+            size="middle"
             onChange={(val) => setSelectedLessonId(val)}
             value={selectedLessonId}
           >

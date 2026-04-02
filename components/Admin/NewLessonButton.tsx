@@ -52,14 +52,14 @@ export default function NewLessonButton({
     <>
       <Button
         onClick={() => setOpen(true)}
-        size="large"
+        size="middle"
         style={{
           fontWeight: 800,
           borderRadius: "10px",
           background: "#ffffff",
           color: "var(--color-text)",
           border: "2px solid var(--color-border)",
-          height: "44px",
+          height: "38px", fontSize: "0.85rem",
           boxShadow: "3px 3px 0px var(--color-border)"
         }}
       >
@@ -88,7 +88,7 @@ export default function NewLessonButton({
             value={date}
             onChange={(d) => d && setDate(d)}
             format="DD.MM.YYYY"
-            size="large"
+            size="middle"
             style={{ width: "100%", borderRadius: "8px" }}
           />
         </div>

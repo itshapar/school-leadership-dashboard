@@ -25,20 +25,21 @@ export default function AdminClassToolbar({
   const router = useRouter();
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "10px", flexWrap: "wrap", flex: 1 }}>
       <QuickBonusPenalty classId={classId} students={students} />
       
       <Link href={`/admin/${classId}/bonus`}>
         <Button
-          size="large"
+          size="middle"
           style={{
             background: "#ffffff",
             color: "var(--color-text)",
             border: "2px solid var(--color-border)",
             fontWeight: 800,
             borderRadius: "10px",
-            height: "44px",
-            boxShadow: "3px 3px 0px var(--color-border)"
+            height: "38px",
+            fontSize: "0.85rem",
+            boxShadow: "2px 2px 0px var(--color-border)"
           }}
         >
           ІСТОРІЯ
@@ -47,6 +48,42 @@ export default function AdminClassToolbar({
 
       <NewLessonButton classId={classId} onSuccess={() => router.refresh()} />
       <DeleteLessonButton classId={classId} onSuccess={() => router.refresh()} />
+      
+      <Link href={`/admin/${classId}/students`}>
+        <Button
+          size="middle"
+          style={{
+            background: "#ffffff",
+            color: "#000",
+            border: "2px solid #000",
+            fontWeight: 800,
+            borderRadius: "10px",
+            height: "38px",
+            fontSize: "0.85rem",
+            boxShadow: "2px 2px 0px #000"
+          }}
+        >
+          СПИСОК УЧНІВ
+        </Button>
+      </Link>
+
+      <Link href={`/class/${classId}`}>
+        <Button
+          size="middle"
+          style={{
+            background: "#000",
+            color: "#fff",
+            border: "2px solid #000",
+            fontWeight: 800,
+            borderRadius: "10px",
+            height: "38px",
+            fontSize: "0.85rem",
+            boxShadow: "2px 2px 0px rgba(0,0,0,0.2)"
+          }}
+        >
+          ДАШБОРД
+        </Button>
+      </Link>
     </div>
   );
 }

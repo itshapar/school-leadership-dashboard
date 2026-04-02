@@ -12,7 +12,6 @@ interface Props {
 export default async function StudentDashboardPage({ params }: Props) {
   const { classId: classParam, studentId } = await params;
   const supabase = await createSupabaseServerClient();
-
   // Fetch student
   const { data: student } = await supabase
     .from("students")

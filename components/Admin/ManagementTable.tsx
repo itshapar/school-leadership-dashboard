@@ -205,11 +205,11 @@ export default function ManagementTable({
         <div style={{
           fontSize: "1.2rem",
           fontWeight: 900,
-          color: "var(--color-text)",
-          background: "#fff9db",
+          color: "#000000",
+          background: "#f1f3f5",
           padding: "4px 8px",
           borderRadius: "8px",
-          border: "2px solid #fcc419"
+          border: "2px solid #dee2e6"
         }}>
           {totalStars[record.id] ?? 0}
         </div>
@@ -243,8 +243,8 @@ export default function ManagementTable({
         title: (
           <div style={{
             fontWeight: 950,
-            color: isHighlighted ? "var(--color-star)" : "#000",
-            borderBottom: isHighlighted ? "2px solid var(--color-star)" : "none"
+            color: isHighlighted ? "#2b8a3e" : "#000",
+            borderBottom: isHighlighted ? "2px solid #2b8a3e" : "none"
           }}>
             {lessonDate.format("DD.MM")}
           </div>
@@ -254,7 +254,7 @@ export default function ManagementTable({
         align: "center" as const,
         onCell: () => ({
           style: {
-            background: isHighlighted ? "#FFF9DB" : "inherit"
+            background: isHighlighted ? "#ebfbee" : "inherit"
           }
         }),
         render: (_: any, record: Student) => {
@@ -302,7 +302,7 @@ export default function ManagementTable({
           scroll={{ x: "max-content", y: "calc(100vh - 120px)" }}
           size="middle"
           bordered
-          sticky
+          sticky={{ offsetHeader: 79 }}
           className="management-grid"
           summary={() => {
             return (
