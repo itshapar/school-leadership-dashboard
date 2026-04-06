@@ -90,6 +90,7 @@ export default function PersonalDashboardClient({
   }
 
   function getEntryLabel(entry: HistoryEntry) {
+    if (entry.type === "lesson" && entry.amount === -1) return "Не було";
     if (entry.type === "lesson") return "Урок";
     if (entry.type === "bonus") return "🎁 Бонус";
     if (entry.type === "penalty") return "⚠️ Штраф";
@@ -228,8 +229,16 @@ export default function PersonalDashboardClient({
                       {entry.type !== "lesson" && entry.note && `: ${entry.note}`}
                     </div>
                   </div>
-                  <div style={{ fontWeight: 950, fontSize: "1.2rem", color: entry.amount < 0 ? "#E03131" : "var(--color-star)", display: "flex", alignItems: "center", gap: "4px" }}>
-                    {entry.amount > 0 ? "+" : ""}{entry.amount} <StarFilled style={{ fontSize: "0.9rem" }} />
+                  <div style={{ 
+                    fontWeight: 950, 
+                    fontSize: "1.2rem", 
+                    color: entry.amount === -1 ? "#adb5bd" : (entry.amount < 0 ? "#E03131" : "var(--color-star)"), 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "4px" 
+                  }}>
+                    {entry.amount === -1 ? "Н" : (entry.amount > 0 ? "+" : "") + entry.amount} 
+                    {entry.amount !== -1 && <StarFilled style={{ fontSize: "0.9rem" }} />}
                   </div>
                 </div>
               );

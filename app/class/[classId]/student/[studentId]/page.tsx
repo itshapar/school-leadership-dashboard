@@ -61,8 +61,8 @@ export default async function StudentDashboardPage({ params }: Props) {
     .is("student_id", null)
     .order("created_at", { ascending: false });
 
-  // Personal stars only
-  const personalStars = (studentEntries ?? []).reduce((s, e) => s + e.amount, 0);
+  // Personal stars only (ignoring absences marked as -1)
+  const personalStars = (studentEntries ?? []).reduce((s, e) => s + (e.amount > 0 ? e.amount : 0), 0);
   const totalStars = personalStars;
 
   // History: Personal only
@@ -95,7 +95,7 @@ export default async function StudentDashboardPage({ params }: Props) {
 
   const starMap: Record<string, number> = {};
   for (const e of allEntries ?? []) {
-    if (e.student_id) {
+    if (e.student_id && e.amount > 0) {
       starMap[e.student_id] = (starMap[e.student_id] ?? 0) + e.amount;
     }
   }

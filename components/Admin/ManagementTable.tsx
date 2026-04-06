@@ -20,6 +20,7 @@ type Prize = ManagementJournalPrize;
 
 const STAR_OPTIONS = [
   { value: 0, label: "0" },
+  { value: -1, label: "Н" },
   { value: 1, label: "1" },
   { value: 2, label: "2" },
   { value: 3, label: "3" },
@@ -100,7 +101,7 @@ export default function ManagementTable({
   // Auto-save star amount (через API з серверною сесією — RLS у Supabase для запису)
   const handleStarChange = async (studentId: string, lessonId: string, amount: number) => {
     const oldAmount = entries[studentId]?.[lessonId] ?? 0;
-    const diff = amount - oldAmount;
+    const diff = (amount > 0 ? amount : 0) - (oldAmount > 0 ? oldAmount : 0);
 
     setEntries((prev) => ({
       ...prev,
@@ -268,14 +269,9 @@ export default function ManagementTable({
               style={{
                 width: "100%",
                 fontWeight: 800,
-                color: score > 0 ? "var(--color-star)" : "inherit"
+                color: score > 0 ? "var(--color-star)" : (score === -1 ? "#fa5252" : "inherit")
               }}
-              options={[
-                { value: 0, label: "0" },
-                { value: 1, label: "1" },
-                { value: 2, label: "2" },
-                { value: 3, label: "3" },
-              ]}
+              options={STAR_OPTIONS}
             />
           );
         }
@@ -325,7 +321,10 @@ export default function ManagementTable({
                   ))}
                   {/* Lesson sum columns */}
                   {lessons.map((lesson, i) => {
-                    const lessonTotal = students.reduce((sum, st) => sum + (entries[st.id]?.[lesson.id] ?? 0), 0);
+                    const lessonTotal = students.reduce((sum, st) => {
+                      const val = entries[st.id]?.[lesson.id] ?? 0;
+                      return sum + (val > 0 ? val : 0);
+                    }, 0);
                     return (
                       <Table.Summary.Cell key={lesson.id} index={3 + prizes.length + i}>
                         <div style={{ 

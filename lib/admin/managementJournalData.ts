@@ -98,7 +98,9 @@ export async function loadManagementJournalData(
     if (!e.student_id) {
       classWideBonus += e.amount;
     } else {
-      totals[e.student_id] = (totals[e.student_id] ?? 0) + e.amount;
+      if (e.amount > 0) {
+        totals[e.student_id] = (totals[e.student_id] ?? 0) + e.amount;
+      }
       if (e.type === "lesson" && e.lesson_id) {
         if (!entryMap[e.student_id]) entryMap[e.student_id] = {};
         entryMap[e.student_id][e.lesson_id] = e.amount;

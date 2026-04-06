@@ -50,7 +50,7 @@ export default async function ClassPage({ params }: Props) {
   // Calculate per-student totals (personal stars only)
   const starMap: Record<string, number> = {};
   for (const entry of starEntries ?? []) {
-    if (entry.student_id) {
+    if (entry.student_id && entry.amount > 0) {
       starMap[entry.student_id] = (starMap[entry.student_id] ?? 0) + entry.amount;
     }
   }
