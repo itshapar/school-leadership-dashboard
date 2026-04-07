@@ -29,11 +29,15 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const isApiAdminRoute = request.nextUrl.pathname.startsWith("/api/admin");
   const isAdminRoute =
     request.nextUrl.pathname.startsWith("/admin") &&
     !request.nextUrl.pathname.startsWith("/admin/login");
 
-  if (isAdminRoute && !user) {
+  if ((isAdminRoute || isApiAdminRoute) && !user) {
+    if (isApiAdminRoute) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
     return NextResponse.redirect(url);

@@ -1,6 +1,20 @@
 import { NextResponse } from "next/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
+import { z } from "zod";
+
+const PatchStudentSchema = z.object({
+  id: z.string().uuid(),
+  full_name: z.string().optional(),
+  nickname: z.string().optional().nullable(),
+  avatar_emoji: z.string().optional(),
+});
+
+const PostStudentSchema = z.object({
+  full_name: z.string().min(1),
+  nickname: z.string().optional().nullable(),
+  avatar_emoji: z.string().min(1),
+  class_id: z.string().uuid(),
+});
 
 export async function PATCH(request: Request) {
   const { user, supabaseForRls } = await getSupabaseForAdminApi(request);
@@ -8,27 +22,16 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const db = createSupabaseAdminClient() ?? supabaseForRls;
-
-  let body: {
-    id: string;
-    full_name?: string;
-    nickname?: string;
-    avatar_emoji?: string;
-  };
+  let body;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    body = PatchStudentSchema.parse(await request.json());
+  } catch (err) {
+    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
   }
 
   const { id, full_name, nickname, avatar_emoji } = body;
-  
-  if (!id) {
-    return NextResponse.json({ error: "Missing student ID" }, { status: 400 });
-  }
 
-  const { error } = await db
+  const { error } = await supabaseForRls
     .from("students")
     .update({
       full_name,
@@ -38,7 +41,7 @@ export async function PATCH(request: Request) {
     .eq("id", id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ error: "Database error during update" }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });
@@ -50,27 +53,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const db = createSupabaseAdminClient() ?? supabaseForRls;
-
-  let body: {
-    full_name: string;
-    nickname?: string;
-    avatar_emoji: string;
-    class_id: string;
-  };
+  let body;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    body = PostStudentSchema.parse(await request.json());
+  } catch (err) {
+    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
   }
 
   const { full_name, nickname, avatar_emoji, class_id } = body;
-  
-  if (!full_name || !avatar_emoji || !class_id) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-  }
 
-  const { data, error } = await db
+  const { data, error } = await supabaseForRls
     .from("students")
     .insert({
       full_name,
@@ -82,7 +74,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ error: "Database error during insert" }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true, student: data });
@@ -97,16 +89,14 @@ export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
-  if (!id) {
-    return NextResponse.json({ error: "Missing student ID" }, { status: 400 });
+  if (!id || typeof id !== "string") {
+    return NextResponse.json({ error: "Missing or invalid student ID" }, { status: 400 });
   }
 
-  const db = createSupabaseAdminClient() ?? supabaseForRls;
-
-  const { error } = await db.from("students").delete().eq("id", id);
+  const { error } = await supabaseForRls.from("students").delete().eq("id", id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ error: "Database error during deletion" }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });

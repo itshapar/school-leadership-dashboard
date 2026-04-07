@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 
 // Column structure per the spec:
 // col 0: full_name
@@ -28,13 +29,12 @@ function isDateLike(header: unknown): boolean {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createSupabaseAdminClient();
-  if (!supabase) {
-    return NextResponse.json(
-      { error: "Налаштуйте SUPABASE_SERVICE_ROLE_KEY на сервері (імпорт потребує service role)." },
-      { status: 500 }
-    );
+  const { user, supabaseForRls } = await getSupabaseForAdminApi(request);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const supabase = createSupabaseAdminClient() ?? supabaseForRls;
 
   let formData: FormData;
   try {
@@ -48,6 +48,31 @@ export async function POST(request: NextRequest) {
 
   if (!file || !classId) {
     return NextResponse.json({ error: "Missing file or classId" }, { status: 400 });
+  }
+
+  // File size and type validation
+  if (file.size > 5 * 1024 * 1024) { // 5MB limit
+    return NextResponse.json({ error: "File too large. Maximum 5MB." }, { status: 400 });
+  }
+
+  const validTypes = [
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
+    "application/vnd.ms-excel",
+    "text/csv"
+  ];
+  if (!validTypes.includes(file.type) && !file.name.endsWith('.xlsx') && !file.name.endsWith('.csv')) {
+    return NextResponse.json({ error: "Invalid file type. Please upload an Excel or CSV file." }, { status: 400 });
+  }
+
+  // Verify class ownership via RLS
+  const { data: classData } = await supabaseForRls
+    .from("classes")
+    .select("id")
+    .eq("id", classId)
+    .single();
+
+  if (!classData) {
+    return NextResponse.json({ error: "Unauthorized to import into this class." }, { status: 403 });
   }
 
   const arrayBuffer = await file.arrayBuffer();
