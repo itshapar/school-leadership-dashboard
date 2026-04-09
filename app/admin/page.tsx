@@ -53,14 +53,13 @@ export default async function AdminPage() {
 
       <Link 
         href="/admin/total"
+        className="total-dashboard-card"
         style={{ 
           display: "block", 
           textDecoration: "none", 
           marginBottom: "32px",
           transition: "transform 0.2s"
         }}
-        onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.02)"}
-        onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
       >
         <div className="star-card" style={{ 
           background: "linear-gradient(135deg, #000000 0%, #2c2c2c 100%)", 

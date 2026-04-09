@@ -318,3 +318,10 @@ html, body {
     font-size: 0.85rem;
   }
 }
+.total-dashboard-card:hover {
+  transform: scale(1.02);
+}
+
+.total-dashboard-card:active {
+  transform: scale(0.98);
+}
