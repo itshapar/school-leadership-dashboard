@@ -129,7 +129,7 @@ export default function ManagementTable({
       }
     } catch (err) {
       console.error(err);
-      message.error("Помилка автозбереження");
+      message.error(err instanceof Error ? err.message : "Помилка автозбереження");
       setEntries((prev) => ({
         ...prev,
         [studentId]: { ...(prev[studentId] || {}), [lessonId]: oldAmount },
@@ -158,7 +158,7 @@ export default function ManagementTable({
       if (!res.ok) throw new Error(json.error);
     } catch (err) {
       console.error(err);
-      message.error("Помилка збереження нагороди");
+      message.error(err instanceof Error ? err.message : "Помилка збереження нагороди");
       setGivenPrizes((prev) => ({
         ...prev,
         [studentId]: { ...(prev[studentId] || {}), [prizeId]: prevVal },
