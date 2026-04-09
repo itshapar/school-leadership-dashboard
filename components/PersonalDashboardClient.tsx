@@ -39,12 +39,7 @@ interface Props {
   classId: string;
 }
 
-const INDIVIDUAL_THRESHOLDS = [
-  { name: "Кіндер", key: "kinder", target: 10 },
-  { name: "Стікер", key: "sticker", target: 20 },
-  { name: "ПІН", key: "pin", target: 30 },
-  { name: "3D-друк", key: "3d", target: 50 },
-];
+
 
 export default function PersonalDashboardClient({
   student,
@@ -92,8 +87,8 @@ export default function PersonalDashboardClient({
   function getEntryLabel(entry: HistoryEntry) {
     if (entry.type === "lesson" && entry.amount === -1) return "Не було";
     if (entry.type === "lesson") return "Урок";
-    if (entry.type === "bonus") return "🎁 Бонус";
-    if (entry.type === "penalty") return "⚠️ Штраф";
+    if (entry.type === "bonus") return "БОНУС";
+    if (entry.type === "penalty") return "ШТРАФ";
     return "Інше";
   }
 
@@ -160,9 +155,7 @@ export default function PersonalDashboardClient({
             const pct = Math.min(100, Math.round((individualStars / p.stars_required) * 100));
             const hasThreshold = individualStars >= p.stars_required;
             const isGiven = givenPrizes[p.id] || false;
-            
-            const names = ["Кіндер", "Стікер", "Пін", "3D-друк"];
-            const titleText = names[idx] || p.name;
+            const titleText = p.name;
             
             return (
               <div key={p.id}>
@@ -232,13 +225,13 @@ export default function PersonalDashboardClient({
                   <div style={{ 
                     fontWeight: 950, 
                     fontSize: "1.2rem", 
-                    color: entry.amount === -1 ? "#adb5bd" : (entry.amount < 0 ? "#E03131" : "var(--color-star)"), 
+                    color: (entry.type === "lesson" && entry.amount === -1) ? "#adb5bd" : (entry.amount < 0 ? "#E03131" : "var(--color-star)"), 
                     display: "flex", 
                     alignItems: "center", 
                     gap: "4px" 
                   }}>
-                    {entry.amount === -1 ? "Н" : (entry.amount > 0 ? "+" : "") + entry.amount} 
-                    {entry.amount !== -1 && <StarFilled style={{ fontSize: "0.9rem" }} />}
+                    {(entry.type === "lesson" && entry.amount === -1) ? "Н" : (entry.amount > 0 ? "+" : "") + entry.amount} 
+                    {!(entry.type === "lesson" && entry.amount === -1) && <StarFilled style={{ fontSize: "0.9rem" }} />}
                   </div>
                 </div>
               );

@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       ...rawBody,
       amount: rawBody.amount !== undefined ? Number(rawBody.amount) : undefined
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Zod parse error:", err.errors || err);
     return NextResponse.json({ 
       error: `Помилка даних: ${err.errors ? JSON.stringify(err.errors) : "Invalid request data"}` 

@@ -24,7 +24,7 @@ export default function QuickBonusPenalty({ classId, students }: { classId: stri
     form.setFieldsValue({ type: t, amount: 1, target: "student" });
   };
 
-  const handleFinish = async (values: any) => {
+  const handleFinish = async (values: Record<string, any>) => {
     setLoading(true);
     const supabase = getSupabaseClient();
     

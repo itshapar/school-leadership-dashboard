@@ -44,7 +44,7 @@ export default function StudentEditForm({
       message.success("Дані учня оновлено");
       router.refresh();
       router.push(`/admin/${classId}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       message.error(err.message);
     } finally {

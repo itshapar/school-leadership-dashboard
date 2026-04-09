@@ -89,7 +89,7 @@ export default function AddBonusPage() {
     {
       title: "Кому",
       key: "target",
-      render: (_: any, record: StarEntry) => {
+      render: (_value: unknown, record: StarEntry) => {
         if (!record.student_id) return <Tag color="blue" style={{ fontWeight: 700 }}>Увесь клас</Tag>;
         return (
           <Space>
@@ -102,7 +102,7 @@ export default function AddBonusPage() {
     {
       title: "Зірки",
       key: "amount",
-      render: (_: any, record: StarEntry) => {
+      render: (_value: unknown, record: StarEntry) => {
         const isNeg = record.amount < 0;
         return (
           <span style={{ fontWeight: 900, fontSize: "1.1rem", color: isNeg ? "#e03131" : "#f08c00" }}>
@@ -126,7 +126,7 @@ export default function AddBonusPage() {
     {
       title: "",
       key: "actions",
-      render: (_: any, record: StarEntry) => (
+      render: (_value: unknown, record: StarEntry) => (
         <Popconfirm
           title="Видалити цей запис?"
           onConfirm={() => handleDelete(record.id)}

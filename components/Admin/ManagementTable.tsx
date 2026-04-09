@@ -98,6 +98,20 @@ export default function ManagementTable({
     }
   }, [initialData, loadData]);
 
+  // Sync state when initialData changes (e.g. after router.refresh())
+  useEffect(() => {
+    if (initialData) {
+      applyJournalState(initialData, {
+        setStudents,
+        setLessons,
+        setPrizes,
+        setEntries,
+        setGivenPrizes,
+        setTotalStars,
+      });
+    }
+  }, [initialData]);
+
   // Auto-save star amount (через API з серверною сесією — RLS у Supabase для запису)
   const handleStarChange = async (studentId: string, lessonId: string, amount: number) => {
     const oldAmount = entries[studentId]?.[lessonId] ?? 0;
@@ -175,7 +189,7 @@ export default function ManagementTable({
       title: <div style={{ fontWeight: 950, color: "#000" }}>#</div>,
       key: "index",
       width: 50,
-      render: (_: any, __: any, index: number) => (
+      render: (_value: unknown, _record: Student, index: number) => (
         <span style={{ color: "#adb5bd", fontWeight: 700 }}>{index + 1}</span>
       ),
       fixed: "left" as const,
@@ -186,7 +200,7 @@ export default function ManagementTable({
       key: "student",
       fixed: "left" as const,
       width: 220,
-      render: (_: any, record: Student) => (
+      render: (_value: unknown, record: Student) => (
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ fontSize: "1.4rem", flexShrink: 0 }}>{record.avatar_emoji}</span>
           <div style={{ lineHeight: "1.2" }}>
@@ -206,7 +220,7 @@ export default function ManagementTable({
       width: 100,
       fixed: "left" as const,
       align: "center" as const,
-      render: (_: any, record: Student) => (
+      render: (_value: unknown, record: Student) => (
         <div style={{
           fontSize: "1.2rem",
           fontWeight: 900,
@@ -221,15 +235,14 @@ export default function ManagementTable({
       )
     },
     ...prizes.map((prize, idx) => {
-      const names = ["Кіндер", "Стікер", "Пін", "3D-друк"];
-      const titleText = names[idx] || prize.name;
+      const titleText = prize.name;
       return {
         title: <div style={{ fontSize: "0.8rem", fontWeight: 900, whiteSpace: "nowrap" }} title={prize.name}>{titleText}</div>,
         key: `prize_${prize.id}`,
         width: 100,
         align: "center" as const,
         onCell: () => ({ style: { padding: 0 } }),
-        render: (_: any, record: Student) => {
+        render: (_value: unknown, record: Student) => {
           const isUnlocked = (totalStars[record.id] ?? 0) >= prize.stars_required;
           const isGiven = givenPrizes[record.id]?.[prize.id] ?? false;
           return (
@@ -250,8 +263,7 @@ export default function ManagementTable({
               />
             </div>
           );
-          // FORCE RELOAD COMMENT 1
-          // FORCE RELOAD COMMENT 2
+
         }
       };
     }),
@@ -265,7 +277,7 @@ export default function ManagementTable({
           <div style={{
             fontWeight: 800,
             border: "none",
-            color: "#495057",
+            color: "#000000",
             width: "100%",
             fontSize: "0.85rem"
           }}>
@@ -280,7 +292,7 @@ export default function ManagementTable({
             background: isHighlighted ? "#f1f3f5" : "inherit"
           }
         }),
-        render: (_: any, record: Student) => {
+        render: (_value: unknown, record: Student) => {
           const score = entries[record.id]?.[lesson.id] ?? 0;
           return (
             <Select

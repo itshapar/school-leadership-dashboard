@@ -55,7 +55,7 @@ export default function StudentManager({
       
       setStudents(students.filter((s) => s.id !== id));
       message.success("Учня видалено");
-    } catch (err: any) {
+    } catch (err: unknown) {
       message.error(err.message);
     }
   };
@@ -87,7 +87,7 @@ export default function StudentManager({
       
       setIsModalOpen(false);
       form.resetFields();
-    } catch (err: any) {
+    } catch (err: unknown) {
       message.error(err.message);
     } finally {
       setLoading(false);
@@ -124,7 +124,7 @@ export default function StudentManager({
       key: "actions",
       width: 150,
       align: "center" as const,
-      render: (_: any, record: Student) => (
+      render: (_value: unknown, record: Student) => (
         <Space>
           <Button 
             icon={<EditOutlined />} 

@@ -139,7 +139,7 @@ export default async function ClassPage({ params }: Props) {
           </div>
           
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {(classEntries ?? []).slice(0, 5).map((entry: any, idx: number) => (
+            {(classEntries ?? []).slice(0, 5).map((entry, idx: number) => (
               <div key={idx} style={{ 
                 fontSize: "0.95rem", 
                 color: "var(--color-text)", 

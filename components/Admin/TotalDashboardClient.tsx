@@ -27,7 +27,7 @@ export default function TotalDashboardClient({ initialData }: { initialData: Stu
       key: "rank",
       width: 60,
       align: "center" as const,
-      render: (_: any, __: any, index: number) => (
+      render: (_value: unknown, _record: Student, index: number) => (
         <span style={{ fontWeight: 800, color: "#adb5bd" }}>{index + 1}</span>
       ),
     },
