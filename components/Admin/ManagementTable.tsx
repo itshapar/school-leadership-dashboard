@@ -225,28 +225,27 @@ export default function ManagementTable({
         width: 100,
         align: "center" as const,
         onCell: () => ({ style: { padding: 0 } }),
-        render: (_: any, record: Student) => {
-          const isUnlocked = (totalStars[record.id] ?? 0) >= prize.stars_required;
-          const isGiven = givenPrizes[record.id]?.[prize.id] ?? false;
-          
           return (
-            <div style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: isUnlocked && !isGiven ? "#ebfbee" : (isGiven ? "#f8f9fa" : "transparent"),
-              transition: "all 0.2s"
-            }}>
+            <div 
+              className={isUnlocked && !isGiven ? "prize-eligible-cell" : ""}
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: isGiven ? "#f8f9fa" : "transparent",
+                transition: "all 0.2s"
+              }}
+            >
               <Checkbox
                 checked={isGiven}
                 onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
+                className="prize-checkbox"
                 style={{ transform: "scale(1.2)" }}
               />
             </div>
           );
-        }
       };
     }),
     ...lessons.map((lesson, idx) => {
@@ -445,13 +444,21 @@ export default function ManagementTable({
           box-shadow: none !important;
           outline: none !important;
         }
-        .score-select .ant-select-selection-item {
-          font-size: 1.1rem;
-          font-weight: 800;
-          padding-inline-end: 0 !important;
+        .management-grid .ant-table-body tr:last-child td {
+          border-bottom: none !important;
         }
-        .score-select .ant-select-arrow {
-          display: none !important;
+        .management-grid .ant-table-placeholder .ant-table-cell {
+          border-bottom: none !important;
+        }
+        .prize-eligible-cell .ant-checkbox-inner {
+          border-color: #2b8a3e !important;
+          border-width: 2px !important;
+          box-shadow: 0 0 8px rgba(43,138,62,0.3) !important;
+        }
+        .score-select .ant-select-selection-item {
+          font-size: 1.4rem !important;
+          font-weight: 850 !important;
+          padding-inline-end: 0 !important;
         }
         .sticky-summary-cell {
           background: #f8f9fa !important;
