@@ -83,9 +83,9 @@ export default async function AdminClassPage({ params }: Props) {
       <div style={{ width: "100%", padding: "24px" }}>
         <div style={{ 
           background: "#ffffff", 
-          borderRadius: "16px", 
-          boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-          border: "1px solid var(--color-border)",
+          borderRadius: "20px", 
+          boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
+          padding: "1px",
           overflow: "hidden"
         }}>
           <ManagementTable key={classId} classId={classId} initialData={journalInitial} />

@@ -370,6 +370,11 @@ export default function ManagementTable({
         .management-grid .ant-table-header {
           background: #ffffff !important;
         }
+        .management-grid {
+          border: 1px solid #dee2e6 !important;
+          border-radius: 18px !important;
+          overflow: hidden !important;
+        }
         .management-grid .ant-table-container,
         .management-grid .ant-table-content,
         .management-grid .ant-table-body {
