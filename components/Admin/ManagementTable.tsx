@@ -224,13 +224,29 @@ export default function ManagementTable({
         key: `prize_${prize.id}`,
         width: 100,
         align: "center" as const,
-        render: (_: any, record: Student) => (
-          <Checkbox
-            checked={givenPrizes[record.id]?.[prize.id] ?? false}
-            onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
-            style={{ transform: "scale(1.2)" }}
-          />
-        )
+        onCell: () => ({ style: { padding: 0 } }),
+        render: (_: any, record: Student) => {
+          const isUnlocked = (totalStars[record.id] ?? 0) >= prize.stars_required;
+          const isGiven = givenPrizes[record.id]?.[prize.id] ?? false;
+          
+          return (
+            <div style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: isUnlocked && !isGiven ? "#ebfbee" : (isGiven ? "#f8f9fa" : "transparent"),
+              transition: "all 0.2s"
+            }}>
+              <Checkbox
+                checked={isGiven}
+                onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
+                style={{ transform: "scale(1.2)" }}
+              />
+            </div>
+          );
+        }
       };
     }),
     ...lessons.map((lesson, idx) => {
@@ -268,8 +284,8 @@ export default function ManagementTable({
               className="score-select"
               style={{
                 width: "100%",
-                fontWeight: 800,
-                color: score > 0 ? "var(--color-star)" : (score === -1 ? "#fa5252" : "inherit")
+                fontWeight: 850,
+                color: score > 0 ? "#000000" : (score === -1 ? "#fa5252" : "#adb5bd")
               }}
               options={STAR_OPTIONS}
             />
@@ -370,6 +386,13 @@ export default function ManagementTable({
         .management-grid .ant-table-header {
           background: #ffffff !important;
         }
+        .management-grid .ant-table {
+          background: #ffffff !important;
+          border: none !important;
+        }
+        .management-grid .ant-table-thead > tr > th {
+          border-top: none !important;
+        }
         .management-grid {
           border: none !important;
           margin: 0 !important;
@@ -385,6 +408,9 @@ export default function ManagementTable({
         }
         .management-grid .ant-table-cell-fix-left-last {
           border-right: 1px solid #eee !important;
+        }
+        .ant-table-bordered .ant-table-container {
+          border: none !important;
         }
         .ant-table-bordered .ant-table-cell {
           border-right: 1px solid #eee !important;
@@ -430,6 +456,7 @@ export default function ManagementTable({
         .sticky-summary-cell {
           background: #f8f9fa !important;
           border-top: 3px solid #000000 !important;
+          border-bottom: none !important;
           padding: 16px 8px !important;
           z-index: 10 !important;
         }
