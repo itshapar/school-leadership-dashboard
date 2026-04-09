@@ -126,7 +126,7 @@ export default function TotalDashboardClient({ initialData }: { initialData: Stu
           dataSource={filteredData}
           columns={columns}
           rowKey="id"
-          pagination={{ pageSize: 50, position: ["bottomCenter"] }}
+          pagination={false}
           className="admin-total-table"
         />
       </div>
