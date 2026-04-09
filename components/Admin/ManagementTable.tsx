@@ -300,10 +300,9 @@ export default function ManagementTable({
           columns={columns}
           rowKey="id"
           pagination={false}
-          scroll={{ x: "max-content", y: "calc(100vh - 80px)" }}
+          scroll={{ x: "max-content", y: "calc(100vh - 65px)" }}
           size="middle"
           bordered
-          sticky={{ offsetHeader: 73 }}
           className="management-grid"
           summary={() => {
             return (
@@ -361,9 +360,10 @@ export default function ManagementTable({
           font-family: 'Montserrat', sans-serif !important;
           text-transform: uppercase;
           font-size: 0.85rem;
-          padding: 16px 8px !important;
+          padding: 12px 8px !important;
           letter-spacing: 0.5px;
           z-index: 10 !important;
+          vertical-align: middle;
         }
         /* Ensure sticky holder has solid background */
         .management-grid .ant-table-sticky-holder {
@@ -388,9 +388,10 @@ export default function ManagementTable({
           border-right: 1px solid #eee !important;
         }
         .ant-table-bordered .ant-table-cell {
-          border-right: 1px solid #eee !important;
-          border-bottom: 1px solid #eee !important;
-          padding: 12px 8px !important;
+          border-right: 1px solid #f1f3f5 !important;
+          border-bottom: 1px solid #f1f3f5 !important;
+          padding: 8px 8px !important;
+          vertical-align: middle;
         }
         .ant-checkbox-inner {
           width: 22px;
@@ -403,23 +404,30 @@ export default function ManagementTable({
         }
         .prize-eligible-checkbox .ant-checkbox-inner {
           border-color: #51cf66 !important;
-          border-width: 3px !important;
+          border-width: 2px !important;
         }
-        .score-select .ant-select-selector {
-          border: none !important;
-          box-shadow: none !important;
-          background: transparent !important;
-          padding: 0 !important;
-        }
-        .score-select:hover, .score-select:focus, .score-select-focused, .score-select-open {
+        /* Aggressive reset for Score Select to remove any 3D effects/shadows */
+        .score-select.ant-select,
+        .score-select.ant-select .ant-select-selector,
+        .score-select.ant-select:hover .ant-select-selector,
+        .score-select.ant-select-focused .ant-select-selector,
+        .score-select.ant-select-open .ant-select-selector {
+          background-color: transparent !important;
           border: none !important;
           box-shadow: none !important;
           outline: none !important;
         }
         .score-select .ant-select-selection-item {
           font-size: 1.1rem;
-          font-weight: 800;
+          font-weight: 850;
+          line-height: 1;
+          color: inherit !important;
         }
+        /* Remove any default border-bottom or box-shadow that might exist */
+        .score-select *:after, .score-select *:before {
+          display: none !important;
+        }
+        
         .management-grid .ant-select-dropdown,
         .management-grid .ant-select-item {
           border-radius: 0 !important;
