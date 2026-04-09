@@ -242,10 +242,11 @@ export default function ManagementTable({
                 checked={isGiven}
                 onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
                 className={isUnlocked && !isGiven ? "prize-checkbox prize-eligible" : "prize-checkbox"}
-                style={{ transform: "scale(1.2)" }}
+                style={{ transform: "scale(1.3)" }}
               />
             </div>
           );
+          // FORCE RELOAD COMMENT 1
         }
       };
     }),
@@ -257,10 +258,11 @@ export default function ManagementTable({
       return {
         title: (
           <div style={{
-            fontWeight: 950,
-            borderBottom: "none",
-            color: "#000000",
-            width: "100%"
+            fontWeight: 800,
+            border: "none",
+            color: "#495057",
+            width: "100%",
+            fontSize: "0.85rem"
           }}>
             {lessonDate.format("DD.MM")}
           </div>
@@ -444,16 +446,21 @@ export default function ManagementTable({
           box-shadow: none !important;
           outline: none !important;
         }
-        .management-grid .ant-table-tbody > tr.ant-table-row:last-child > td.ant-table-cell {
+        /* BROAD SELECTORS TO KILL THE DOUBLE BORDER */
+        .management-grid .ant-table-tbody > tr > td {
+          border-bottom: 1px solid #eee !important;
+        }
+        .management-grid .ant-table-tbody > tr:last-child > td {
           border-bottom: none !important;
         }
         .management-grid .ant-table-summary {
           border-top: none !important;
+          box-shadow: none !important;
         }
-        .management-grid .ant-table-footer {
-          padding: 0 !important;
-          border-top: none !important;
+        .management-grid table {
+          border-collapse: collapse !important;
         }
+        
         .ant-checkbox-wrapper:hover .ant-checkbox-inner,
         .ant-checkbox:hover .ant-checkbox-inner {
           border-color: #dee2e6 !important;
@@ -462,25 +469,25 @@ export default function ManagementTable({
           background-color: #51cf66 !important;
           border-color: #2b8a3e !important;
         }
-        .prize-eligible .ant-checkbox-inner,
-        .prize-eligible:hover .ant-checkbox-inner,
-        .prize-checkbox.prize-eligible .ant-checkbox:hover .ant-checkbox-inner {
-          border-color: #2b8a3e !important;
+        /* VIBRANT GREEN FOR TESTING */
+        .prize-checkbox.prize-eligible .ant-checkbox-inner {
+          border-color: #00ff00 !important;
           border-width: 3px !important;
-          box-shadow: 0 0 10px rgba(43,138,62,0.4) !important;
+          box-shadow: 0 0 12px rgba(0,255,0,0.5) !important;
           background-color: transparent !important;
         }
         .prize-checkbox.prize-eligible.ant-checkbox-wrapper-checked .ant-checkbox-inner {
           background-color: #51cf66 !important;
         }
         .score-select .ant-select-selection-item {
-          font-size: 2.2rem !important;
-          font-weight: 900 !important;
+          font-size: 3rem !important;
+          font-weight: 950 !important;
           padding-inline-end: 0 !important;
+          line-height: 1 !important;
         }
         .sticky-summary-cell {
           background: #ffffff !important;
-          border-top: 4px solid #000000 !important;
+          border-top: 5px solid #000000 !important;
           border-bottom: none !important;
           padding: 16px 8px !important;
           z-index: 10 !important;
