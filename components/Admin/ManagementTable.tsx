@@ -371,9 +371,10 @@ export default function ManagementTable({
           background: #ffffff !important;
         }
         .management-grid {
-          border: 1px solid #dee2e6 !important;
-          border-radius: 18px !important;
+          border: 3px solid #000000 !important;
+          border-radius: 20px !important;
           overflow: hidden !important;
+          margin: 0 !important;
         }
         .management-grid .ant-table-container,
         .management-grid .ant-table-content,
@@ -415,6 +416,10 @@ export default function ManagementTable({
           box-shadow: none !important;
           outline: none !important;
           background: transparent !important;
+        }
+        .score-select, .ant-select, .ant-select-selector {
+          box-shadow: none !important;
+          outline: none !important;
         }
         .score-select .ant-select-selection-item {
           font-size: 1.1rem;
