@@ -224,13 +224,18 @@ export default function ManagementTable({
         key: `prize_${prize.id}`,
         width: 100,
         align: "center" as const,
-        render: (_: any, record: Student) => (
-          <Checkbox
-            checked={givenPrizes[record.id]?.[prize.id] ?? false}
-            onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
-            style={{ transform: "scale(1.2)" }}
-          />
-        )
+        render: (_: any, record: Student) => {
+          const isGiven = givenPrizes[record.id]?.[prize.id] ?? false;
+          const isEligible = (totalStars[record.id] ?? 0) >= prize.stars_required;
+          return (
+            <Checkbox
+              checked={isGiven}
+              onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
+              style={{ transform: "scale(1.2)" }}
+              className={!isGiven && isEligible ? "prize-eligible-checkbox" : ""}
+            />
+          );
+        }
       };
     }),
     ...lessons.map((lesson, idx) => {
@@ -288,14 +293,14 @@ export default function ManagementTable({
   }
 
   return (
-    <div style={{ background: "#ffffff", width: "100%" }}>
-      <div style={{ padding: "0" }} className="full-width-table">
+    <div style={{ background: "#ffffff", width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+      <div style={{ padding: "0", flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }} className="full-width-table">
         <Table
           dataSource={students}
           columns={columns}
           rowKey="id"
           pagination={false}
-          scroll={{ x: "max-content", y: "calc(100vh - 120px)" }}
+          scroll={{ x: "max-content", y: "calc(100vh - 80px)" }}
           size="middle"
           bordered
           sticky={{ offsetHeader: 73 }}
@@ -395,6 +400,10 @@ export default function ManagementTable({
         .ant-checkbox-checked .ant-checkbox-inner {
           background-color: #51cf66;
           border-color: #2b8a3e;
+        }
+        .prize-eligible-checkbox .ant-checkbox-inner {
+          border-color: #51cf66 !important;
+          border-width: 3px !important;
         }
         .score-select .ant-select-selector {
           border: none !important;

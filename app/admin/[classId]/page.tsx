@@ -40,7 +40,7 @@ export default async function AdminClassPage({ params }: Props) {
   const journalInitial = await loadManagementJournalData(supabase, classId);
 
   return (
-    <div style={{ padding: "0", minHeight: "100vh", background: "#f8f9fa" }}>
+    <div style={{ height: "100vh", background: "#f8f9fa", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* Top Header Bar */}
       <div style={{ 
         background: "#ffffff", 
@@ -49,8 +49,7 @@ export default async function AdminClassPage({ params }: Props) {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        position: "sticky",
-        top: 0,
+        flexShrink: 0,
         zIndex: 100
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
@@ -80,7 +79,7 @@ export default async function AdminClassPage({ params }: Props) {
       </div>
 
       {/* Full Width Table Area */}
-      <div style={{ width: "100%", padding: "0" }}>
+      <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <ManagementTable key={classId} classId={classId} initialData={journalInitial} />
       </div>
     </div>
