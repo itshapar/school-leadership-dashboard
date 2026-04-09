@@ -225,6 +225,10 @@ export default function ManagementTable({
         width: 100,
         align: "center" as const,
         onCell: () => ({ style: { padding: 0 } }),
+        render: (_: any, record: Student) => {
+          const isUnlocked = (totalStars[record.id] ?? 0) >= prize.stars_required;
+          const isGiven = givenPrizes[record.id]?.[prize.id] ?? false;
+          
           return (
             <div 
               className={isUnlocked && !isGiven ? "prize-eligible-cell" : ""}
@@ -246,6 +250,7 @@ export default function ManagementTable({
               />
             </div>
           );
+        }
       };
     }),
     ...lessons.map((lesson, idx) => {
