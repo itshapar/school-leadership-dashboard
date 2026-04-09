@@ -288,35 +288,34 @@ export default function ManagementTable({
   }
 
   return (
-    <div style={{ background: "#ffffff", width: "100%" }}>
+    <div style={{ background: "#ffffff", width: "100%", height: "100%" }}>
       <div style={{ padding: "0" }} className="full-width-table">
         <Table
           dataSource={students}
           columns={columns}
           rowKey="id"
           pagination={false}
-          scroll={{ x: "max-content", y: "calc(100vh - 120px)" }}
+          scroll={{ x: "max-content", y: "calc(100vh - 260px)" }}
           size="middle"
           bordered
-          sticky={{ offsetHeader: 73 }}
           className="management-grid"
           summary={() => {
             return (
               <Table.Summary fixed="bottom">
-                <Table.Summary.Row style={{ background: "#f1f3f5" }}>
-                  <Table.Summary.Cell index={0}>
-                    <div style={{ textAlign: "center", fontWeight: 950 }}>Σ</div>
+                <Table.Summary.Row style={{ background: "#f8f9fa", borderTop: "2px solid #dee2e6" }}>
+                  <Table.Summary.Cell index={0} className="sticky-summary-cell">
+                    <div style={{ textAlign: "center", fontWeight: 950, color: "#adb5bd" }}>Σ</div>
                   </Table.Summary.Cell>
-                  <Table.Summary.Cell index={1}>
-                    <div style={{ fontWeight: 950, textTransform: "uppercase", fontSize: "0.8rem" }}>За урок:</div>
+                  <Table.Summary.Cell index={1} className="sticky-summary-cell">
+                    <div style={{ fontWeight: 950, textTransform: "uppercase", fontSize: "0.8rem", color: "#495057" }}>За урок:</div>
                   </Table.Summary.Cell>
-                  <Table.Summary.Cell index={2}>
-                    <div style={{ textAlign: "center", fontWeight: 950 }}>-</div>
+                  <Table.Summary.Cell index={2} className="sticky-summary-cell">
+                    <div style={{ textAlign: "center", fontWeight: 950, color: "#adb5bd" }}>-</div>
                   </Table.Summary.Cell>
                   {/* Prize columns (empty sum) */}
                   {prizes.map((_, i) => (
-                    <Table.Summary.Cell key={i} index={3 + i}>
-                      <div style={{ textAlign: "center" }}>-</div>
+                    <Table.Summary.Cell key={i} index={3 + i} className="sticky-summary-cell">
+                      <div style={{ textAlign: "center", color: "#adb5bd" }}>-</div>
                     </Table.Summary.Cell>
                   ))}
                   {/* Lesson sum columns */}
@@ -326,12 +325,13 @@ export default function ManagementTable({
                       return sum + (val > 0 ? val : 0);
                     }, 0);
                     return (
-                      <Table.Summary.Cell key={lesson.id} index={3 + prizes.length + i}>
+                      <Table.Summary.Cell key={lesson.id} index={3 + prizes.length + i} className="sticky-summary-cell">
                         <div style={{ 
                           textAlign: "center", 
                           fontWeight: 950, 
                           fontSize: "1.1rem",
-                          color: lessonTotal > 0 ? "var(--color-star)" : "#adb5bd"
+                          color: lessonTotal > 0 ? "#2b8a3e" : "#adb5bd",
+                          textShadow: lessonTotal > 0 ? "0 0 10px rgba(43,138,62,0.1)" : "none"
                         }}>
                           {lessonTotal}
                         </div>
@@ -396,26 +396,48 @@ export default function ManagementTable({
           background-color: #51cf66;
           border-color: #2b8a3e;
         }
-        .score-select .ant-select-selector {
-          border: none !important;
-          box-shadow: none !important;
-          background: transparent !important;
-          padding: 0 !important;
+        .management-grid .ant-select-dropdown,
+        .management-grid .ant-select-item {
+          border-radius: 8px !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+          border: 1px solid #eee !important;
         }
-        .score-select:hover, .score-select:focus, .score-select-focused, .score-select-open {
+        .score-select .ant-select-selector,
+        .score-select:hover .ant-select-selector,
+        .score-select-focused .ant-select-selector,
+        .score-select-open .ant-select-selector {
           border: none !important;
           box-shadow: none !important;
           outline: none !important;
+          background: transparent !important;
         }
         .score-select .ant-select-selection-item {
           font-size: 1.1rem;
           font-weight: 800;
+          padding-inline-end: 0 !important;
         }
-        .management-grid .ant-select-dropdown,
-        .management-grid .ant-select-item {
-          border-radius: 0 !important;
-          box-shadow: none !important;
-          border: 2px solid var(--color-border) !important;
+        .score-select .ant-select-arrow {
+          display: none !important;
+        }
+        .sticky-summary-cell {
+          background: #f8f9fa !important;
+          border-top: 2px solid #dee2e6 !important;
+          padding: 16px 8px !important;
+        }
+        /* Custom scrollbar for better look */
+        .management-grid .ant-table-body::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        .management-grid .ant-table-body::-webkit-scrollbar-track {
+          background: #f1f3f5;
+        }
+        .management-grid .ant-table-body::-webkit-scrollbar-thumb {
+          background: #dee2e6;
+          border-radius: 4px;
+        }
+        .management-grid .ant-table-body::-webkit-scrollbar-thumb:hover {
+          background: #adb5bd;
         }
       `}</style>
     </div>

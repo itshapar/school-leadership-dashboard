@@ -80,8 +80,16 @@ export default async function AdminClassPage({ params }: Props) {
       </div>
 
       {/* Full Width Table Area */}
-      <div style={{ width: "100%", padding: "0" }}>
-        <ManagementTable key={classId} classId={classId} initialData={journalInitial} />
+      <div style={{ width: "100%", padding: "24px" }}>
+        <div style={{ 
+          background: "#ffffff", 
+          borderRadius: "16px", 
+          boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+          border: "1px solid var(--color-border)",
+          overflow: "hidden"
+        }}>
+          <ManagementTable key={classId} classId={classId} initialData={journalInitial} />
+        </div>
       </div>
     </div>
   );

@@ -47,8 +47,42 @@ export default async function AdminPage() {
     <div className="page-container" style={{ maxWidth: "800px", paddingBottom: "80px" }}>
       <div style={{ textAlign: "center", marginBottom: "32px" }}>
         <h1 style={{ margin: 0, fontSize: "2.2rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "-1px" }}>
-          Список класів
+          Адмін-панель
         </h1>
+      </div>
+
+      <Link 
+        href="/admin/total"
+        style={{ 
+          display: "block", 
+          textDecoration: "none", 
+          marginBottom: "32px",
+          transition: "transform 0.2s"
+        }}
+        onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.02)"}
+        onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+      >
+        <div className="star-card" style={{ 
+          background: "linear-gradient(135deg, #000000 0%, #2c2c2c 100%)", 
+          color: "#ffffff",
+          border: "none",
+          padding: "24px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <div>
+            <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Загальний дашборд</div>
+            <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>Всі учні, сортування та глобальний рейтинг</div>
+          </div>
+          <StarFilled style={{ fontSize: "2.5rem", color: "var(--color-star)" }} />
+        </div>
+      </Link>
+
+      <div style={{ marginBottom: "16px" }}>
+        <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 900, textTransform: "uppercase", opacity: 0.5 }}>
+          Класи
+        </h2>
       </div>
 
       <div className="admin-class-list" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
