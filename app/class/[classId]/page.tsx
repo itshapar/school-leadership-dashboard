@@ -43,7 +43,7 @@ export default async function ClassPage({ params }: Props) {
   // Fetch class-wide entries (whole class bonuses)
   const { data: classEntries } = await supabase
     .from("star_entries")
-    .select("amount")
+    .select("amount, note")
     .eq("class_id", classId)
     .is("student_id", null);
 
