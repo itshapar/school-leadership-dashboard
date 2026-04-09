@@ -402,7 +402,6 @@ export default function ManagementTable({
         .management-grid {
           border: none !important;
           margin: 0 !important;
-          --ant-table-border-color: transparent !important;
         }
         .management-grid .ant-table-container,
         .management-grid .ant-table-content,

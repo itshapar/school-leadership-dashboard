@@ -107,6 +107,9 @@ const useIllustrationTheme = () => {
             colorPrimaryBorder: '#237804',
             colorPrimaryBorderHover: '#237804',
           },
+          Table: {
+            borderColor: 'transparent',
+          },
         },
       },
       button: {
