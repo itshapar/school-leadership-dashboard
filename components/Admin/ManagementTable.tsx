@@ -258,7 +258,7 @@ export default function ManagementTable({
         title: (
           <div style={{
             fontWeight: 950,
-            borderBottom: isHighlighted ? "3px solid #000000" : "none",
+            borderBottom: "none",
             color: "#000000",
             width: "100%"
           }}>
@@ -444,20 +444,37 @@ export default function ManagementTable({
           box-shadow: none !important;
           outline: none !important;
         }
-        .management-grid .ant-table-body tr:last-child td {
+        .management-grid .ant-table-tbody > tr.ant-table-row:last-child > td.ant-table-cell {
           border-bottom: none !important;
+        }
+        .management-grid .ant-table-summary {
+          border-top: none !important;
         }
         .management-grid .ant-table-footer {
           padding: 0 !important;
           border-top: none !important;
         }
-        .prize-checkbox.prize-eligible .ant-checkbox-inner {
+        .ant-checkbox-wrapper:hover .ant-checkbox-inner,
+        .ant-checkbox:hover .ant-checkbox-inner {
+          border-color: #dee2e6 !important;
+        }
+        .ant-checkbox-checked .ant-checkbox-inner {
+          background-color: #51cf66 !important;
+          border-color: #2b8a3e !important;
+        }
+        .prize-eligible .ant-checkbox-inner,
+        .prize-eligible:hover .ant-checkbox-inner,
+        .prize-checkbox.prize-eligible .ant-checkbox:hover .ant-checkbox-inner {
           border-color: #2b8a3e !important;
           border-width: 3px !important;
           box-shadow: 0 0 10px rgba(43,138,62,0.4) !important;
+          background-color: transparent !important;
+        }
+        .prize-checkbox.prize-eligible.ant-checkbox-wrapper-checked .ant-checkbox-inner {
+          background-color: #51cf66 !important;
         }
         .score-select .ant-select-selection-item {
-          font-size: 1.7rem !important;
+          font-size: 2.2rem !important;
           font-weight: 900 !important;
           padding-inline-end: 0 !important;
         }
