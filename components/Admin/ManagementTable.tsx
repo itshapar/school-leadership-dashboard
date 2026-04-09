@@ -228,24 +228,20 @@ export default function ManagementTable({
         render: (_: any, record: Student) => {
           const isUnlocked = (totalStars[record.id] ?? 0) >= prize.stars_required;
           const isGiven = givenPrizes[record.id]?.[prize.id] ?? false;
-          
           return (
-            <div 
-              className={isUnlocked && !isGiven ? "prize-eligible-cell" : ""}
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: isGiven ? "#f8f9fa" : "transparent",
-                transition: "all 0.2s"
-              }}
-            >
+            <div style={{
+              height: "100%",
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "transparent",
+              transition: "all 0.2s"
+            }}>
               <Checkbox
                 checked={isGiven}
                 onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
-                className="prize-checkbox"
+                className={isUnlocked && !isGiven ? "prize-checkbox prize-eligible" : "prize-checkbox"}
                 style={{ transform: "scale(1.2)" }}
               />
             </div>
@@ -256,16 +252,15 @@ export default function ManagementTable({
     ...lessons.map((lesson, idx) => {
       const lessonDate = dayjs(lesson.date);
       const isToday = dayjs().isSame(lessonDate, "day");
-      // Fallback: highlight the most recent past lesson if today is not a lesson day 
-      // (only for the last recorded lesson or today)
       const isHighlighted = isToday || (idx === lessons.length - 1 && lessonDate.isBefore(dayjs()));
       
       return {
         title: (
           <div style={{
             fontWeight: 950,
-            color: isHighlighted ? "#2b8a3e" : "#000",
-            borderBottom: isHighlighted ? "2px solid #2b8a3e" : "none"
+            borderBottom: isHighlighted ? "3px solid #000000" : "none",
+            color: "#000000",
+            width: "100%"
           }}>
             {lessonDate.format("DD.MM")}
           </div>
@@ -275,7 +270,7 @@ export default function ManagementTable({
         align: "center" as const,
         onCell: () => ({
           style: {
-            background: isHighlighted ? "#ebfbee" : "inherit"
+            background: isHighlighted ? "#f1f3f5" : "inherit"
           }
         }),
         render: (_: any, record: Student) => {
@@ -288,8 +283,8 @@ export default function ManagementTable({
               className="score-select"
               style={{
                 width: "100%",
-                fontWeight: 850,
-                color: score > 0 ? "#000000" : (score === -1 ? "#fa5252" : "#adb5bd")
+                fontWeight: 900,
+                color: score > 0 ? "#000000" : (score === -1 ? "#fa5252" : (score < 0 ? "#fa5252" : "#adb5bd"))
               }}
               options={STAR_OPTIONS}
             />
@@ -452,22 +447,23 @@ export default function ManagementTable({
         .management-grid .ant-table-body tr:last-child td {
           border-bottom: none !important;
         }
-        .management-grid .ant-table-placeholder .ant-table-cell {
-          border-bottom: none !important;
+        .management-grid .ant-table-footer {
+          padding: 0 !important;
+          border-top: none !important;
         }
-        .prize-eligible-cell .ant-checkbox-inner {
+        .prize-checkbox.prize-eligible .ant-checkbox-inner {
           border-color: #2b8a3e !important;
-          border-width: 2px !important;
-          box-shadow: 0 0 8px rgba(43,138,62,0.3) !important;
+          border-width: 3px !important;
+          box-shadow: 0 0 10px rgba(43,138,62,0.4) !important;
         }
         .score-select .ant-select-selection-item {
-          font-size: 1.4rem !important;
-          font-weight: 850 !important;
+          font-size: 1.7rem !important;
+          font-weight: 900 !important;
           padding-inline-end: 0 !important;
         }
         .sticky-summary-cell {
-          background: #f8f9fa !important;
-          border-top: 3px solid #000000 !important;
+          background: #ffffff !important;
+          border-top: 4px solid #000000 !important;
           border-bottom: none !important;
           padding: 16px 8px !important;
           z-index: 10 !important;
