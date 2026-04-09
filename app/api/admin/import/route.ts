@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
+import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
 
 // Column structure per the spec:
 // col 0: full_name
@@ -64,15 +65,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid file type. Please upload an Excel or CSV file." }, { status: 400 });
   }
 
-  // Verify class ownership via RLS
-  const { data: classData } = await supabaseForRls
-    .from("classes")
-    .select("id")
-    .eq("id", classId)
-    .single();
-
-  if (!classData) {
-    return NextResponse.json({ error: "Unauthorized to import into this class." }, { status: 403 });
+  // Auto-claim class if unassigned
+  const claim = await claimClassIfUnassigned(supabaseForRls, classId, user.id);
+  if (!claim.success) {
+    return NextResponse.json({ error: claim.error || "Permission denied" }, { status: 403 });
   }
 
   const arrayBuffer = await file.arrayBuffer();

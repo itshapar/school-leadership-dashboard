@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
+import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
 
 const PatchStudentSchema = z.object({
   id: z.string().uuid(),
@@ -61,6 +62,12 @@ export async function POST(request: Request) {
   }
 
   const { full_name, nickname, avatar_emoji, class_id } = body;
+
+  // Auto-claim class if unassigned
+  const claim = await claimClassIfUnassigned(supabaseForRls, class_id, user.id);
+  if (!claim.success) {
+    return NextResponse.json({ error: claim.error || "Permission denied" }, { status: 403 });
+  }
 
   const { data, error } = await supabaseForRls
     .from("students")

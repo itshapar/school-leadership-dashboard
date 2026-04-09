@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
+import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
 
 const PrizeGivenSchema = z.object({
   student_id: z.string().uuid(),
@@ -22,6 +23,18 @@ export async function POST(request: Request) {
   }
 
   const { student_id, prize_id, given } = body;
+
+  // Find class_id for the student to perform auto-claim
+  const { data: student } = await supabaseForRls
+    .from("students")
+    .select("class_id")
+    .eq("id", student_id)
+    .single();
+
+  if (student?.class_id) {
+    const claim = await claimClassIfUnassigned(supabaseForRls, student.class_id, user.id);
+    // We don't block if claim fails here, RLS will handle the final decision
+  }
 
   if (given) {
     const { error } = await supabaseForRls.from("prizes_given").insert({ student_id, prize_id });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
+import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
 
 const StarEntrySchema = z.object({
   student_id: z.string().uuid(),
@@ -18,7 +19,6 @@ export async function POST(request: Request) {
   let body;
   try {
     const rawBody = await request.json();
-    // Allow parsing string amount as number
     body = StarEntrySchema.parse({
       ...rawBody,
       amount: rawBody.amount !== undefined ? Number(rawBody.amount) : undefined
@@ -28,6 +28,12 @@ export async function POST(request: Request) {
   }
 
   const { student_id, lesson_id, class_id, amount } = body;
+
+  // Auto-claim class if unassigned
+  const claim = await claimClassIfUnassigned(supabaseForRls, class_id, user.id);
+  if (!claim.success) {
+    return NextResponse.json({ error: claim.error || "Permission denied" }, { status: 403 });
+  }
 
   // If amount is 0, we delete the entry to avoid filling the DB with empty rows
   // and bypass the NOT NULL / amount != 0 check if it exists.
