@@ -56,7 +56,7 @@ export default function StudentManager({
       setStudents(students.filter((s) => s.id !== id));
       message.success("Учня видалено");
     } catch (err: unknown) {
-      message.error(err.message);
+      message.error(err instanceof Error ? err.message : "Помилка при видаленні");
     }
   };
 
@@ -88,7 +88,7 @@ export default function StudentManager({
       setIsModalOpen(false);
       form.resetFields();
     } catch (err: unknown) {
-      message.error(err.message);
+      message.error(err instanceof Error ? err.message : "Помилка збереження");
     } finally {
       setLoading(false);
     }

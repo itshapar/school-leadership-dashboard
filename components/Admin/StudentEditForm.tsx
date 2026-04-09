@@ -46,7 +46,7 @@ export default function StudentEditForm({
       router.push(`/admin/${classId}`);
     } catch (err: unknown) {
       console.error(err);
-      message.error(err.message);
+      message.error(err instanceof Error ? err.message : "Помилка оновлення");
     } finally {
       setLoading(false);
     }
