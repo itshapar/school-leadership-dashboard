@@ -224,18 +224,13 @@ export default function ManagementTable({
         key: `prize_${prize.id}`,
         width: 100,
         align: "center" as const,
-        render: (_: any, record: Student) => {
-          const isGiven = givenPrizes[record.id]?.[prize.id] ?? false;
-          const isEligible = (totalStars[record.id] ?? 0) >= prize.stars_required;
-          return (
-            <Checkbox
-              checked={isGiven}
-              onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
-              style={{ transform: "scale(1.2)" }}
-              className={!isGiven && isEligible ? "prize-eligible-checkbox" : ""}
-            />
-          );
-        }
+        render: (_: any, record: Student) => (
+          <Checkbox
+            checked={givenPrizes[record.id]?.[prize.id] ?? false}
+            onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
+            style={{ transform: "scale(1.2)" }}
+          />
+        )
       };
     }),
     ...lessons.map((lesson, idx) => {
@@ -293,16 +288,17 @@ export default function ManagementTable({
   }
 
   return (
-    <div style={{ background: "#ffffff", width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: "0", flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }} className="full-width-table">
+    <div style={{ background: "#ffffff", width: "100%" }}>
+      <div style={{ padding: "0" }} className="full-width-table">
         <Table
           dataSource={students}
           columns={columns}
           rowKey="id"
           pagination={false}
-          scroll={{ x: "max-content", y: "calc(100vh - 65px)" }}
+          scroll={{ x: "max-content", y: "calc(100vh - 120px)" }}
           size="middle"
           bordered
+          sticky={{ offsetHeader: 73 }}
           className="management-grid"
           summary={() => {
             return (
@@ -360,10 +356,9 @@ export default function ManagementTable({
           font-family: 'Montserrat', sans-serif !important;
           text-transform: uppercase;
           font-size: 0.85rem;
-          padding: 12px 8px !important;
+          padding: 16px 8px !important;
           letter-spacing: 0.5px;
           z-index: 10 !important;
-          vertical-align: middle;
         }
         /* Ensure sticky holder has solid background */
         .management-grid .ant-table-sticky-holder {
@@ -388,10 +383,9 @@ export default function ManagementTable({
           border-right: 1px solid #eee !important;
         }
         .ant-table-bordered .ant-table-cell {
-          border-right: 1px solid #f1f3f5 !important;
-          border-bottom: 1px solid #f1f3f5 !important;
-          padding: 8px 8px !important;
-          vertical-align: middle;
+          border-right: 1px solid #eee !important;
+          border-bottom: 1px solid #eee !important;
+          padding: 12px 8px !important;
         }
         .ant-checkbox-inner {
           width: 22px;
@@ -402,32 +396,21 @@ export default function ManagementTable({
           background-color: #51cf66;
           border-color: #2b8a3e;
         }
-        .prize-eligible-checkbox .ant-checkbox-inner {
-          border-color: #51cf66 !important;
-          border-width: 2px !important;
+        .score-select .ant-select-selector {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+          padding: 0 !important;
         }
-        /* Aggressive reset for Score Select to remove any 3D effects/shadows */
-        .score-select.ant-select,
-        .score-select.ant-select .ant-select-selector,
-        .score-select.ant-select:hover .ant-select-selector,
-        .score-select.ant-select-focused .ant-select-selector,
-        .score-select.ant-select-open .ant-select-selector {
-          background-color: transparent !important;
+        .score-select:hover, .score-select:focus, .score-select-focused, .score-select-open {
           border: none !important;
           box-shadow: none !important;
           outline: none !important;
         }
         .score-select .ant-select-selection-item {
           font-size: 1.1rem;
-          font-weight: 850;
-          line-height: 1;
-          color: inherit !important;
+          font-weight: 800;
         }
-        /* Remove any default border-bottom or box-shadow that might exist */
-        .score-select *:after, .score-select *:before {
-          display: none !important;
-        }
-        
         .management-grid .ant-select-dropdown,
         .management-grid .ant-select-item {
           border-radius: 0 !important;

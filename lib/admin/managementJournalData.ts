@@ -16,7 +16,6 @@ export interface ManagementJournalPrize {
   id: string;
   name: string;
   emoji: string;
-  stars_required: number;
 }
 
 export interface ManagementJournalData {
@@ -67,7 +66,7 @@ export async function loadManagementJournalData(
       .eq("class_id", classId),
     supabase
       .from("prizes_individual")
-      .select("id, name, emoji, stars_required")
+      .select("id, name, emoji")
       .eq("class_id", classId)
       .order("sort_order"),
   ]);
