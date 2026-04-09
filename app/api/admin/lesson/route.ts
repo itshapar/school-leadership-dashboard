@@ -4,12 +4,12 @@ import { z } from "zod";
 import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
 
 const PostLessonSchema = z.object({
-  class_id: z.string().uuid(),
+  class_id: z.string(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
 
 const DeleteLessonSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
 });
 
 export async function POST(request: Request) {
@@ -21,8 +21,11 @@ export async function POST(request: Request) {
   let body;
   try {
     body = PostLessonSchema.parse(await request.json());
-  } catch (err) {
-    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
+  } catch (err: any) {
+    console.error("Zod parse error:", err.errors || err);
+    return NextResponse.json({ 
+      error: `Помилка даних: ${err.errors ? JSON.stringify(err.errors) : "Invalid request data"}` 
+    }, { status: 400 });
   }
 
   const { class_id, date } = body;

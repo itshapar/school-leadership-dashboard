@@ -4,7 +4,7 @@ import { z } from "zod";
 import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
 
 const PatchStudentSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   full_name: z.string().optional(),
   nickname: z.string().optional().nullable(),
   avatar_emoji: z.string().optional(),
@@ -14,7 +14,7 @@ const PostStudentSchema = z.object({
   full_name: z.string().min(1),
   nickname: z.string().optional().nullable(),
   avatar_emoji: z.string().min(1),
-  class_id: z.string().uuid(),
+  class_id: z.string(),
 });
 
 export async function PATCH(request: Request) {
