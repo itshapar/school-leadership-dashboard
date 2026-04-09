@@ -1,6 +1,12 @@
 -- 012_update_pizza_thresholds.sql
--- Update pizza_day_threshold for all classes to 350
--- except for 7А which should be 400
+-- Update thresholds for specific classes
 
-UPDATE classes SET pizza_day_threshold = 350;
+-- Initial defaults for all
+UPDATE classes SET game_day_threshold = 250, pizza_day_threshold = 350;
+
+-- Custom values for special classes
 UPDATE classes SET pizza_day_threshold = 400 WHERE name = '7А';
+
+UPDATE classes SET game_day_threshold = 100, pizza_day_threshold = 200 WHERE name = '7В';
+
+UPDATE classes SET game_day_threshold = 200, pizza_day_threshold = 300 WHERE name IN ('7Г', '7Д', '7Е');
