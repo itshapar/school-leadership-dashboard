@@ -302,7 +302,7 @@ export default function ManagementTable({
           summary={() => {
             return (
               <Table.Summary fixed="bottom">
-                <Table.Summary.Row style={{ background: "#f8f9fa", borderTop: "2px solid #dee2e6" }}>
+                <Table.Summary.Row style={{ background: "#f8f9fa" }}>
                   <Table.Summary.Cell index={0} className="sticky-summary-cell">
                     <div style={{ textAlign: "center", fontWeight: 950, color: "#adb5bd" }}>Σ</div>
                   </Table.Summary.Cell>
@@ -371,9 +371,7 @@ export default function ManagementTable({
           background: #ffffff !important;
         }
         .management-grid {
-          border: 3px solid #000000 !important;
-          border-radius: 20px !important;
-          overflow: hidden !important;
+          border: none !important;
           margin: 0 !important;
         }
         .management-grid .ant-table-container,
@@ -431,8 +429,9 @@ export default function ManagementTable({
         }
         .sticky-summary-cell {
           background: #f8f9fa !important;
-          border-top: 2px solid #dee2e6 !important;
+          border-top: 3px solid #000000 !important;
           padding: 16px 8px !important;
+          z-index: 10 !important;
         }
         /* Custom scrollbar for better look */
         .management-grid .ant-table-body::-webkit-scrollbar {
