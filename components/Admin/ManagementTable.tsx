@@ -101,16 +101,20 @@ export default function ManagementTable({
   // Auto-save star amount (через API з серверною сесією — RLS у Supabase для запису)
   const handleStarChange = async (studentId: string, lessonId: string, amount: number) => {
     const oldAmount = entries[studentId]?.[lessonId] ?? 0;
-    const diff = (amount > 0 ? amount : 0) - (oldAmount > 0 ? oldAmount : 0);
+    const getStarsVal = (v: number) => (v === -1 ? 0 : v);
+    const diff = getStarsVal(amount) - getStarsVal(oldAmount);
 
     setEntries((prev) => ({
       ...prev,
       [studentId]: { ...(prev[studentId] || {}), [lessonId]: amount },
     }));
-    setTotalStars((prev) => ({
-      ...prev,
-      [studentId]: (prev[studentId] ?? 0) + diff,
-    }));
+    setTotalStars((prev) => {
+      const current = prev[studentId] ?? 0;
+      return {
+        ...prev,
+        [studentId]: current + diff,
+      };
+    });
 
     try {
       const res = await adminApiFetch(supabase, "/api/admin/star-entry", {
@@ -242,7 +246,7 @@ export default function ManagementTable({
                 checked={isGiven}
                 onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
                 className={isUnlocked && !isGiven ? "prize-checkbox prize-eligible" : "prize-checkbox"}
-                style={{ transform: "scale(1.3)" }}
+                style={{ transform: "scale(1.15)" }}
               />
             </div>
           );
@@ -446,7 +450,7 @@ export default function ManagementTable({
           box-shadow: none !important;
           outline: none !important;
         }
-        /* BROAD SELECTORS TO KILL THE DOUBLE BORDER */
+        /* TUNE SUMMARY LINE TO MATCH OTHERS */
         .management-grid .ant-table-tbody > tr > td {
           border-bottom: 1px solid #eee !important;
         }
@@ -455,10 +459,6 @@ export default function ManagementTable({
         }
         .management-grid .ant-table-summary {
           border-top: none !important;
-          box-shadow: none !important;
-        }
-        .management-grid table {
-          border-collapse: collapse !important;
         }
         
         .ant-checkbox-wrapper:hover .ant-checkbox-inner,
@@ -469,25 +469,31 @@ export default function ManagementTable({
           background-color: #51cf66 !important;
           border-color: #2b8a3e !important;
         }
-        /* VIBRANT GREEN FOR TESTING */
+        /* MORE ROBUST PRIZE ELIGIBILITY */
         .prize-checkbox.prize-eligible .ant-checkbox-inner {
-          border-color: #00ff00 !important;
+          border-color: #2b8a3e !important;
           border-width: 3px !important;
-          box-shadow: 0 0 12px rgba(0,255,0,0.5) !important;
-          background-color: transparent !important;
+          box-shadow: 0 0 8px rgba(43,138,62,0.6) !important;
+          background-color: #ffffff !important;
         }
         .prize-checkbox.prize-eligible.ant-checkbox-wrapper-checked .ant-checkbox-inner {
           background-color: #51cf66 !important;
+          border-width: 2px !important;
+          box-shadow: none !important;
         }
         .score-select .ant-select-selection-item {
-          font-size: 3rem !important;
+          font-size: 2rem !important;
           font-weight: 950 !important;
-          padding-inline-end: 0 !important;
-          line-height: 1 !important;
+          color: inherit !important;
+        }
+        .management-grid .ant-select-item-option-content {
+          font-size: 1.5rem !important;
+          font-weight: 800 !important;
+          padding: 8px 0 !important;
         }
         .sticky-summary-cell {
           background: #ffffff !important;
-          border-top: 5px solid #000000 !important;
+          border-top: 3px solid #000000 !important;
           border-bottom: none !important;
           padding: 16px 8px !important;
           z-index: 10 !important;
