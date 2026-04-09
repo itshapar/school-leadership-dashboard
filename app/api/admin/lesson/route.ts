@@ -51,7 +51,8 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: "Database error during lesson creation" }, { status: 400 });
+    console.error("Supabase error (lesson insert):", error);
+    return NextResponse.json({ error: `Помилка бази даних: ${error.message} (код: ${error.code})` }, { status: 400 });
   }
 
   return NextResponse.json({ lesson: newLesson });
@@ -74,12 +75,14 @@ export async function DELETE(request: Request) {
 
   const { error: entriesError } = await supabaseForRls.from("star_entries").delete().eq("lesson_id", id);
   if (entriesError) {
-    return NextResponse.json({ error: "Database error during entries deletion" }, { status: 400 });
+    console.error("Supabase error (entries delete):", entriesError);
+    return NextResponse.json({ error: `Помилка бази даних (зірки): ${entriesError.message} (код: ${entriesError.code})` }, { status: 400 });
   }
 
   const { error: lessonError } = await supabaseForRls.from("lessons").delete().eq("id", id);
   if (lessonError) {
-    return NextResponse.json({ error: "Database error during lesson deletion" }, { status: 400 });
+    console.error("Supabase error (lesson delete):", lessonError);
+    return NextResponse.json({ error: `Помилка бази даних (урок): ${lessonError.message} (код: ${lessonError.code})` }, { status: 400 });
   }
 
   return NextResponse.json({ success: true });

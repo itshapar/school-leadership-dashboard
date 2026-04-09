@@ -39,6 +39,7 @@ export async function getSupabaseForAdminApi(request: Request): Promise<{
 }> {
   const authHeader = request.headers.get("Authorization");
   if (authHeader?.startsWith("Bearer ")) {
+    console.log("[AdminApi] Using Bearer token authentication");
     const jwt = authHeader.slice(7);
     const minimal = createClient(url(), anon(), {
       auth: { persistSession: false, autoRefreshToken: false },
@@ -48,8 +49,10 @@ export async function getSupabaseForAdminApi(request: Request): Promise<{
       error,
     } = await minimal.auth.getUser(jwt);
     if (error || !user) {
+      console.warn("[AdminApi] Invalid Bearer token:", error?.message);
       return { user: null, supabaseForRls: minimal };
     }
+    console.log("[AdminApi] Bearer user detected:", user.id);
     const supabaseForRls = createClient(url(), anon(), {
       global: { headers: { Authorization: authHeader } },
       auth: { persistSession: false, autoRefreshToken: false },
@@ -57,9 +60,18 @@ export async function getSupabaseForAdminApi(request: Request): Promise<{
     return { user, supabaseForRls };
   }
 
+  console.log("[AdminApi] Using Cookie authentication");
   const supabaseForRls = await createSupabaseServerClient();
   const {
     data: { user },
+    error: cookieError
   } = await supabaseForRls.auth.getUser();
+
+  if (cookieError || !user) {
+    console.warn("[AdminApi] No user session in cookies:", cookieError?.message);
+  } else {
+    console.log("[AdminApi] Cookie user detected:", user.id);
+  }
+
   return { user, supabaseForRls };
 }

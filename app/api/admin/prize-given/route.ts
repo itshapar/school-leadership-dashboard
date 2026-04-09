@@ -38,14 +38,20 @@ export async function POST(request: Request) {
 
   if (given) {
     const { error } = await supabaseForRls.from("prizes_given").insert({ student_id, prize_id });
-    if (error) return NextResponse.json({ error: "Database error during insert" }, { status: 400 });
+    if (error) {
+      console.error("Supabase error (prize insert):", error);
+      return NextResponse.json({ error: `Помилка бази даних (приз): ${error.message} (код: ${error.code})` }, { status: 400 });
+    }
   } else {
     const { error } = await supabaseForRls
       .from("prizes_given")
       .delete()
       .eq("student_id", student_id)
       .eq("prize_id", prize_id);
-    if (error) return NextResponse.json({ error: "Database error during deletion" }, { status: 400 });
+    if (error) {
+      console.error("Supabase error (prize delete):", error);
+      return NextResponse.json({ error: `Помилка бази даних (приз видалення): ${error.message} (код: ${error.code})` }, { status: 400 });
+    }
   }
 
   return NextResponse.json({ ok: true });

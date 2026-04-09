@@ -64,7 +64,10 @@ export async function POST(request: Request) {
   );
 
   if (error) {
-    return NextResponse.json({ error: "Database error during upsert" }, { status: 400 });
+    console.error("Supabase error (upsert):", error);
+    return NextResponse.json({ 
+      error: `Помилка бази даних: ${error.message} (код: ${error.code})` 
+    }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });
