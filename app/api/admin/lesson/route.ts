@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+// Trigger redeploy
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
 import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
