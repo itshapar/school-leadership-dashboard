@@ -4,9 +4,9 @@ import { z } from "zod";
 import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
 
 const StarEntrySchema = z.object({
-  student_id: z.string().uuid(),
-  lesson_id: z.string().uuid(),
-  class_id: z.string().uuid(),
+  student_id: z.string(),
+  lesson_id: z.string(),
+  class_id: z.string(),
   amount: z.number(),
 });
 
@@ -23,8 +23,11 @@ export async function POST(request: Request) {
       ...rawBody,
       amount: rawBody.amount !== undefined ? Number(rawBody.amount) : undefined
     });
-  } catch (err) {
-    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
+  } catch (err: any) {
+    console.error("Zod parse error:", err.errors || err);
+    return NextResponse.json({ 
+      error: `Помилка даних: ${err.errors ? JSON.stringify(err.errors) : "Invalid request data"}` 
+    }, { status: 400 });
   }
 
   const { student_id, lesson_id, class_id, amount } = body;

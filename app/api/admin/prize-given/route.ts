@@ -4,8 +4,8 @@ import { z } from "zod";
 import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
 
 const PrizeGivenSchema = z.object({
-  student_id: z.string().uuid(),
-  prize_id: z.string().uuid(),
+  student_id: z.string(),
+  prize_id: z.string(),
   given: z.boolean(),
 });
 
