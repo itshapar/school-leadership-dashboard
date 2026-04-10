@@ -511,21 +511,7 @@ export default function ManagementTable({
           padding: 16px 8px !important;
           z-index: 10 !important;
         }
-        /* Custom scrollbar for better look */
-        .management-grid .ant-table-body::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
-        }
-        .management-grid .ant-table-body::-webkit-scrollbar-track {
-          background: #f1f3f5;
-        }
-        .management-grid .ant-table-body::-webkit-scrollbar-thumb {
-          background: #dee2e6;
-          border-radius: 4px;
-        }
-        .management-grid .ant-table-body::-webkit-scrollbar-thumb:hover {
-          background: #adb5bd;
-        }
+
       `}</style>
     </div>
   );
