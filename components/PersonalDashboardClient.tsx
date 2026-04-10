@@ -242,7 +242,7 @@ export default function PersonalDashboardClient({
 
       <style jsx global>{`
         .heavy-progress .ant-progress-inner {
-          border: 3px solid var(--color-border) !important;
+          border: 2px solid var(--color-border) !important;
           background: #fff !important;
           border-radius: 8px !important;
           height: 18px !important;

@@ -64,7 +64,7 @@ export default function StudentEditForm({
 
       <Card 
         title={<div style={{ fontWeight: 900, fontSize: "1.2rem", textTransform: "uppercase" }}>Редагувати учня</div>}
-        style={{ border: "3px solid #000", boxShadow: "4px 4px 0px #000" }}
+        style={{ border: "2px solid #000", boxShadow: "3px 3px 0px #000" }}
       >
         <Form
           form={form}
