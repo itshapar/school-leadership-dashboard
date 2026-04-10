@@ -485,7 +485,7 @@ export default function ManagementTable({
         /* MORE ROBUST PRIZE ELIGIBILITY */
         .prize-checkbox.prize-eligible .ant-checkbox-inner {
           border-color: #2b8a3e !important;
-          border-width: 3px !important;
+          border-width: 2px !important;
           box-shadow: 0 0 8px rgba(43,138,62,0.6) !important;
           background-color: #ffffff !important;
         }
@@ -506,7 +506,7 @@ export default function ManagementTable({
         }
         .sticky-summary-cell {
           background: #ffffff !important;
-          border-top: 3px solid #000000 !important;
+          border-top: 2px solid #000000 !important;
           border-bottom: none !important;
           padding: 16px 8px !important;
           z-index: 10 !important;
