@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "antd";
-import { HistoryOutlined } from "@ant-design/icons";
+import { TrophyOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QuickBonusPenalty from "@/components/Admin/QuickBonusPenalty";
 import NewLessonButton from "@/components/Admin/NewLessonButton";
 import DeleteLessonButton from "@/components/Admin/DeleteLessonButton";
+import RewardSettings from "@/components/Admin/RewardSettings";
 
 interface Student {
   id: string;
@@ -67,6 +69,8 @@ export default function AdminClassToolbar({
         </Button>
       </Link>
 
+      <RewardButton classId={classId} />
+
       <Link href={`/class/${classId}`}>
         <Button
           size="middle"
@@ -85,5 +89,38 @@ export default function AdminClassToolbar({
         </Button>
       </Link>
     </div>
+  );
+}
+
+function RewardButton({ classId }: { classId: string }) {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  return (
+    <>
+      <Button
+        size="middle"
+        onClick={() => setOpen(true)}
+        icon={<TrophyOutlined />}
+        style={{
+          background: "#ffffff",
+          color: "var(--color-star)",
+          border: "2px solid var(--color-star)",
+          fontWeight: 800,
+          borderRadius: "10px",
+          height: "38px",
+          fontSize: "0.85rem",
+          boxShadow: "2px 2px 0px var(--color-star)"
+        }}
+      >
+        НАГОРОДИ
+      </Button>
+      <RewardSettings 
+        classId={classId} 
+        visible={open} 
+        onClose={() => setOpen(false)} 
+        onSuccess={() => router.refresh()} 
+      />
+    </>
   );
 }
