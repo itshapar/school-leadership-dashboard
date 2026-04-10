@@ -380,107 +380,123 @@ export default function ManagementTable({
 
       <style jsx global>{`
         /* =========================================================
-         * MANAGEMENT GRID — єдина система бордерів без дублювання
+         * MANAGEMENT GRID — FINAL POLISHED BORDERS
          * ========================================================= */
 
-        /* Base table reset */
-        .management-grid,
+        /* 1. Reset Containers */
+        .management-grid, 
+        .management-grid * {
+          border-color: #2C2C2C !important;
+        }
+
         .management-grid .ant-table-wrapper,
-        .management-grid .ant-table,
         .management-grid .ant-table-container,
-        .management-grid .ant-table-content,
+        .management-grid .ant-table-header,
         .management-grid .ant-table-body,
-        .management-grid .ant-table-header {
-          border: none !important;
-          outline: none !important;
-          margin: 0 !important;
-          border-radius: 0 !important;
-        }
-
-        .management-grid .ant-table {
-          background: #ffffff !important;
-        }
-
-        /* ── Sticky header ──────────────────────────────────────────
-         * ant-table-sticky-holder є окремим DOM-вузлом, що рендериться
-         * ПОВЕРХ thead. Якщо і sticky-holder, і th мають border-bottom,
-         * вони накладаються і дають «жиру» лінію при певних viewport-ах.
-         * Рішення: border ТІЛЬКИ на th, sticky-holder — без border.
-         * ─────────────────────────────────────────────────────────── */
-        .management-grid .ant-table-sticky-holder {
-          background: #ffffff !important;
-          z-index: 102 !important;
-          /* Жодного border тут — single source of truth на th нижче */
+        .management-grid .ant-table-summary,
+        .management-grid .ant-table-content {
           border: none !important;
           box-shadow: none !important;
+          outline: none !important;
         }
 
+        /* 2. Global Table Logic */
+        .management-grid table {
+          border-collapse: collapse !important;
+          border-spacing: 0 !important;
+          border: 2px solid #2C2C2C !important; /* Full table outer border */
+        }
+
+        /* 3. Header Styling - Bold 2px Separator */
         .management-grid .ant-table-thead > tr > th {
           background: #ffffff !important;
-          /* Єдиний бордер знизу заголовку таблиці */
           border-bottom: 2px solid #2C2C2C !important;
-          border-top: none !important;
           border-right: 1px solid #e9ecef !important;
+          border-top: none !important;
+          border-left: none !important;
           color: var(--color-text) !important;
           font-family: 'Montserrat', sans-serif !important;
           text-transform: uppercase;
           font-size: 0.85rem;
           padding: 16px 8px !important;
-          letter-spacing: 0.5px;
           z-index: 10 !important;
         }
 
-        /* ── Body cells ─────────────────────────────────────────── */
+        /* 4. Body Cell Styling */
         .management-grid .ant-table-tbody > tr > td {
           border-bottom: 1px solid #e9ecef !important;
           border-right: 1px solid #e9ecef !important;
+          border-top: none !important;
+          border-left: none !important;
           padding: 12px 8px !important;
-          outline: none !important;
-        }
-        .management-grid .ant-table-tbody > tr:last-child > td {
-          border-bottom: none !important;
+          background: #ffffff;
         }
 
-        /* ── Sticky fixed columns ───────────────────────────────── */
-        .management-grid .ant-table-cell-fix-left {
+        /* 5. Sticky and Fixed Columns */
+        .management-grid .ant-table-sticky-holder {
+          background: transparent !important;
+          border: none !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+        }
+
+        .management-grid .ant-table-cell-fix-left,
+        .management-grid .ant-table-cell-fix-right {
           background: #ffffff !important;
-        }
-        .management-grid .ant-table-cell-fix-left-last {
-          border-right: 1px solid #dee2e6 !important;
+          z-index: 20 !important;
         }
 
-        /* ── Scroll ping shadows → вимкнути, вони виглядають як товсті лінії ── */
+        /* Stronger vertical separator for the fixed columns */
+        .management-grid .ant-table-cell-fix-left-last {
+          border-right: 2px solid #2C2C2C !important;
+        }
+
+        /* KILL ALL ANT DESIGN SEPARATORS & SHADOWS */
         .management-grid .ant-table-cell-fix-left-last::after,
         .management-grid .ant-table-cell-fix-right-first::after,
         .ant-table-ping-left .ant-table-cell-fix-left-last::after,
         .ant-table-ping-right .ant-table-cell-fix-right-first::after {
-          box-shadow: none !important;
-          border: none !important;
-          opacity: 0 !important;
           content: none !important;
+          display: none !important;
+          box-shadow: none !important;
+          width: 0 !important;
         }
 
-        /* ── Summary row ────────────────────────────────────────── */
+        /* 6. Summary Footer - Bold 2px Top Border */
         .management-grid .ant-table-summary {
-          border-top: none !important;
+          border: none !important;
         }
+        
         .sticky-summary-cell {
           background: #ffffff !important;
           border-top: 2px solid #2C2C2C !important;
           border-bottom: none !important;
+          border-right: 1px solid #e9ecef !important;
           padding: 16px 8px !important;
           z-index: 10 !important;
         }
 
-        /* ── Checkboxes ─────────────────────────────────────────── */
+        /* 7. Scrollbar Styling - Clean & Discrete */
+        .management-grid .ant-table-body::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        .management-grid .ant-table-body::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .management-grid .ant-table-body::-webkit-scrollbar-thumb {
+          background: #dee2e6;
+          border-radius: 4px;
+        }
+        .management-grid .ant-table-body::-webkit-scrollbar-thumb:hover {
+          background: #adb5bd;
+        }
+
+        /* ... remaining logic (checkboxes, select) ... */
         .ant-checkbox-inner {
           width: 22px;
           height: 22px;
           border: 2px solid var(--color-border);
-        }
-        .ant-checkbox-wrapper:hover .ant-checkbox-inner,
-        .ant-checkbox:hover .ant-checkbox-inner {
-          border-color: #dee2e6 !important;
         }
         .ant-checkbox-checked .ant-checkbox-inner {
           background-color: #51cf66 !important;
@@ -494,33 +510,18 @@ export default function ManagementTable({
         }
         .prize-checkbox.prize-eligible.ant-checkbox-wrapper-checked .ant-checkbox-inner {
           background-color: #51cf66 !important;
-          border-width: 2px !important;
-          box-shadow: none !important;
         }
 
-        /* ── Score select ───────────────────────────────────────── */
-        .score-select .ant-select-selector,
-        .score-select:hover .ant-select-selector,
-        .score-select-focused .ant-select-selector,
-        .score-select-open .ant-select-selector {
+        .score-select .ant-select-selector {
           border: none !important;
           box-shadow: none !important;
-          outline: none !important;
           background: transparent !important;
-        }
-        .score-select,
-        .ant-select,
-        .ant-select-selector {
-          box-shadow: none !important;
-          outline: none !important;
         }
         .score-select .ant-select-selection-item {
           font-size: 2rem !important;
           font-weight: 950 !important;
           color: inherit !important;
         }
-
-        /* ── Dropdown ───────────────────────────────────────────── */
         .management-grid .ant-select-dropdown,
         .management-grid .ant-select-item {
           border-radius: 8px !important;

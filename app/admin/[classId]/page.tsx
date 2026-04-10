@@ -85,7 +85,7 @@ export default async function AdminClassPage({ params }: Props) {
           background: "#ffffff", 
           borderRadius: "20px", 
           boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
-          border: "2px solid #000000",
+          /* Border removed to prevent collision with internal table borders */
           overflow: "hidden"
         }}>
           <ManagementTable key={classId} classId={classId} initialData={journalInitial} />
