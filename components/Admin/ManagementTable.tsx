@@ -434,7 +434,29 @@ export default function ManagementTable({
           border-right: 1px solid #eee !important;
           border-bottom: 1px solid #eee !important;
           padding: 12px 8px !important;
+          outline: none !important;
         }
+        
+        /* Remove focus rings that appear when table is clicked */
+        .management-grid .ant-table-wrapper,
+        .management-grid .ant-table-container,
+        .management-grid .ant-table-content,
+        .management-grid .ant-table-body,
+        .management-grid .ant-table {
+          outline: none !important;
+        }
+
+        /* Prevent Ant Design scroll shadows (pings) from appearing as fat black lines */
+        .management-grid .ant-table-cell-fix-left-last::after, 
+        .management-grid .ant-table-cell-fix-right-first::after,
+        .ant-table-ping-left .ant-table-cell-fix-left-last::after,
+        .ant-table-ping-right .ant-table-cell-fix-right-first::after {
+          box-shadow: none !important;
+          border: none !important;
+          opacity: 0 !important;
+          display: none !important;
+        }
+
         .ant-checkbox-inner {
           width: 22px;
           height: 22px;
