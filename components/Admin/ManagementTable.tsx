@@ -331,7 +331,6 @@ export default function ManagementTable({
           pagination={false}
           scroll={{ x: "max-content", y: "calc(100vh - 260px)" }}
           size="middle"
-          bordered
           className="management-grid"
           summary={() => {
             return (
@@ -380,12 +379,48 @@ export default function ManagementTable({
       </div>
 
       <style jsx global>{`
+        /* =========================================================
+         * MANAGEMENT GRID — єдина система бордерів без дублювання
+         * ========================================================= */
+
+        /* Base table reset */
+        .management-grid,
+        .management-grid .ant-table-wrapper,
+        .management-grid .ant-table,
+        .management-grid .ant-table-container,
+        .management-grid .ant-table-content,
+        .management-grid .ant-table-body,
+        .management-grid .ant-table-header {
+          border: none !important;
+          outline: none !important;
+          margin: 0 !important;
+          border-radius: 0 !important;
+        }
+
         .management-grid .ant-table {
           background: #ffffff !important;
         }
+
+        /* ── Sticky header ──────────────────────────────────────────
+         * ant-table-sticky-holder є окремим DOM-вузлом, що рендериться
+         * ПОВЕРХ thead. Якщо і sticky-holder, і th мають border-bottom,
+         * вони накладаються і дають «жиру» лінію при певних viewport-ах.
+         * Рішення: border ТІЛЬКИ на th, sticky-holder — без border.
+         * ─────────────────────────────────────────────────────────── */
+        .management-grid .ant-table-sticky-holder {
+          background: #ffffff !important;
+          z-index: 102 !important;
+          /* Жодного border тут — single source of truth на th нижче */
+          border: none !important;
+          box-shadow: none !important;
+        }
+
         .management-grid .ant-table-thead > tr > th {
           background: #ffffff !important;
-          border-bottom: 2px solid var(--color-border) !important;
+          /* Єдиний бордер знизу заголовку таблиці */
+          border-bottom: 2px solid #2C2C2C !important;
+          border-top: none !important;
+          border-right: 1px solid #e9ecef !important;
           color: var(--color-text) !important;
           font-family: 'Montserrat', sans-serif !important;
           text-transform: uppercase;
@@ -394,108 +429,55 @@ export default function ManagementTable({
           letter-spacing: 0.5px;
           z-index: 10 !important;
         }
-        /* Ensure sticky holder has solid background */
-        .management-grid .ant-table-sticky-holder {
-          background: #ffffff !important;
-          z-index: 102 !important;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-          border-bottom: 2px solid var(--color-border);
-        }
-        .management-grid .ant-table-header {
-          background: #ffffff !important;
-        }
-        .management-grid .ant-table {
-          background: #ffffff !important;
-          border: none !important;
-        }
-        .management-grid .ant-table-thead > tr > th {
-          border-top: none !important;
-        }
-        .management-grid {
-          border: none !important;
-          margin: 0 !important;
-        }
-        .management-grid .ant-table-container,
-        .management-grid .ant-table-content,
-        .management-grid .ant-table-body {
-          border-radius: 0 !important;
-        }
-        .management-grid .ant-table-cell-fix-left {
-          background: #ffffff !important;
-          border-right: 1px solid #eee !important;
-        }
-        .management-grid .ant-table-cell-fix-left-last {
-          border-right: 1px solid #eee !important;
-        }
-        .ant-table-bordered .ant-table-container {
-          border: none !important;
-        }
-        .ant-table-bordered .ant-table-cell {
-          border-right: 1px solid #eee !important;
-          border-bottom: 1px solid #eee !important;
+
+        /* ── Body cells ─────────────────────────────────────────── */
+        .management-grid .ant-table-tbody > tr > td {
+          border-bottom: 1px solid #e9ecef !important;
+          border-right: 1px solid #e9ecef !important;
           padding: 12px 8px !important;
           outline: none !important;
         }
-        
-        /* Remove focus rings that appear when table is clicked */
-        .management-grid .ant-table-wrapper,
-        .management-grid .ant-table-container,
-        .management-grid .ant-table-content,
-        .management-grid .ant-table-body,
-        .management-grid .ant-table {
-          outline: none !important;
+        .management-grid .ant-table-tbody > tr:last-child > td {
+          border-bottom: none !important;
         }
 
-        /* Prevent Ant Design scroll shadows (pings) from appearing as fat black lines */
-        .management-grid .ant-table-cell-fix-left-last::after, 
+        /* ── Sticky fixed columns ───────────────────────────────── */
+        .management-grid .ant-table-cell-fix-left {
+          background: #ffffff !important;
+        }
+        .management-grid .ant-table-cell-fix-left-last {
+          border-right: 1px solid #dee2e6 !important;
+        }
+
+        /* ── Scroll ping shadows → вимкнути, вони виглядають як товсті лінії ── */
+        .management-grid .ant-table-cell-fix-left-last::after,
         .management-grid .ant-table-cell-fix-right-first::after,
         .ant-table-ping-left .ant-table-cell-fix-left-last::after,
         .ant-table-ping-right .ant-table-cell-fix-right-first::after {
           box-shadow: none !important;
           border: none !important;
           opacity: 0 !important;
-          display: none !important;
+          content: none !important;
         }
 
+        /* ── Summary row ────────────────────────────────────────── */
+        .management-grid .ant-table-summary {
+          border-top: none !important;
+        }
+        .sticky-summary-cell {
+          background: #ffffff !important;
+          border-top: 2px solid #2C2C2C !important;
+          border-bottom: none !important;
+          padding: 16px 8px !important;
+          z-index: 10 !important;
+        }
+
+        /* ── Checkboxes ─────────────────────────────────────────── */
         .ant-checkbox-inner {
           width: 22px;
           height: 22px;
           border: 2px solid var(--color-border);
         }
-        .ant-checkbox-checked .ant-checkbox-inner {
-          background-color: #51cf66;
-          border-color: #2b8a3e;
-        }
-        .management-grid .ant-select-dropdown,
-        .management-grid .ant-select-item {
-          border-radius: 8px !important;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-          border: 1px solid #eee !important;
-        }
-        .score-select .ant-select-selector,
-        .score-select:hover .ant-select-selector,
-        .score-select-focused .ant-select-selector,
-        .score-select-open .ant-select-selector {
-          border: none !important;
-          box-shadow: none !important;
-          outline: none !important;
-          background: transparent !important;
-        }
-        .score-select, .ant-select, .ant-select-selector {
-          box-shadow: none !important;
-          outline: none !important;
-        }
-        /* TUNE SUMMARY LINE TO MATCH OTHERS */
-        .management-grid .ant-table-tbody > tr > td {
-          border-bottom: 1px solid #eee !important;
-        }
-        .management-grid .ant-table-tbody > tr:last-child > td {
-          border-bottom: none !important;
-        }
-        .management-grid .ant-table-summary {
-          border-top: none !important;
-        }
-        
         .ant-checkbox-wrapper:hover .ant-checkbox-inner,
         .ant-checkbox:hover .ant-checkbox-inner {
           border-color: #dee2e6 !important;
@@ -504,7 +486,6 @@ export default function ManagementTable({
           background-color: #51cf66 !important;
           border-color: #2b8a3e !important;
         }
-        /* MORE ROBUST PRIZE ELIGIBILITY */
         .prize-checkbox.prize-eligible .ant-checkbox-inner {
           border-color: #2b8a3e !important;
           border-width: 2px !important;
@@ -516,24 +497,41 @@ export default function ManagementTable({
           border-width: 2px !important;
           box-shadow: none !important;
         }
+
+        /* ── Score select ───────────────────────────────────────── */
+        .score-select .ant-select-selector,
+        .score-select:hover .ant-select-selector,
+        .score-select-focused .ant-select-selector,
+        .score-select-open .ant-select-selector {
+          border: none !important;
+          box-shadow: none !important;
+          outline: none !important;
+          background: transparent !important;
+        }
+        .score-select,
+        .ant-select,
+        .ant-select-selector {
+          box-shadow: none !important;
+          outline: none !important;
+        }
         .score-select .ant-select-selection-item {
           font-size: 2rem !important;
           font-weight: 950 !important;
           color: inherit !important;
+        }
+
+        /* ── Dropdown ───────────────────────────────────────────── */
+        .management-grid .ant-select-dropdown,
+        .management-grid .ant-select-item {
+          border-radius: 8px !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+          border: 1px solid #eee !important;
         }
         .management-grid .ant-select-item-option-content {
           font-size: 1.5rem !important;
           font-weight: 800 !important;
           padding: 8px 0 !important;
         }
-        .sticky-summary-cell {
-          background: #ffffff !important;
-          border-top: 2px solid #000000 !important;
-          border-bottom: none !important;
-          padding: 16px 8px !important;
-          z-index: 10 !important;
-        }
-
       `}</style>
     </div>
   );
