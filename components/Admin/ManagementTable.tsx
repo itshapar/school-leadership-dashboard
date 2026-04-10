@@ -331,6 +331,7 @@ export default function ManagementTable({
           pagination={false}
           scroll={{ x: "max-content", y: "calc(100vh - 260px)" }}
           size="middle"
+          bordered
           className="management-grid"
           summary={() => {
             return (
@@ -379,148 +380,69 @@ export default function ManagementTable({
       </div>
 
       <style jsx global>{`
-        /* =========================================================
-         * MANAGEMENT GRID — FINAL POLISHED BORDERS
-         * ========================================================= */
-
-        /* 1. Reset Containers */
-        .management-grid, 
-        .management-grid * {
-          border-color: #2C2C2C !important;
+        .management-grid .ant-table {
+          background: #ffffff !important;
         }
-
-        .management-grid .ant-table-wrapper,
-        .management-grid .ant-table-container,
-        .management-grid .ant-table-header,
-        .management-grid .ant-table-body,
-        .management-grid .ant-table-summary,
-        .management-grid .ant-table-content {
-          border: none !important;
-          box-shadow: none !important;
-          outline: none !important;
-        }
-
-        /* 2. Global Table Logic */
-        .management-grid table {
-          border-collapse: collapse !important;
-          border-spacing: 0 !important;
-          border: 2px solid #2C2C2C !important; /* Full table outer border */
-        }
-
-        /* 3. Header Styling - Bold 2px Separator */
         .management-grid .ant-table-thead > tr > th {
           background: #ffffff !important;
-          border-bottom: 2px solid #2C2C2C !important;
-          border-right: 1px solid #e9ecef !important;
-          border-top: none !important;
-          border-left: none !important;
+          border-bottom: 2px solid var(--color-border) !important;
           color: var(--color-text) !important;
           font-family: 'Montserrat', sans-serif !important;
           text-transform: uppercase;
           font-size: 0.85rem;
           padding: 16px 8px !important;
+          letter-spacing: 0.5px;
           z-index: 10 !important;
         }
-
-        /* 4. Body Cell Styling */
-        .management-grid .ant-table-tbody > tr > td {
-          border-bottom: 1px solid #e9ecef !important;
-          border-right: 1px solid #e9ecef !important;
-          border-top: none !important;
-          border-left: none !important;
-          padding: 12px 8px !important;
-          background: #ffffff;
-        }
-
-        /* 5. Sticky and Fixed Columns */
+        /* Ensure sticky holder has solid background */
         .management-grid .ant-table-sticky-holder {
-          background: transparent !important;
-          border: none !important;
-          padding: 0 !important;
-          box-shadow: none !important;
-        }
-
-        .management-grid .ant-table-cell-fix-left,
-        .management-grid .ant-table-cell-fix-right {
           background: #ffffff !important;
-          z-index: 20 !important;
+          z-index: 102 !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          border-bottom: 2px solid var(--color-border);
         }
-
-        /* Stronger vertical separator for the fixed columns */
+        .management-grid .ant-table-header {
+          background: #ffffff !important;
+        }
+        .management-grid .ant-table {
+          background: #ffffff !important;
+          border: none !important;
+        }
+        .management-grid .ant-table-thead > tr > th {
+          border-top: none !important;
+        }
+        .management-grid {
+          border: none !important;
+          margin: 0 !important;
+        }
+        .management-grid .ant-table-container,
+        .management-grid .ant-table-content,
+        .management-grid .ant-table-body {
+          border-radius: 0 !important;
+        }
+        .management-grid .ant-table-cell-fix-left {
+          background: #ffffff !important;
+          border-right: 1px solid #eee !important;
+        }
         .management-grid .ant-table-cell-fix-left-last {
-          border-right: 2px solid #2C2C2C !important;
+          border-right: 1px solid #eee !important;
         }
-
-        /* KILL ALL ANT DESIGN SEPARATORS & SHADOWS */
-        .management-grid .ant-table-cell-fix-left-last::after,
-        .management-grid .ant-table-cell-fix-right-first::after,
-        .ant-table-ping-left .ant-table-cell-fix-left-last::after,
-        .ant-table-ping-right .ant-table-cell-fix-right-first::after {
-          content: none !important;
-          display: none !important;
-          box-shadow: none !important;
-          width: 0 !important;
-        }
-
-        /* 6. Summary Footer - Bold 2px Top Border */
-        .management-grid .ant-table-summary {
+        .ant-table-bordered .ant-table-container {
           border: none !important;
         }
-        
-        .sticky-summary-cell {
-          background: #ffffff !important;
-          border-top: 2px solid #2C2C2C !important;
-          border-bottom: none !important;
-          border-right: 1px solid #e9ecef !important;
-          padding: 16px 8px !important;
-          z-index: 10 !important;
+        .ant-table-bordered .ant-table-cell {
+          border-right: 1px solid #eee !important;
+          border-bottom: 1px solid #eee !important;
+          padding: 12px 8px !important;
         }
-
-        /* 7. Scrollbar Styling - Clean & Discrete */
-        .management-grid .ant-table-body::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
-        }
-        .management-grid .ant-table-body::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .management-grid .ant-table-body::-webkit-scrollbar-thumb {
-          background: #dee2e6;
-          border-radius: 4px;
-        }
-        .management-grid .ant-table-body::-webkit-scrollbar-thumb:hover {
-          background: #adb5bd;
-        }
-
-        /* ... remaining logic (checkboxes, select) ... */
         .ant-checkbox-inner {
           width: 22px;
           height: 22px;
           border: 2px solid var(--color-border);
         }
         .ant-checkbox-checked .ant-checkbox-inner {
-          background-color: #51cf66 !important;
-          border-color: #2b8a3e !important;
-        }
-        .prize-checkbox.prize-eligible .ant-checkbox-inner {
-          border-color: #2b8a3e !important;
-          border-width: 2px !important;
-          box-shadow: 0 0 8px rgba(43,138,62,0.6) !important;
-          background-color: #ffffff !important;
-        }
-        .prize-checkbox.prize-eligible.ant-checkbox-wrapper-checked .ant-checkbox-inner {
-          background-color: #51cf66 !important;
-        }
-
-        .score-select .ant-select-selector {
-          border: none !important;
-          box-shadow: none !important;
-          background: transparent !important;
-        }
-        .score-select .ant-select-selection-item {
-          font-size: 2rem !important;
-          font-weight: 950 !important;
-          color: inherit !important;
+          background-color: #51cf66;
+          border-color: #2b8a3e;
         }
         .management-grid .ant-select-dropdown,
         .management-grid .ant-select-item {
@@ -528,10 +450,81 @@ export default function ManagementTable({
           box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
           border: 1px solid #eee !important;
         }
+        .score-select .ant-select-selector,
+        .score-select:hover .ant-select-selector,
+        .score-select-focused .ant-select-selector,
+        .score-select-open .ant-select-selector {
+          border: none !important;
+          box-shadow: none !important;
+          outline: none !important;
+          background: transparent !important;
+        }
+        .score-select, .ant-select, .ant-select-selector {
+          box-shadow: none !important;
+          outline: none !important;
+        }
+        /* TUNE SUMMARY LINE TO MATCH OTHERS */
+        .management-grid .ant-table-tbody > tr > td {
+          border-bottom: 1px solid #eee !important;
+        }
+        .management-grid .ant-table-tbody > tr:last-child > td {
+          border-bottom: none !important;
+        }
+        .management-grid .ant-table-summary {
+          border-top: none !important;
+        }
+        
+        .ant-checkbox-wrapper:hover .ant-checkbox-inner,
+        .ant-checkbox:hover .ant-checkbox-inner {
+          border-color: #dee2e6 !important;
+        }
+        .ant-checkbox-checked .ant-checkbox-inner {
+          background-color: #51cf66 !important;
+          border-color: #2b8a3e !important;
+        }
+        /* MORE ROBUST PRIZE ELIGIBILITY */
+        .prize-checkbox.prize-eligible .ant-checkbox-inner {
+          border-color: #2b8a3e !important;
+          border-width: 3px !important;
+          box-shadow: 0 0 8px rgba(43,138,62,0.6) !important;
+          background-color: #ffffff !important;
+        }
+        .prize-checkbox.prize-eligible.ant-checkbox-wrapper-checked .ant-checkbox-inner {
+          background-color: #51cf66 !important;
+          border-width: 2px !important;
+          box-shadow: none !important;
+        }
+        .score-select .ant-select-selection-item {
+          font-size: 2rem !important;
+          font-weight: 950 !important;
+          color: inherit !important;
+        }
         .management-grid .ant-select-item-option-content {
           font-size: 1.5rem !important;
           font-weight: 800 !important;
           padding: 8px 0 !important;
+        }
+        .sticky-summary-cell {
+          background: #ffffff !important;
+          border-top: 3px solid #000000 !important;
+          border-bottom: none !important;
+          padding: 16px 8px !important;
+          z-index: 10 !important;
+        }
+        /* Custom scrollbar for better look */
+        .management-grid .ant-table-body::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        .management-grid .ant-table-body::-webkit-scrollbar-track {
+          background: #f1f3f5;
+        }
+        .management-grid .ant-table-body::-webkit-scrollbar-thumb {
+          background: #dee2e6;
+          border-radius: 4px;
+        }
+        .management-grid .ant-table-body::-webkit-scrollbar-thumb:hover {
+          background: #adb5bd;
         }
       `}</style>
     </div>

@@ -90,8 +90,8 @@ export default async function ClassPage({ params }: Props) {
         marginBottom: "24px", 
         padding: "32px",
         background: "#ffffff",
-        border: "2px solid #000000",
-        boxShadow: "3px 3px 0px #000000"
+        border: "3px solid #000000",
+        boxShadow: "4px 4px 0px #000000"
       }}>
         <div style={{ fontSize: "5rem", fontWeight: 950, color: "var(--color-star)", lineHeight: 1, letterSpacing: "-2px" }}>
           {totalClassStars} <StarFilled style={{ fontSize: "3.5rem", verticalAlign: "middle", marginTop: "-10px" }} />
@@ -115,8 +115,8 @@ export default async function ClassPage({ params }: Props) {
         <div className="star-card" style={{ 
           marginBottom: "24px", 
           background: "#ffffff", 
-          border: "2px solid #000000",
-          boxShadow: "3px 3px 0px #000000"
+          border: "3px solid #000000",
+          boxShadow: "4px 4px 0px #000000"
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <div style={{ fontWeight: 900, fontSize: "1.1rem", textTransform: "uppercase" }}>
