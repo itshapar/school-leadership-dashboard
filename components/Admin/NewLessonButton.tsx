@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Modal, DatePicker, Space, message } from "antd";
-import { CalendarOutlined } from "@ant-design/icons";
+import { Button, Modal, DatePicker, Space, message, Tooltip } from "antd";
+import { CalendarOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
@@ -50,21 +50,27 @@ export default function NewLessonButton({
 
   return (
     <>
-      <Button
-        onClick={() => setOpen(true)}
-        size="middle"
-        style={{
-          fontWeight: 800,
-          borderRadius: "10px",
-          background: "#ffffff",
-          color: "var(--color-text)",
-          border: "2px solid var(--color-border)",
-          height: "38px", fontSize: "0.85rem",
-          boxShadow: "3px 3px 0px var(--color-border)"
-        }}
-      >
-        Новий урок
-      </Button>
+      <Tooltip title="НОВИЙ УРОК">
+        <Button
+          onClick={() => setOpen(true)}
+          size="middle"
+          icon={<PlusOutlined />}
+          style={{
+            fontWeight: 800,
+            borderRadius: "12px",
+            background: "#ffffff",
+            color: "var(--color-text)",
+            border: "2px solid var(--color-border)",
+            height: "42px", 
+            width: "42px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "1.2rem",
+            boxShadow: "3px 3px 0px var(--color-border)"
+          }}
+        />
+      </Tooltip>
 
       <Modal
         title={

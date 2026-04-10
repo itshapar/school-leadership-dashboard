@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Modal, Select, Space, message, Popconfirm } from "antd";
+import { Button, Modal, Select, Space, message, Popconfirm, Tooltip } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
@@ -63,24 +63,30 @@ export default function DeleteLessonButton({
 
   return (
     <>
-      <Button
-        onClick={() => {
-          setOpen(true);
-          fetchLessons();
-        }}
-        size="middle"
-        style={{
-          fontWeight: 800,
-          borderRadius: "10px",
-          background: "#ffffff",
-          color: "#000000",
-          border: "2px solid var(--color-border)",
-          height: "38px", fontSize: "0.85rem",
-          boxShadow: "3px 3px 0px var(--color-border)"
-        }}
-      >
-        Видалити урок
-      </Button>
+      <Tooltip title="ВИДАЛИТИ УРОК">
+        <Button
+          onClick={() => {
+            setOpen(true);
+            fetchLessons();
+          }}
+          size="middle"
+          icon={<DeleteOutlined />}
+          style={{
+            fontWeight: 800,
+            borderRadius: "12px",
+            background: "#ffffff",
+            color: "#e03131",
+            border: "2px solid #e03131",
+            height: "42px", 
+            width: "42px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "1.2rem",
+            boxShadow: "3px 3px 0px #e03131"
+          }}
+        />
+      </Tooltip>
 
       <Modal
         title={

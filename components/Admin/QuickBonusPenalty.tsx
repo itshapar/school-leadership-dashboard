@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Modal, Form, Select, InputNumber, Input, Space, message } from "antd";
+import { Button, Modal, Form, Select, InputNumber, Input, Space, message, Tooltip } from "antd";
 import { PlusCircleOutlined, MinusCircleOutlined, UserOutlined, TeamOutlined } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
@@ -49,37 +49,47 @@ export default function QuickBonusPenalty({ classId, students }: { classId: stri
   return (
     <>
       <Space size="middle">
-        <Button 
-          onClick={() => openModal("bonus")}
-          size="middle"
-          style={{ 
-            background: "#ebfbee", 
-            color: "#2f9e44", 
-            border: "2px solid #2f9e44", 
-            fontWeight: 800,
-            borderRadius: "10px",
-            height: "38px",
-            fontSize: "0.85rem",
-            boxShadow: "2px 2px 0px #2f9e44"
-          }}
-        >
-          БОНУС
-        </Button>
-        <Button 
-          onClick={() => openModal("penalty")}
-          size="middle"
-          danger
-          style={{ 
-            fontWeight: 800, 
-            border: "2px solid #e03131", 
-            borderRadius: "10px", 
-            height: "38px",
-            fontSize: "0.85rem",
-            boxShadow: "2px 2px 0px #e03131"
-          }}
-        >
-          ШТРАФ
-        </Button>
+        <Tooltip title="БОНУС">
+          <Button 
+            onClick={() => openModal("bonus")}
+            size="middle"
+            icon={<PlusCircleOutlined />}
+            style={{ 
+              background: "#ebfbee", 
+              color: "#2f9e44", 
+              border: "2px solid #2f9e44", 
+              fontWeight: 800,
+              borderRadius: "12px",
+              height: "42px",
+              width: "42px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1.2rem",
+              boxShadow: "3px 3px 0px #2f9e44"
+            }}
+          />
+        </Tooltip>
+        <Tooltip title="ШТРАФ">
+          <Button 
+            onClick={() => openModal("penalty")}
+            size="middle"
+            danger
+            icon={<MinusCircleOutlined />}
+            style={{ 
+              fontWeight: 800, 
+              border: "2px solid #e03131", 
+              borderRadius: "12px", 
+              height: "42px",
+              width: "42px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1.2rem",
+              boxShadow: "3px 3px 0px #e03131"
+            }}
+          />
+        </Tooltip>
       </Space>
 
       <Modal
