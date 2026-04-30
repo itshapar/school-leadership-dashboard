@@ -99,7 +99,8 @@ export async function loadManagementJournalData(
     if (!e.student_id) {
       classWideBonus += e.amount;
     } else {
-      if (e.amount !== -1) {
+      // Individual student entry: only count gains for the total (matches dashboard logic)
+      if (e.amount > 0) {
         totals[e.student_id] = (totals[e.student_id] ?? 0) + e.amount;
       }
       if (e.type === "lesson" && e.lesson_id) {

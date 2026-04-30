@@ -5,6 +5,8 @@ import { UserOutlined, ReadOutlined, StarFilled } from "@ant-design/icons";
 import { Progress } from "antd";
 import { buildClassCodeMap } from "@/lib/classCodes";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const supabase = await createSupabaseServerClient();
 
@@ -25,10 +27,20 @@ export default async function AdminPage() {
 
       const { data: entries } = await supabase
         .from("star_entries")
-        .select("amount")
+        .select("student_id, amount")
         .eq("class_id", cls.id);
 
-      const totalStars = (entries ?? []).reduce((s, e) => s + e.amount, 0);
+      // Total class stars: sum of individual efforts (ignoring penalties <= 0) + the class pool (including all class-wide entries)
+      const totalStars = (entries ?? []).reduce((s, e) => {
+        if (e.student_id) {
+          // Individual student entry: only count gains (matches dashboard logic)
+          return s + (e.amount > 0 ? e.amount : 0);
+        } else {
+          // Class-wide entry: count all bonuses/penalties
+          return s + e.amount;
+        }
+      }, 0);
+
       const { data: lessons } = await supabase
         .from("lessons")
         .select("id")

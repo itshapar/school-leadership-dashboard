@@ -16,7 +16,21 @@ interface StudentData {
 export default function TotalDashboardClient({ initialData }: { initialData: StudentData[] }) {
   const [searchText, setSearchText] = useState("");
 
-  const filteredData = initialData.filter((item) =>
+  // Pre-calculate ranks based on all data (Global Rank)
+  // Standard competition ranking: 1, 2, 2, 4...
+  const rankedData = initialData
+    .map((st) => ({
+      ...st,
+      rank: initialData.filter((o) => o.totalStars > st.totalStars).length + 1,
+    }))
+    .sort((a, b) => {
+      // Primary sort: stars desc
+      if (b.totalStars !== a.totalStars) return b.totalStars - a.totalStars;
+      // Secondary sort: name asc
+      return a.full_name.localeCompare(b.full_name);
+    });
+
+  const filteredData = rankedData.filter((item) =>
     item.full_name.toLowerCase().includes(searchText.toLowerCase()) ||
     item.className.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -27,8 +41,9 @@ export default function TotalDashboardClient({ initialData }: { initialData: Stu
       key: "rank",
       width: 60,
       align: "center" as const,
-      render: (_value: unknown, _record: StudentData, index: number) => (
-        <span style={{ fontWeight: 800, color: "#adb5bd" }}>{index + 1}</span>
+      sorter: (a: any, b: any) => a.rank - b.rank,
+      render: (_value: unknown, record: StudentData & { rank: number }) => (
+        <span style={{ fontWeight: 800, color: "#adb5bd" }}>{record.rank}</span>
       ),
     },
     {

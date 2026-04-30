@@ -115,7 +115,7 @@ export default function ManagementTable({
   // Auto-save star amount (через API з серверною сесією — RLS у Supabase для запису)
   const handleStarChange = async (studentId: string, lessonId: string, amount: number) => {
     const oldAmount = entries[studentId]?.[lessonId] ?? 0;
-    const getStarsVal = (v: number) => (v === -1 ? 0 : v);
+    const getStarsVal = (v: number) => (v > 0 ? v : 0);
     const diff = getStarsVal(amount) - getStarsVal(oldAmount);
 
     setEntries((prev) => ({
