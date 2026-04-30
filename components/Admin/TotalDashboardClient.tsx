@@ -17,11 +17,15 @@ export default function TotalDashboardClient({ initialData }: { initialData: Stu
   const [searchText, setSearchText] = useState("");
 
   // Pre-calculate ranks based on all data (Global Rank)
-  // Standard competition ranking: 1, 2, 2, 4...
+  // Dense ranking: 1, 2, 2, 3... (no numbers skipped)
+  const sortedUniqueStars = Array.from(new Set(initialData.map((s) => s.totalStars))).sort(
+    (a, b) => b - a
+  );
+
   const rankedData = initialData
     .map((st) => ({
       ...st,
-      rank: initialData.filter((o) => o.totalStars > st.totalStars).length + 1,
+      rank: sortedUniqueStars.indexOf(st.totalStars) + 1,
     }))
     .sort((a, b) => {
       // Primary sort: stars desc
