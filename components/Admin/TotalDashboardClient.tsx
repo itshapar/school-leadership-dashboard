@@ -10,6 +10,7 @@ interface StudentData {
   full_name: string;
   avatar_emoji: string;
   className: string;
+  classCode: string;
   totalStars: number;
 }
 
@@ -55,10 +56,14 @@ export default function TotalDashboardClient({ initialData }: { initialData: Stu
       key: "student",
       sorter: (a: StudentData, b: StudentData) => a.full_name.localeCompare(b.full_name),
       render: (record: StudentData) => (
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ fontSize: "1.5rem" }}>{record.avatar_emoji}</span>
-          <span style={{ fontWeight: 850, fontSize: "1rem" }}>{record.full_name}</span>
-        </div>
+        <Link href={`/class/${record.classCode}/student/${record.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="student-profile-link" style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
+            <span style={{ fontSize: "1.5rem" }}>{record.avatar_emoji}</span>
+            <span style={{ fontWeight: 850, fontSize: "1rem" }} className="student-name-text">
+              {record.full_name}
+            </span>
+          </div>
+        </Link>
       ),
     },
     {
@@ -166,6 +171,10 @@ export default function TotalDashboardClient({ initialData }: { initialData: Stu
         }
         .admin-total-table .ant-table-row:hover .ant-table-cell {
           background: #fdfaf5 !important;
+        }
+        .student-profile-link:hover .student-name-text {
+          color: #1890ff;
+          text-decoration: underline;
         }
       `}</style>
     </div>

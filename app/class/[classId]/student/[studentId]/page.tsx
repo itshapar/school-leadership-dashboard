@@ -65,8 +65,9 @@ export default async function StudentDashboardPage({ params }: Props) {
   const personalStars = (studentEntries ?? []).reduce((s, e) => s + (e.amount > 0 ? e.amount : 0), 0);
   const totalStars = personalStars;
 
-  // History: Personal only
+  // History: Personal only, excluding absences (amount === -1)
   const history = (studentEntries ?? [])
+    .filter((e) => !(e.type === "lesson" && e.amount === -1))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 30);
 
