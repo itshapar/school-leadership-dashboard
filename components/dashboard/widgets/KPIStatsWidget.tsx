@@ -1,0 +1,31 @@
+import { Flame } from "lucide-react";
+
+export default function KPIStatsWidget({ kpi }: any) {
+  const diff = kpi.bonusesThisMonth - kpi.bonusesLastMonth;
+  const isUp = diff >= 0;
+
+  return (
+    <>
+      <div className="widget-title" style={{ marginBottom: "8px" }}>
+        <Flame size={20} color="#e03131" />
+        Бонуси Місяця
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontSize: "3rem", fontWeight: 900, lineHeight: 1, color: "#000" }}>
+          {kpi.bonusesThisMonth}
+        </div>
+        <div style={{ 
+          fontSize: "0.9rem", 
+          fontWeight: 700, 
+          color: isUp ? "#40c057" : "#fa5252",
+          marginTop: "8px",
+          display: "flex",
+          alignItems: "center",
+          gap: "4px"
+        }}>
+          {isUp ? "▲" : "▼"} {Math.abs(diff)} vs мин. місяць
+        </div>
+      </div>
+    </>
+  );
+}
