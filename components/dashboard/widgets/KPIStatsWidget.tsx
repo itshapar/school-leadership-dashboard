@@ -1,4 +1,4 @@
-import { Flame } from "lucide-react";
+import { FireOutlined } from "@ant-design/icons";
 
 export default function KPIStatsWidget({ kpi }: any) {
   const diff = kpi.bonusesThisMonth - kpi.bonusesLastMonth;
@@ -7,7 +7,6 @@ export default function KPIStatsWidget({ kpi }: any) {
   return (
     <>
       <div className="widget-title" style={{ marginBottom: "8px" }}>
-        <Flame size={20} color="#e03131" />
         Бонуси Місяця
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>

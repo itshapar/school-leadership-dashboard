@@ -1,11 +1,11 @@
-import { Trophy, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { StarFilled, ArrowUpOutlined, ArrowDownOutlined, MinusOutlined } from "@ant-design/icons";
+import React from "react";
 
 export default function LeaderboardWidget({ leaderboard, isGlobal, onStudentClick }: any) {
   return (
     <>
       <div className="widget-title">
-        <Trophy size={20} color="#f59f00" />
-        {isGlobal ? "Глобальний Топ" : "Топ Класу"}
+        {isGlobal ? "Глобальний Рейтинг" : "Рейтинг Класу"}
       </div>
       <div className="leaderboard-list custom-scrollbar">
         {leaderboard.map((item: any, idx: number) => {
@@ -33,18 +33,23 @@ export default function LeaderboardWidget({ leaderboard, isGlobal, onStudentClic
                 )}
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontWeight: 900, fontSize: "1.1rem", color: "var(--color-star, #f59f00)" }}>
-                  {item.totalStars} ⭐
+                <div style={{ fontWeight: 900, fontSize: "1.1rem", color: "var(--color-star, #f59f00)", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
+                  {item.totalStars} <StarFilled style={{ color: "var(--color-star, #f59f00)", fontSize: "0.95rem" }} />
                 </div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
                   {item.trend > 0 ? (
-                    <span className="trend-up"><TrendingUp size={12} /> +{item.trend}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "2px", color: "#40c057" }}>
+                      <ArrowUpOutlined style={{ fontSize: "12px" }} /> {item.trend}
+                    </div>
                   ) : item.trend < 0 ? (
-                    <span className="trend-down"><TrendingDown size={12} /> {item.trend}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "2px", color: "#fa5252" }}>
+                      <ArrowDownOutlined style={{ fontSize: "12px" }} /> {Math.abs(item.trend)}
+                    </div>
                   ) : (
-                    <span className="trend-flat"><Minus size={12} /></span>
-                  )}
-                </div>
+                    <div style={{ color: "#adb5bd" }}>
+                      <MinusOutlined style={{ fontSize: "12px" }} />
+                    </div>
+                  )}</div>
               </div>
             </div>
           );

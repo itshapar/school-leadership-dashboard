@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="uk">
       <body>
-        <AntdProvider>{children}</AntdProvider>
+        {children}
       </body>
     </html>
   );

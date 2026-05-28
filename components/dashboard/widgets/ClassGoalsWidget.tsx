@@ -1,19 +1,10 @@
 "use client";
 
-import { Target } from "lucide-react";
+import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { StarFilled } from "@ant-design/icons";
 
 export default function ClassGoalsWidget({ classInfo, leaderboard }: any) {
-  if (!classInfo) {
-    return (
-      <div style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", color: "#868e96", textAlign: "center" }}>
-        <Target size={32} style={{ marginBottom: "12px" }} />
-        <div style={{ fontWeight: 800 }}>Оберіть клас</div>
-        <div style={{ fontSize: "0.85rem", marginTop: "4px" }}>Цілі розраховуються для конкретного класу</div>
-      </div>
-    );
-  }
-
   const totalStars = leaderboard.reduce((sum: number, s: any) => sum + s.totalStars, 0);
   
   const renderChart = (title: string, current: number, target: number, color: string) => {
@@ -25,16 +16,16 @@ export default function ClassGoalsWidget({ classInfo, leaderboard }: any) {
     
     return (
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <div style={{ fontWeight: 800, fontSize: "0.9rem", marginBottom: "8px" }}>{title}</div>
-        <div style={{ width: "100%", height: "120px", position: "relative" }}>
+        <div style={{ fontWeight: 800, fontSize: "0.95rem", marginBottom: "6px", color: "#000000" }}>{title}</div>
+        <div style={{ width: "100%", height: "110px", position: "relative" }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={35}
-                outerRadius={50}
+                innerRadius={30}
+                outerRadius={45}
                 startAngle={90}
                 endAngle={-270}
                 dataKey="value"
@@ -51,13 +42,14 @@ export default function ClassGoalsWidget({ classInfo, leaderboard }: any) {
             left: "50%", 
             transform: "translate(-50%, -50%)",
             fontWeight: 900,
-            fontSize: "1rem"
+            fontSize: "1rem",
+            color: "#000000"
           }}>
             {percent}%
           </div>
         </div>
-        <div style={{ fontSize: "0.75rem", color: "#868e96", fontWeight: 700, marginTop: "4px" }}>
-          {current} / {target} ⭐
+        <div style={{ fontSize: "0.8rem", color: "#495057", fontWeight: 800, marginTop: "4px", display: "flex", alignItems: "center", gap: "3px" }}>
+          {current} / {target} <StarFilled style={{ color: "var(--color-star, #f59f00)", fontSize: "0.85rem" }} />
         </div>
       </div>
     );
@@ -66,12 +58,33 @@ export default function ClassGoalsWidget({ classInfo, leaderboard }: any) {
   return (
     <>
       <div className="widget-title">
-        <Target size={20} color="#e8590c" />
         Епічні Цілі Класу
       </div>
-      <div style={{ display: "flex", justifyContent: "space-around", flex: 1, alignItems: "center" }}>
-        {renderChart("Game Day", totalStars, classInfo.game_day_threshold, "#40c057")}
-        {renderChart("Pizza Day", totalStars, classInfo.pizza_day_threshold, "#f59f00")}
+      
+      <div style={{ display: "flex", flex: 1, gap: "16px", minHeight: 0, width: "100%", alignItems: "center" }}>
+        {classInfo ? (
+          <div style={{ display: "flex", justifyContent: "space-around", width: "100%", padding: "0 20px" }}>
+            {renderChart("Game Day", totalStars, classInfo.game_day_threshold, "#40c057")}
+            {renderChart("Pizza Day", totalStars, classInfo.pizza_day_threshold, "#f59f00")}
+          </div>
+        ) : (
+          <div style={{
+            background: "#f8f9fa",
+            border: "2px dashed #ced4da",
+            borderRadius: "12px",
+            padding: "24px",
+            textAlign: "center",
+            color: "#868e96",
+            fontSize: "0.85rem",
+            fontWeight: 700,
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
+            Оберіть клас, щоб побачити прогрес цілей
+          </div>
+        )}
       </div>
     </>
   );

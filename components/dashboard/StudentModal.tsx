@@ -1,4 +1,4 @@
-import { X, Award, MapPin } from "lucide-react";
+import { CloseOutlined, TrophyOutlined } from "@ant-design/icons";
 import React, { useEffect } from "react";
 
 const REWARDS = [
@@ -46,7 +46,7 @@ export default function StudentModal({ student, onClose }: any) {
           background: "transparent", border: "none", cursor: "pointer",
           padding: "4px"
         }}>
-          <X size={24} />
+          <CloseOutlined style={{ fontSize: "24px" }} />
         </button>
 
         {/* Header */}
@@ -78,7 +78,7 @@ export default function StudentModal({ student, onClose }: any) {
           {/* Rewards Inventory */}
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 800, fontSize: "1.1rem", marginBottom: "12px" }}>
-              <Award size={20} color="#e03131" />
+              <TrophyOutlined style={{ fontSize: "20px", color: "#e03131" }} />
               Інвентар Нагород
             </div>
             

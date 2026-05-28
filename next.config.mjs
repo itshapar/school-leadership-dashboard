@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  optimizeFonts: false,
   transpilePackages: [
     "antd",
     "@ant-design/icons",
@@ -11,8 +12,8 @@ const nextConfig = {
   ],
   experimental: {
     serverComponentsExternalPackages: ["xlsx"],
+    optimizePackageImports: ["recharts"],
   },
 };
 
 export default nextConfig;
-

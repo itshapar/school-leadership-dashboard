@@ -8,12 +8,15 @@ import { buildClassCodeMap } from "@/lib/classCodes";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  console.log("[AdminPage] Rendering started, creating supabase client...");
   const supabase = await createSupabaseServerClient();
 
+  console.log("[AdminPage] Fetching classes...");
   const { data: classes } = await supabase
     .from("classes")
     .select("id, name, game_day_threshold, pizza_day_threshold")
     .order("name");
+  console.log(`[AdminPage] Fetched ${classes?.length || 0} classes`);
   const classList = classes ?? [];
   const codeMap = buildClassCodeMap(classList);
 
@@ -69,7 +72,7 @@ export default async function AdminPage() {
         style={{ 
           display: "block", 
           textDecoration: "none", 
-          marginBottom: "32px",
+          marginBottom: "16px",
           transition: "transform 0.2s"
         }}
       >
@@ -83,10 +86,37 @@ export default async function AdminPage() {
           alignItems: "center"
         }}>
           <div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Загальний дашборд</div>
-            <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>Всі учні, сортування та глобальний рейтинг</div>
+            <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Рейтинг усіх учнів</div>
+            <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>Всі учні, класична таблиця рейтингу</div>
           </div>
           <StarFilled style={{ fontSize: "2.5rem", color: "var(--color-star)" }} />
+        </div>
+      </Link>
+
+      <Link 
+        href="/dashboard"
+        className="total-dashboard-card"
+        style={{ 
+          display: "block", 
+          textDecoration: "none", 
+          marginBottom: "32px",
+          transition: "transform 0.2s"
+        }}
+      >
+        <div className="star-card" style={{ 
+          background: "linear-gradient(135deg, #f59f00 0%, #f08c00 100%)", 
+          color: "#000000",
+          border: "3px solid #000",
+          padding: "24px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <div>
+            <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Загальний дашборд</div>
+            <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>Розширена статистика, цілі та графіки</div>
+          </div>
+          <ReadOutlined style={{ fontSize: "2.5rem", color: "#000" }} />
         </div>
       </Link>
 

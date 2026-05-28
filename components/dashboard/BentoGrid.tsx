@@ -5,8 +5,6 @@ import LeaderboardWidget from "./widgets/LeaderboardWidget";
 import LootRoadWidget from "./widgets/LootRoadWidget";
 import ClassGoalsWidget from "./widgets/ClassGoalsWidget";
 import EfficiencyWidget from "./widgets/EfficiencyWidget";
-import KPIStatsWidget from "./widgets/KPIStatsWidget";
-import VelocityWidget from "./widgets/VelocityWidget";
 import StudentModal from "./StudentModal";
 
 export default function BentoGrid({ data, classId }: { data: any; classId: string | null }) {
@@ -28,29 +26,20 @@ export default function BentoGrid({ data, classId }: { data: any; classId: strin
           />
         </div>
         
-        <div className="bento-widget col-span-2 row-span-1">
+        <div className="bento-widget col-span-2 row-span-2">
+          <EfficiencyWidget leaderboard={data.leaderboard} />
+        </div>
+
+        {/* Row 2 */}
+        <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
           <LootRoadWidget 
             leaderboard={data.leaderboard} 
             classInfo={selectedClassInfo}
           />
         </div>
 
-        {/* Row 2 */}
-        <div className="bento-widget col-span-1 row-span-1" style={{ background: "#f8f9fa", borderColor: "#228be6" }}>
-          <KPIStatsWidget kpi={data.kpi} />
-        </div>
-        
-        <div className="bento-widget col-span-1 row-span-1" style={{ background: "#fff5f5", borderColor: "#fa5252" }}>
-          <VelocityWidget topStudent={data.topVelocity} />
-        </div>
-
-        {/* Row 3 */}
-        <div className="bento-widget col-span-2 row-span-1">
-          <EfficiencyWidget leaderboard={data.leaderboard} />
-        </div>
-
-        <div className="bento-widget col-span-2 row-span-1">
-          <ClassGoalsWidget classInfo={selectedClassInfo} leaderboard={data.leaderboard} />
+        <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
+          <ClassGoalsWidget classInfo={selectedClassInfo} leaderboard={data.leaderboard} kpi={data.kpi} />
         </div>
       </div>
 

@@ -25,9 +25,11 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  console.log(`[Middleware] Path: ${request.nextUrl.pathname} - Calling supabase.auth.getUser()...`);
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  console.log(`[Middleware] Path: ${request.nextUrl.pathname} - User: ${user ? user.email : 'null'}`);
 
   const isApiAdminRoute = request.nextUrl.pathname.startsWith("/api/admin");
   const isAdminRoute =
@@ -35,6 +37,7 @@ export async function middleware(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/admin/login");
 
   if ((isAdminRoute || isApiAdminRoute) && !user) {
+    console.log(`[Middleware] Redirecting to login: ${request.nextUrl.pathname}`);
     if (isApiAdminRoute) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -43,6 +46,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  console.log(`[Middleware] Request allowed: ${request.nextUrl.pathname}`);
   return supabaseResponse;
 }
 

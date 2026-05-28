@@ -1,11 +1,8 @@
-import { Rocket } from "lucide-react";
-
 export default function VelocityWidget({ topStudent }: any) {
   if (!topStudent || topStudent.starsLast30 === 0) {
     return (
       <>
         <div className="widget-title" style={{ marginBottom: "8px" }}>
-          <Rocket size={20} color="#e8590c" />
           Прорив Місяця
         </div>
         <div style={{ flex: 1, display: "flex", alignItems: "center", color: "#868e96" }}>
@@ -18,7 +15,6 @@ export default function VelocityWidget({ topStudent }: any) {
   return (
     <>
       <div className="widget-title" style={{ marginBottom: "8px" }}>
-        <Rocket size={20} color="#e8590c" />
         Прорив Місяця
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "16px" }}>
