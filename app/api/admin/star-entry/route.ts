@@ -4,10 +4,10 @@ import { z } from "zod";
 import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
 
 const StarEntrySchema = z.object({
-  student_id: z.string(),
-  lesson_id: z.string(),
-  class_id: z.string(),
-  amount: z.number(),
+  student_id: z.string().uuid(),
+  lesson_id: z.string().uuid(),
+  class_id: z.string().uuid(),
+  amount: z.number().int().min(-100).max(100),
 });
 
 export async function POST(request: Request) {
@@ -23,11 +23,8 @@ export async function POST(request: Request) {
       ...rawBody,
       amount: rawBody.amount !== undefined ? Number(rawBody.amount) : undefined
     });
-  } catch (err: any) {
-    console.error("Zod parse error:", err.errors || err);
-    return NextResponse.json({ 
-      error: `Помилка даних: ${err.errors ? JSON.stringify(err.errors) : "Invalid request data"}` 
-    }, { status: 400 });
+  } catch {
+    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
   }
 
   const { student_id, lesson_id, class_id, amount } = body;
@@ -47,10 +44,10 @@ export async function POST(request: Request) {
       .eq("student_id", student_id)
       .eq("lesson_id", lesson_id)
       .eq("type", "lesson");
-    
-    if (error) {
-      // Avoid leaking internal DB errors in production
-      return NextResponse.json({ error: "Database error during deletion" }, { status: 400 });
+
+    // PGRST116 = row not found — idempotent, treat as success
+    if (error && error.code !== "PGRST116") {
+      return NextResponse.json({ error: "Failed to delete entry" }, { status: 400 });
     }
     return NextResponse.json({ ok: true });
   }
@@ -68,9 +65,7 @@ export async function POST(request: Request) {
 
   if (error) {
     console.error("Supabase error (upsert):", error);
-    return NextResponse.json({ 
-      error: `Помилка бази даних: ${error.message} (код: ${error.code})` 
-    }, { status: 400 });
+    return NextResponse.json({ error: "Failed to save star entry" }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });

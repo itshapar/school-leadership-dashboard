@@ -172,7 +172,7 @@ export default async function ClassPage({ params }: Props) {
           return (
             <Link
               key={student.id}
-              href={`/class/${classParam}/student/${student.id}`}
+              href={`/class/${resolvedClassId}/student/${student.id}`}
               style={{ textDecoration: "none" }}
             >
               <div className="leaderboard-row">

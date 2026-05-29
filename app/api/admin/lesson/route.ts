@@ -5,8 +5,8 @@ import { z } from "zod";
 import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
 
 const PostLessonSchema = z.object({
-  class_id: z.string(),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  class_id: z.string().uuid(),
+  date: z.string().date(),
 });
 
 const DeleteLessonSchema = z.object({
@@ -22,11 +22,8 @@ export async function POST(request: Request) {
   let body;
   try {
     body = PostLessonSchema.parse(await request.json());
-  } catch (err: any) {
-    console.error("Zod parse error:", err.errors || err);
-    return NextResponse.json({ 
-      error: `Помилка даних: ${err.errors ? JSON.stringify(err.errors) : "Invalid request data"}` 
-    }, { status: 400 });
+  } catch {
+    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
   }
 
   const { class_id, date } = body;
@@ -56,7 +53,7 @@ export async function POST(request: Request) {
 
   if (error) {
     console.error("Supabase error (lesson insert):", error);
-    return NextResponse.json({ error: `Помилка бази даних: ${error.message} (код: ${error.code})` }, { status: 400 });
+    return NextResponse.json({ error: "Failed to create lesson" }, { status: 400 });
   }
 
   return NextResponse.json({ lesson: newLesson });
@@ -80,13 +77,13 @@ export async function DELETE(request: Request) {
   const { error: entriesError } = await supabaseForRls.from("star_entries").delete().eq("lesson_id", id);
   if (entriesError) {
     console.error("Supabase error (entries delete):", entriesError);
-    return NextResponse.json({ error: `Помилка бази даних (зірки): ${entriesError.message} (код: ${entriesError.code})` }, { status: 400 });
+    return NextResponse.json({ error: "Failed to delete lesson entries" }, { status: 400 });
   }
 
   const { error: lessonError } = await supabaseForRls.from("lessons").delete().eq("id", id);
   if (lessonError) {
     console.error("Supabase error (lesson delete):", lessonError);
-    return NextResponse.json({ error: `Помилка бази даних (урок): ${lessonError.message} (код: ${lessonError.code})` }, { status: 400 });
+    return NextResponse.json({ error: "Failed to delete lesson" }, { status: 400 });
   }
 
   return NextResponse.json({ success: true });

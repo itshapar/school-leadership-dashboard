@@ -43,7 +43,7 @@ export async function PATCH(request: Request) {
 
   if (error) {
     console.error("Supabase error (student update):", error);
-    return NextResponse.json({ error: `Помилка бази даних: ${error.message} (код: ${error.code})` }, { status: 400 });
+    return NextResponse.json({ error: "Failed to update student" }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 
   if (error) {
     console.error("Supabase error (student insert):", error);
-    return NextResponse.json({ error: `Помилка бази даних: ${error.message} (код: ${error.code})` }, { status: 400 });
+    return NextResponse.json({ error: "Failed to create student" }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true, student: data });
@@ -106,7 +106,7 @@ export async function DELETE(request: Request) {
 
   if (error) {
     console.error("Supabase error (student delete):", error);
-    return NextResponse.json({ error: `Помилка бази даних: ${error.message} (код: ${error.code})` }, { status: 400 });
+    return NextResponse.json({ error: "Failed to delete student" }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });

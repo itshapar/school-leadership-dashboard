@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const { error } = await supabaseForRls.from("prizes_given").insert({ student_id, prize_id });
     if (error) {
       console.error("Supabase error (prize insert):", error);
-      return NextResponse.json({ error: `Помилка бази даних (приз): ${error.message} (код: ${error.code})` }, { status: 400 });
+      return NextResponse.json({ error: "Failed to record prize" }, { status: 400 });
     }
   } else {
     const { error } = await supabaseForRls
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       .eq("prize_id", prize_id);
     if (error) {
       console.error("Supabase error (prize delete):", error);
-      return NextResponse.json({ error: `Помилка бази даних (приз видалення): ${error.message} (код: ${error.code})` }, { status: 400 });
+      return NextResponse.json({ error: "Failed to remove prize" }, { status: 400 });
     }
   }
 
