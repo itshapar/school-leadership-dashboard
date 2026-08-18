@@ -1,0 +1,168 @@
+erDiagram
+    %% ===== НОВІ таблиці позначені (new), змінені — (upd) =====
+
+    schools {
+        uuid id PK "new"
+        uuid teacher_id FK "auth.users; NOT NULL"
+        text name
+        int sort_order
+        timestamptz deleted_at "soft delete"
+        timestamptz created_at
+    }
+
+    parallels {
+        uuid id PK "new"
+        uuid teacher_id FK "NOT NULL"
+        uuid school_id FK "NULL; композитний FK (school_id, teacher_id)"
+        text name
+        int sort_order
+        timestamptz deleted_at
+        timestamptz created_at
+    }
+
+    classes {
+        uuid id PK "(upd)"
+        uuid teacher_id FK "стає NOT NULL"
+        uuid school_id FK "NULL; (school_id, teacher_id) -> schools"
+        uuid parallel_id FK "NULL; (parallel_id, teacher_id) -> parallels"
+        text name
+        text public_code "10 симв., unique"
+        text legacy_code "NULL, unique"
+        int lessons_per_week
+        timestamptz archived_at "new: read-only клас"
+        timestamptz deleted_at "new: soft delete"
+        int game_day_threshold "DEPRECATED -> class_prizes"
+        int pizza_day_threshold "DEPRECATED -> class_prizes"
+    }
+
+    class_groups {
+        uuid id PK "new"
+        uuid class_id FK "NOT NULL; unique(id, class_id)"
+        text name
+        int sort_order
+        timestamptz deleted_at
+    }
+
+    students {
+        uuid id PK "(upd)"
+        uuid class_id FK "NOT NULL"
+        uuid group_id FK "new: NULL; (group_id, class_id) -> class_groups"
+        text full_name "NOT NULL (Р9); ніколи не в публічних RPC"
+        text nickname "NULL; публічне ім'я з fallback"
+        text avatar_emoji
+        text pin_hash "new: bcrypt via extensions.crypt; NULL"
+        timestamptz pin_set_at "new"
+        int pin_generation "new: інвалідація сесій Етапу 4"
+        timestamptz deleted_at "new"
+    }
+
+    entry_types {
+        uuid id PK "new: типи нарахувань класу"
+        uuid class_id FK "NOT NULL"
+        text name "unique(class_id, name) де не deleted"
+        smallint sign "+1 / -1 (default-знак для UI)"
+        int default_amount "> 0"
+        bool is_lesson_bound
+        text icon
+        text color
+        int sort_order
+        timestamptz deleted_at
+    }
+
+    lessons {
+        uuid id PK
+        uuid class_id FK
+        date date
+    }
+
+    star_entries {
+        uuid id PK "(upd)"
+        uuid class_id FK "NOT NULL"
+        uuid student_id FK "NOT NULL (fan-out)"
+        uuid lesson_id FK "NULL"
+        uuid entry_type_id FK "new -> entry_types; NOT NULL після backfill"
+        star_type type "DEPRECATED enum; drop у cleanup"
+        int amount "<> 0; знак НЕ обмежується типом"
+        text note
+        text scope "new: student | group | class"
+        uuid group_id FK "new: NULL, провенанс групового нарахування"
+        uuid batch_id "new: групування масових операцій"
+        timestamptz created_at
+    }
+
+    prizes_individual {
+        uuid id PK "(upd)"
+        uuid class_id FK
+        text name
+        int stars_required
+        text emoji
+        int sort_order
+        timestamptz deleted_at "new"
+    }
+
+    prizes_given {
+        uuid id PK
+        uuid student_id FK
+        uuid prize_id FK
+        timestamptz given_at
+    }
+
+    class_prizes {
+        uuid id PK "new: класові призи (game day, pizza day...)"
+        uuid class_id FK "NOT NULL"
+        text name
+        text emoji
+        int threshold "поріг сумарних зірок класу"
+        int sort_order
+        timestamptz deleted_at
+    }
+
+    class_prizes_given {
+        uuid id PK "(upd)"
+        uuid class_id FK
+        uuid class_prize_id FK "new -> class_prizes"
+        class_prize_type prize_type "DEPRECATED enum; drop у cleanup"
+        timestamptz given_at
+    }
+
+    config_templates {
+        uuid id PK "new: шаблони конфігурації класу"
+        uuid teacher_id FK "NULL для системного шаблона"
+        bool is_system "true = шаблон за замовчуванням"
+        text name
+        jsonb payload "entry_types[] + individual_prizes[] + class_prizes[]"
+        timestamptz created_at
+    }
+
+    audit_log {
+        bigint id PK "new: append-only"
+        uuid actor "auth.uid() на момент дії"
+        uuid teacher_id "власник даних"
+        uuid class_id
+        text table_name "мінімум: star_entries"
+        uuid row_id
+        text action "INSERT | UPDATE | DELETE"
+        jsonb old_data
+        jsonb new_data
+        timestamptz at
+    }
+
+    schools ||--o{ parallels : "опц. папка"
+    schools ||--o{ classes : "опц."
+    parallels ||--o{ classes : "опц."
+    classes ||--o{ class_groups : "опц. групи"
+    classes ||--o{ students : ""
+    class_groups |o--o{ students : "учень <= 1 групи свого класу"
+    classes ||--o{ lessons : ""
+    classes ||--o{ entry_types : "конфіг на рівні класу"
+    classes ||--o{ star_entries : ""
+    students ||--o{ star_entries : "fan-out: 1 рядок = 1 учень"
+    lessons |o--o{ star_entries : ""
+    entry_types ||--o{ star_entries : "замість enum type"
+    classes ||--o{ prizes_individual : ""
+    students ||--o{ prizes_given : ""
+    prizes_individual ||--o{ prizes_given : ""
+    classes ||--o{ class_prizes : ""
+    classes ||--o{ class_prizes_given : ""
+    class_prizes ||--o{ class_prizes_given : ""
+    classes ||--o{ audit_log : "SECURITY DEFINER тригер"
