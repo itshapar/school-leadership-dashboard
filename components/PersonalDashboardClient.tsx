@@ -25,8 +25,8 @@ interface HistoryEntry {
 interface Props {
   student: {
     id: string;
-    full_name: string;
-    nickname: string | null;
+    /** Публічне ім'я: nickname, або ім'я з ПІБ. full_name сюди не потрапляє. */
+    display_name: string;
     avatar_emoji: string;
   };
   totalStars: number;
@@ -75,7 +75,7 @@ export default function PersonalDashboardClient({
     return () => clearInterval(timer);
   }, [totalStars]);
 
-  const displayName = student.nickname || student.full_name.split(" ")[0];
+  const displayName = student.display_name;
 
   function rankMedal(r: number) {
     if (r === 1) return "🥇";
@@ -100,11 +100,6 @@ export default function PersonalDashboardClient({
           {student.avatar_emoji}
         </div>
         <h2 style={{ margin: "0 0 8px", fontSize: "2.2rem", fontWeight: 900 }}>{displayName}</h2>
-        {student.nickname && (
-          <div style={{ color: "var(--color-text-muted)", fontSize: "1rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px" }}>
-            {student.full_name}
-          </div>
-        )}
 
         {/* Stars & Rank row */}
         <div

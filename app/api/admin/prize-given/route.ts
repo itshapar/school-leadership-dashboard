@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
-import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
+import { assertClassOwnership } from "@/lib/admin/classOwnership";
 
 const PrizeGivenSchema = z.object({
   student_id: z.string(),
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     .single();
 
   if (student?.class_id) {
-    const claim = await claimClassIfUnassigned(supabaseForRls, student.class_id, user.id);
+    const claim = await assertClassOwnership(supabaseForRls, student.class_id, user.id);
     // We don't block if claim fails here, RLS will handle the final decision
   }
 

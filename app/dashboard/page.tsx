@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getDashboardData } from "@/lib/analytics";
 import BentoGrid from "@/components/dashboard/BentoGrid";
@@ -5,9 +6,18 @@ import Link from "next/link";
 import { ArrowLeftOutlined, StarFilled } from "@ant-design/icons";
 import "./dashboard.css";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage({ searchParams }: { searchParams: { classId?: string } }) {
   const classId = searchParams.classId || null;
   const supabase = await createSupabaseServerClient();
+
+  // Другий бар'єр поряд із middleware: middleware можна обійти конфігом
+  // matcher-а, серверний guard — ні.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/admin/login");
 
   const data = await getDashboardData(supabase, classId);
 

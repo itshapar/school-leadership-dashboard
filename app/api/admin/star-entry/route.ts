@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
-import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
+import { assertClassOwnership } from "@/lib/admin/classOwnership";
 
 const StarEntrySchema = z.object({
   student_id: z.string().uuid(),
@@ -29,8 +29,8 @@ export async function POST(request: Request) {
 
   const { student_id, lesson_id, class_id, amount } = body;
 
-  // Auto-claim class if unassigned
-  const claim = await claimClassIfUnassigned(supabaseForRls, class_id, user.id);
+  // Клас має належати цьому вчителю (без винятку для teacher_id IS NULL)
+  const claim = await assertClassOwnership(supabaseForRls, class_id, user.id);
   if (!claim.success) {
     return NextResponse.json({ error: claim.error || "Permission denied" }, { status: 403 });
   }

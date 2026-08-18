@@ -4,7 +4,7 @@ import Link from "next/link";
 import ManagementTable from "@/components/Admin/ManagementTable";
 import AdminClassToolbar from "@/components/Admin/AdminClassToolbar";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { resolveClassIdByCode } from "@/lib/classCodes";
+import { resolveOwnedClass } from "@/lib/admin/resolveClass";
 import { loadManagementJournalData } from "@/lib/admin/managementJournalData";
 
 export const dynamic = "force-dynamic";
@@ -16,20 +16,10 @@ interface Props {
 export default async function AdminClassPage({ params }: Props) {
   const { classId: classParam } = await params;
   const supabase = await createSupabaseServerClient();
-  const isUuidLike = /^[0-9a-f-]{36}$/i.test(classParam);
-  let resolvedClassId = classParam;
 
-  if (!isUuidLike) {
-    const { data: allClasses } = await supabase.from("classes").select("id");
-    const byCode = resolveClassIdByCode(allClasses ?? [], classParam);
-    if (!byCode) return notFound();
-    resolvedClassId = byCode;
-  }
-
-  const { data: cls } = await supabase.from("classes").select("id, name").eq("id", resolvedClassId).maybeSingle();
-
+  const cls = await resolveOwnedClass(supabase, classParam);
   if (!cls) return notFound();
-  const classId = resolvedClassId;
+  const classId = cls.id;
 
   const { data: students } = await supabase
     .from("students")

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
-import { claimClassIfUnassigned } from "@/lib/admin/autoClaim";
+import { assertClassOwnership } from "@/lib/admin/classOwnership";
 
 // Column structure per the spec:
 // col 0: full_name
@@ -65,8 +65,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid file type. Please upload an Excel or CSV file." }, { status: 400 });
   }
 
-  // Auto-claim class if unassigned
-  const claim = await claimClassIfUnassigned(supabaseForRls, classId, user.id);
+  // Клас має належати цьому вчителю (без винятку для teacher_id IS NULL)
+  const claim = await assertClassOwnership(supabaseForRls, classId, user.id);
   if (!claim.success) {
     return NextResponse.json({ error: claim.error || "Permission denied" }, { status: 403 });
   }

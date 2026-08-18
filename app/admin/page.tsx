@@ -3,22 +3,18 @@ import Link from "next/link";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
 import { UserOutlined, ReadOutlined, StarFilled } from "@ant-design/icons";
 import { Progress } from "antd";
-import { buildClassCodeMap } from "@/lib/classCodes";
+import { formatClassCode } from "@/lib/classCodes";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  console.log("[AdminPage] Rendering started, creating supabase client...");
   const supabase = await createSupabaseServerClient();
 
-  console.log("[AdminPage] Fetching classes...");
   const { data: classes } = await supabase
     .from("classes")
-    .select("id, name, game_day_threshold, pizza_day_threshold")
+    .select("id, name, public_code, game_day_threshold, pizza_day_threshold")
     .order("name");
-  console.log(`[AdminPage] Fetched ${classes?.length || 0} classes`);
   const classList = classes ?? [];
-  const codeMap = buildClassCodeMap(classList);
 
   // Per-class star totals
   const classData = await Promise.all(
@@ -143,17 +139,29 @@ export default async function AdminPage() {
                       {cls.totalStars} <StarFilled style={{ fontSize: "0.9rem" }} />
                     </span>
                   </div>
+
+                  <div
+                    style={{
+                      marginTop: "6px",
+                      fontSize: "0.8rem",
+                      fontWeight: 800,
+                      letterSpacing: "1px",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
+                    Код для учнів: {formatClassCode(cls.public_code)}
+                  </div>
                 </div>
 
                 <div className="admin-btn-group">
                   <Link
-                    href={`/admin/${codeMap[cls.id]}`}
+                    href={`/admin/${cls.public_code}`}
                     className="admin-action-btn admin-btn-black"
                   >
                     Журнал
                   </Link>
                   <Link
-                    href={`/class/${codeMap[cls.id]}`}
+                    href={`/class/${cls.public_code}`}
                     target="_blank"
                     className="admin-action-btn admin-btn-white"
                   >

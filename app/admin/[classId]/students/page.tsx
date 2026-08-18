@@ -1,6 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-import { resolveClassIdByCode } from "@/lib/classCodes";
+import { resolveOwnedClass } from "@/lib/admin/resolveClass";
 import StudentManager from "@/components/Admin/StudentManager";
 
 interface Props {
@@ -11,14 +11,9 @@ export default async function AdminStudentsPage({ params }: Props) {
   const { classId: classParam } = await params;
   const supabase = await createSupabaseServerClient();
 
-  const isUuidLike = /^[0-9a-f-]{36}$/i.test(classParam);
-  let resolvedClassId = classParam;
-  if (!isUuidLike) {
-    const { data: allClasses } = await supabase.from("classes").select("id");
-    const byCode = resolveClassIdByCode(allClasses ?? [], classParam);
-    if (!byCode) return notFound();
-    resolvedClassId = byCode;
-  }
+  const cls = await resolveOwnedClass(supabase, classParam);
+  if (!cls) return notFound();
+  const resolvedClassId = cls.id;
 
   const { data: students } = await supabase
     .from("students")

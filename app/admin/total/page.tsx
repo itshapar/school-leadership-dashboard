@@ -1,6 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import TotalDashboardClient from "@/components/Admin/TotalDashboardClient";
-import { buildClassCodeMap } from "@/lib/classCodes";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +12,7 @@ export default async function TotalDashboardPage() {
     { data: classes, error: clError }
   ] = await Promise.all([
     supabase.from("students").select("id, full_name, avatar_emoji, class_id"),
-    supabase.from("classes").select("id, name")
+    supabase.from("classes").select("id, name, public_code")
   ]);
 
   if (stError || clError) {
@@ -55,7 +54,10 @@ export default async function TotalDashboardPage() {
     classMap[c.id] = c.name;
   });
 
-  const codeMap = buildClassCodeMap(classes ?? []);
+  const codeMap: Record<string, string> = {};
+  (classes ?? []).forEach((c) => {
+    codeMap[c.id] = c.public_code;
+  });
 
   // Aggregate star totals
   const starTotals: Record<string, number> = {};

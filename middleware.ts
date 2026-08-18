@@ -25,32 +25,34 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  console.log(`[Middleware] Path: ${request.nextUrl.pathname} - Calling supabase.auth.getUser()...`);
+  // Жодного логування email/uid: логи Vercel зберігаються й доступні ширшому
+  // колу, ніж самі дані. Раніше сюди на кожен запит писався email користувача.
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  console.log(`[Middleware] Path: ${request.nextUrl.pathname} - User: ${user ? user.email : 'null'}`);
 
-  const isApiAdminRoute = request.nextUrl.pathname.startsWith("/api/admin");
+  const { pathname } = request.nextUrl;
+
+  const isApiAdminRoute = pathname.startsWith("/api/admin");
   const isAdminRoute =
-    request.nextUrl.pathname.startsWith("/admin") &&
-    !request.nextUrl.pathname.startsWith("/admin/login");
+    pathname.startsWith("/admin") && !pathname.startsWith("/admin/login");
+  // /dashboard — повна аналітика по всіх класах; була доступна без логіну.
+  const isDashboardRoute = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 
-  if ((isAdminRoute || isApiAdminRoute) && !user) {
-    console.log(`[Middleware] Redirecting to login: ${request.nextUrl.pathname}`);
+  if ((isAdminRoute || isApiAdminRoute || isDashboardRoute) && !user) {
     if (isApiAdminRoute) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 
-  console.log(`[Middleware] Request allowed: ${request.nextUrl.pathname}`);
   return supabaseResponse;
 }
 
 export const config = {
   // /api/admin — щоб оновлювати сесію Supabase на кожному запиті до API (без редіректу: шлях не під /admin)
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/admin/:path*", "/dashboard/:path*"],
 };
