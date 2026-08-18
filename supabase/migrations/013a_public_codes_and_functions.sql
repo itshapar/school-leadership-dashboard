@@ -13,7 +13,7 @@
 
 BEGIN;
 
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 
 -- ---------------------------------------------------------------------------
 -- 1. Коди класів
@@ -47,7 +47,9 @@ RETURNS TEXT
 LANGUAGE plpgsql
 VOLATILE
 SECURITY DEFINER
-SET search_path = public, pg_temp
+-- extensions у search_path: у Supabase pgcrypto (gen_random_bytes) встановлений
+-- саме там, а не в public
+SET search_path = public, extensions, pg_temp
 AS $$
 DECLARE
   alphabet CONSTANT TEXT := 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';  -- 31 символ
