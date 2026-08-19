@@ -166,6 +166,36 @@ export default async function ClassPage({ params }: Props) {
         </div>
       )}
 
+      {/* Мій дашборд: вхід за PIN один раз → довгоживуча сесія (Етап 4) */}
+      <Link
+        href={`/class/${overview.public_code}/me`}
+        style={{ textDecoration: "none" }}
+      >
+        <div
+          className="star-card"
+          style={{
+            marginBottom: "16px",
+            padding: "20px 24px",
+            background: "linear-gradient(135deg, #f5a623, #e8940f)",
+            border: "3px solid #000000",
+            boxShadow: "4px 4px 0px #000000",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: "1.3rem", fontWeight: 900, color: "#000000" }}>
+              Мій дашборд
+            </div>
+            <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#000000", opacity: 0.75 }}>
+              Увійди зі своїм PIN — один раз
+            </div>
+          </div>
+          <div style={{ fontSize: "2rem" }}>🔑</div>
+        </div>
+      </Link>
+
       {/* Student List (за публічним іменем, без ПІБ) */}
       <div className="star-card" style={{ padding: "24px 16px" }}>
         {students.map((student) => (

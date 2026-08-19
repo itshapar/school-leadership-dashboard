@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Form, Input, Button, Alert, Card } from "antd";
+import { Form, Input, Button, Alert, Card, Divider } from "antd";
+import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
@@ -97,6 +99,22 @@ export default function AdminLoginPage() {
               Увійти
             </Button>
           </Form>
+
+          <Divider plain style={{ margin: "16px 0" }}>
+            або
+          </Divider>
+          <GoogleSignInButton label="Увійти через Google" />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: "16px",
+            }}
+          >
+            <Link href="/register">Зареєструватися</Link>
+            <Link href="/forgot-password">Забули пароль?</Link>
+          </div>
         </div>
       </div>
     </div>

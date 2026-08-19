@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import PersonalDashboardClient from "@/components/PersonalDashboardClient";
 import { ArrowLeftOutlined } from "@ant-design/icons";
@@ -15,8 +15,10 @@ export default async function StudentDashboardPage({ params }: Props) {
 
   // RPC сама перевіряє, що учень належить саме цьому класу, і повертає NULL
   // і для неіснуючого коду, і для чужого student_id — без різниці назовні.
+  // Після міграції 024 (Фаза B Етапу 4) anon втрачає цю RPC взагалі —
+  // тоді старі посилання м'яко ведуть на вхід за PIN (/me).
   const data = await getPublicStudentDashboard(classParam, studentId);
-  if (!data) return notFound();
+  if (!data) redirect(`/class/${classParam}/me`);
 
   if (data.public_code.toUpperCase() !== classParam.toUpperCase().replace(/[^A-Z0-9]/g, "")) {
     redirect(`/class/${data.public_code}/student/${studentId}`);
