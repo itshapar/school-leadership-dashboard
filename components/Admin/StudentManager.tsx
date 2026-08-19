@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import Link from "next/link";
+import { ResetPinButton, ResetClassPinsButton } from "@/components/Admin/PinManager";
 
 interface Student {
   id: string;
@@ -18,9 +19,13 @@ interface Student {
 export default function StudentManager({
   classId,
   initialStudents,
+  publicCode = "",
+  className = "",
 }: {
   classId: string;
   initialStudents: Student[];
+  publicCode?: string;
+  className?: string;
 }) {
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -120,6 +125,15 @@ export default function StudentManager({
       render: (nick: string) => nick || <span style={{ color: "#adb5bd" }}>—</span>,
     },
     {
+      title: "PIN",
+      key: "pin",
+      width: 70,
+      align: "center" as const,
+      render: (_value: unknown, record: Student) => (
+        <ResetPinButton student={record} />
+      ),
+    },
+    {
       title: "Дії",
       key: "actions",
       width: 150,
@@ -172,23 +186,31 @@ export default function StudentManager({
           <h1 style={{ margin: 0, fontWeight: 900, fontSize: "1.8rem", textTransform: "uppercase" }}>Список учнів</h1>
         </Space>
         
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
-          onClick={handleAdd}
-          size="middle"
-          style={{ 
-            background: "#000", 
-            borderColor: "#000", 
-            fontWeight: 800,
-            borderRadius: "10px",
-            height: "38px",
-            fontSize: "0.85rem",
-            boxShadow: "2px 2px 0px rgba(0,0,0,0.2)"
-          }}
-        >
-          ДОДАТИ УЧНЯ
-        </Button>
+        <Space>
+          <ResetClassPinsButton
+            classId={classId}
+            publicCode={publicCode}
+            className={className}
+            students={students}
+          />
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+            size="middle"
+            style={{
+              background: "#000",
+              borderColor: "#000",
+              fontWeight: 800,
+              borderRadius: "10px",
+              height: "38px",
+              fontSize: "0.85rem",
+              boxShadow: "2px 2px 0px rgba(0,0,0,0.2)"
+            }}
+          >
+            ДОДАТИ УЧНЯ
+          </Button>
+        </Space>
       </div>
 
       <div style={{ 

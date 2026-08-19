@@ -10,6 +10,13 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   const supabase = await createSupabaseServerClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isPlatformAdmin =
+    (user?.app_metadata as Record<string, unknown> | undefined)?.platform_role ===
+    "admin";
+
   const { data: classes } = await supabase
     .from("classes")
     .select("id, name, public_code, game_day_threshold, pizza_day_threshold")
@@ -60,6 +67,16 @@ export default async function AdminPage() {
         <h1 style={{ margin: 0, fontSize: "2.2rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "-1px" }}>
           Адмін-панель
         </h1>
+        <div style={{ marginTop: "8px", display: "flex", gap: "16px", justifyContent: "center", fontSize: "0.9rem", fontWeight: 700 }}>
+          <Link href="/admin/profile" style={{ color: "inherit" }}>
+            <UserOutlined /> Профіль
+          </Link>
+          {isPlatformAdmin && (
+            <Link href="/admin/platform" style={{ color: "inherit" }}>
+              <ReadOutlined /> Платформа
+            </Link>
+          )}
+        </div>
       </div>
 
       <Link 

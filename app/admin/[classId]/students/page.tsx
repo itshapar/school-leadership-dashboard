@@ -23,9 +23,11 @@ export default async function AdminStudentsPage({ params }: Props) {
 
   return (
     <div style={{ background: "#f8f9fa", minHeight: "100vh" }}>
-      <StudentManager 
-        classId={resolvedClassId} 
-        initialStudents={students ?? []} 
+      <StudentManager
+        classId={resolvedClassId}
+        initialStudents={students ?? []}
+        publicCode={cls.public_code}
+        className={cls.name}
       />
     </div>
   );

@@ -1,0 +1,98 @@
+import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import PersonalDashboardClient from "@/components/PersonalDashboardClient";
+import StudentPinLogin from "@/components/StudentPinLogin";
+import StudentLogoutButton from "@/components/StudentLogoutButton";
+import { getPublicClassOverview } from "@/lib/public/classData";
+import { getStudentDashboardFromSession } from "@/lib/studentSession";
+
+export const dynamic = "force-dynamic";
+
+interface Props {
+  params: Promise<{ classId: string }>;
+}
+
+/**
+ * «Мій дашборд» учня (Етап 4): вхід «код класу + PIN» один раз →
+ * довгоживуча сесія на пристрої. Без валідної сесії — форма PIN.
+ *
+ * У URL немає student_id: кого показувати, вирішує сесія (httpOnly-cookie),
+ * тому підмінити чужий id неможливо. Це закриває залишковий ризик Етапу 1
+ * («однокласник бачить чужу сторінку»), як тільки застосується міграція 024.
+ */
+export default async function MyDashboardPage({ params }: Props) {
+  const { classId: classParam } = await params;
+
+  const overview = await getPublicClassOverview(classParam);
+  if (!overview) return notFound();
+  if (overview.requested_legacy) {
+    redirect(`/class/${overview.public_code}/me`);
+  }
+
+  const data = await getStudentDashboardFromSession();
+
+  if (!data) {
+    return (
+      <div className="page-container">
+        <StudentPinLogin code={overview.public_code} className={overview.name} />
+      </div>
+    );
+  }
+
+  // Сесія іншого класу (напр., брат/сестра на тому ж телефоні) —
+  // ведемо учня на дашборд ЙОГО класу.
+  if (data.public_code !== overview.public_code) {
+    redirect(`/class/${data.public_code}/me`);
+  }
+
+  const givenPrizes: Record<string, boolean> = {};
+  for (const prizeId of data.given_prize_ids ?? []) {
+    givenPrizes[prizeId] = true;
+  }
+
+  return (
+    <div className="page-container">
+      <div
+        style={{
+          marginBottom: "8px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Link
+          href={`/class/${data.public_code}`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "44px",
+            height: "44px",
+            borderRadius: "10px",
+            color: "#ffffff",
+            fontSize: "1.2rem",
+            textDecoration: "none",
+            background: "#000000",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          }}
+        >
+          <ArrowLeftOutlined />
+        </Link>
+        <StudentLogoutButton />
+      </div>
+
+      <PersonalDashboardClient
+        student={data.student}
+        totalStars={data.total_stars}
+        individualStars={data.total_stars}
+        rank={data.rank}
+        totalStudents={data.total_students}
+        prizes={data.prizes ?? []}
+        givenPrizes={givenPrizes}
+        history={data.history ?? []}
+        classId={data.class_id}
+      />
+    </div>
+  );
+}
