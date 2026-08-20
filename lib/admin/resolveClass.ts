@@ -15,13 +15,13 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export async function resolveOwnedClass(
   supabase: SupabaseClient,
   param: string
-): Promise<{ id: string; name: string; public_code: string } | null> {
-  const query = supabase.from("classes").select("id, name, public_code");
+): Promise<{ id: string; name: string; public_code: string; archived_at: string | null } | null> {
+  const query = supabase.from("classes").select("id, name, public_code, archived_at");
 
   const { data, error } = UUID_RE.test(param)
     ? await query.eq("id", param).maybeSingle()
     : await query.eq("public_code", normalizeClassCode(param)).maybeSingle();
 
   if (error || !data) return null;
-  return data as { id: string; name: string; public_code: string };
+  return data as { id: string; name: string; public_code: string; archived_at: string | null };
 }

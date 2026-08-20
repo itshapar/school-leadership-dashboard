@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Table, Input, Select, Tag } from "antd";
+import { Table, Input, Tag } from "antd";
 import { StarFilled, SearchOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import type { Parallel } from "@/lib/admin/parallels";
@@ -18,6 +18,20 @@ interface StudentData {
 
 const ALL = "__all__";
 
+function chipStyle(active: boolean): React.CSSProperties {
+  return {
+    padding: "8px 16px",
+    borderRadius: "20px",
+    background: active ? "#000" : "#ffffff",
+    color: active ? "#fff" : "#495057",
+    fontWeight: 700,
+    fontSize: "0.9rem",
+    border: active ? "2px solid #000" : "2px solid #dee2e6",
+    boxShadow: active ? "2px 2px 0px var(--color-star, #f59f00)" : "none",
+    cursor: "pointer",
+  };
+}
+
 export default function TotalDashboardClient({
   initialData,
   parallels,
@@ -26,11 +40,17 @@ export default function TotalDashboardClient({
   parallels: Parallel[];
 }) {
   const [searchText, setSearchText] = useState("");
+  // Паралель — назва "1".."12" (Етап 9), сортуємо числово: інакше "10" йде
+  // перед "2" за звичайним рядковим порядком з БД.
+  const sortedParallels = useMemo(
+    () => [...parallels].sort((a, b) => Number(a.name) - Number(b.name)),
+    [parallels]
+  );
   // За замовчуванням — перша паралель, якщо вона є: рейтинг усіх класів
   // разом рідко має сенс (див. фідбек продукту), паралель ближче до
   // реального питання «як мій 7 клас проти інших 7-х».
   const [parallelFilter, setParallelFilter] = useState<string>(
-    parallels[0]?.id ?? ALL
+    sortedParallels[0]?.id ?? ALL
   );
 
   const scoped = useMemo(
@@ -126,11 +146,33 @@ export default function TotalDashboardClient({
 
   return (
     <div className="page-container" style={{ maxWidth: "900px" }}>
-      <div style={{ 
-        display: "flex", 
-        alignItems: "center", 
-        gap: "20px", 
-        marginBottom: "32px" 
+      {sortedParallels.length > 0 && (
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
+          <button
+            type="button"
+            onClick={() => setParallelFilter(ALL)}
+            style={chipStyle(parallelFilter === ALL)}
+          >
+            Усі паралелі
+          </button>
+          {sortedParallels.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setParallelFilter(p.id)}
+              style={chipStyle(parallelFilter === p.id)}
+            >
+              {p.name} клас
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "20px",
+        marginBottom: "32px"
       }}>
         <Link
           href="/admin"
@@ -149,22 +191,11 @@ export default function TotalDashboardClient({
           <ArrowLeftOutlined />
         </Link>
         <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 900, textTransform: "uppercase" }}>
-          Загальний дашборд
+          Рейтинг усіх учнів
         </h1>
       </div>
 
       <div style={{ marginBottom: "24px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
-        {parallels.length > 0 && (
-          <Select
-            value={parallelFilter}
-            onChange={setParallelFilter}
-            style={{ height: "50px", minWidth: "160px" }}
-            options={[
-              { value: ALL, label: "Усі паралелі" },
-              ...parallels.map((p) => ({ value: p.id, label: p.name })),
-            ]}
-          />
-        )}
         <Input
           prefix={<SearchOutlined style={{ color: "#adb5bd" }} />}
           placeholder="Пошук учня або класу..."

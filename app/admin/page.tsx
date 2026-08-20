@@ -17,13 +17,6 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   const supabase = await createSupabaseServerClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const isPlatformAdmin =
-    (user?.app_metadata as Record<string, unknown> | undefined)?.platform_role ===
-    "admin";
-
   // Акцепт Умов: guard для Google OAuth і для наявних акаунтів, які
   // реєструвалися до появи чекбоксів (Етап 5, п. 9).
   const termsAccepted = await hasAcceptedCurrentTerms(supabase);
@@ -32,6 +25,10 @@ export default async function AdminPage() {
     supabase
       .from("classes")
       .select("id, name, public_code, parallel_id, is_demo, archived_at")
+      // Постійний публічний демо-клас (Етап 9, /demo) технічно належить
+      // цьому акаунту, але вчитель не має його бачити у своєму списку —
+      // це не його дані, лише носій для публічної демонстрації.
+      .eq("is_public_demo", false)
       .is("deleted_at", null)
       .order("name"),
     loadParallels(supabase),
@@ -124,11 +121,6 @@ export default async function AdminPage() {
           <Link href="/admin/profile" style={{ color: "inherit" }}>
             <UserOutlined /> Профіль
           </Link>
-          {isPlatformAdmin && (
-            <Link href="/admin/platform" style={{ color: "inherit" }}>
-              <ReadOutlined /> Платформа
-            </Link>
-          )}
         </div>
       </div>
 

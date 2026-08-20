@@ -1,11 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Button, Spin, Tabs, message } from "antd";
+import { useRouter } from "next/navigation";
+import { Button, Popconfirm, Spin, Tabs, message } from "antd";
 import Link from "next/link";
 import {
   ArrowLeftOutlined,
+  DeleteOutlined,
   GiftOutlined,
+  InboxOutlined,
   TeamOutlined,
   TrophyOutlined,
 } from "@ant-design/icons";
@@ -46,6 +49,7 @@ interface Props {
   classId: string;
   classCode: string;
   className: string;
+  initialArchived: boolean;
   initialStudents: StudentRow[];
 }
 
@@ -53,11 +57,15 @@ export default function ClassSettingsClient({
   classId,
   classCode,
   className,
+  initialArchived,
   initialStudents,
 }: Props) {
   const supabase = getSupabaseClient();
+  const router = useRouter();
 
   const [loading, setLoading] = useState(true);
+  const [archived, setArchived] = useState(initialArchived);
+  const [busy, setBusy] = useState(false);
   const [individualPrizes, setIndividualPrizes] = useState<IndividualPrize[]>([]);
   const [classPrizes, setClassPrizes] = useState<ClassPrize[]>([]);
   const [groups, setGroups] = useState<ClassGroup[]>([]);
@@ -90,6 +98,34 @@ export default function ClassSettingsClient({
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  async function toggleArchive() {
+    setBusy(true);
+    const { error } = await supabase
+      .from("classes")
+      .update({ archived_at: archived ? null : new Date().toISOString() })
+      .eq("id", classId);
+    setBusy(false);
+    if (error) {
+      message.error("Не вдалося змінити статус архіву");
+      return;
+    }
+    setArchived((v) => !v);
+    message.success(archived ? "Клас повернуто з архіву" : "Клас заархівовано");
+    router.refresh();
+  }
+
+  async function deleteClassForever() {
+    setBusy(true);
+    const { error } = await supabase.from("classes").delete().eq("id", classId);
+    setBusy(false);
+    if (error) {
+      message.error("Не вдалося видалити клас");
+      return;
+    }
+    message.success("Клас видалено");
+    router.push("/admin");
+  }
 
   return (
     <div style={{ padding: 24, maxWidth: 960, margin: "0 auto" }}>
@@ -244,6 +280,44 @@ export default function ClassSettingsClient({
             ]}
           />
         )}
+      </div>
+
+      <div
+        style={{
+          marginTop: 24,
+          border: "2px solid #ffc9c9",
+          borderRadius: 12,
+          padding: "16px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Небезпечна зона</div>
+          <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2 }}>
+            Архів ховає клас зі списку, не видаляючи дані. Видалення — назавжди.
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Button icon={<InboxOutlined />} loading={busy} onClick={toggleArchive}>
+            {archived ? "Повернути з архіву" : "Архівувати"}
+          </Button>
+          <Popconfirm
+            title="Видалити клас назавжди?"
+            description="Усі учні, уроки, бали й призи цього класу буде видалено безповоротно."
+            onConfirm={deleteClassForever}
+            okText="Видалити"
+            okButtonProps={{ danger: true }}
+            cancelText="Скасувати"
+          >
+            <Button danger icon={<DeleteOutlined />} loading={busy}>
+              Видалити назавжди
+            </Button>
+          </Popconfirm>
+        </div>
       </div>
     </div>
   );

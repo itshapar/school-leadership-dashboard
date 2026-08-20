@@ -204,35 +204,68 @@ export default async function ClassPage({ params }: Props) {
         </div>
       )}
 
-      {/* Мій дашборд: вхід за PIN один раз → довгоживуча сесія (Етап 4) */}
-      <Link
-        href={`/class/${overview.public_code}/me`}
-        style={{ textDecoration: "none" }}
-      >
-        <div
-          className="star-card"
-          style={{
-            marginBottom: "16px",
-            padding: "20px 24px",
-            background: "linear-gradient(135deg, #f5a623, #e8940f)",
-            border: "3px solid #000000",
-            boxShadow: "4px 4px 0px #000000",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div>
-            <div style={{ fontSize: "1.3rem", fontWeight: 900, color: "#000000" }}>
-              Мій дашборд
+      {/*
+        Мій дашборд: вхід за PIN один раз → довгоживуча сесія (Етап 4).
+        У демо цього флоу НЕМАЄ навмисно (Етап 9, live-фідбек) — це реальний
+        студентський вхід, а не те, що має пробувати вчитель-гість. Замість
+        нього — посилання на "погляд вчителя" (хто скільки балів отримав).
+      */}
+      {overview.is_public_demo ? (
+        <Link href="/demo/students" style={{ textDecoration: "none" }}>
+          <div
+            className="star-card"
+            style={{
+              marginBottom: "16px",
+              padding: "20px 24px",
+              background: "linear-gradient(135deg, #f5a623, #e8940f)",
+              border: "3px solid #000000",
+              boxShadow: "4px 4px 0px #000000",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: "1.3rem", fontWeight: 900, color: "#000000" }}>
+                Учні класу
+              </div>
+              <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#000000", opacity: 0.75 }}>
+                Хто скільки балів отримав і за що
+              </div>
             </div>
-            <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#000000", opacity: 0.75 }}>
-              Увійди зі своїм PIN — один раз
-            </div>
+            <div style={{ fontSize: "2rem" }}>📋</div>
           </div>
-          <div style={{ fontSize: "2rem" }}>🔑</div>
-        </div>
-      </Link>
+        </Link>
+      ) : (
+        <Link
+          href={`/class/${overview.public_code}/me`}
+          style={{ textDecoration: "none" }}
+        >
+          <div
+            className="star-card"
+            style={{
+              marginBottom: "16px",
+              padding: "20px 24px",
+              background: "linear-gradient(135deg, #f5a623, #e8940f)",
+              border: "3px solid #000000",
+              boxShadow: "4px 4px 0px #000000",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: "1.3rem", fontWeight: 900, color: "#000000" }}>
+                Мій дашборд
+              </div>
+              <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#000000", opacity: 0.75 }}>
+                Увійди зі своїм PIN — один раз
+              </div>
+            </div>
+            <div style={{ fontSize: "2rem" }}>🔑</div>
+          </div>
+        </Link>
+      )}
 
       {/*
         Список класу — за публічним іменем, без ПІБ і БЕЗ посилань.

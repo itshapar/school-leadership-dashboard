@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Input, Popover, Select, Tag, message } from "antd";
+import { Button, Popover, Select, Tag, message } from "antd";
 import { PlusOutlined, StarFilled, TagOutlined } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { setClassParallel, upsertParallelByName, type Parallel } from "@/lib/admin/parallels";
@@ -18,6 +18,12 @@ import type { OnboardingStepKey } from "@/lib/admin/onboarding";
  * профілі вчителя); паралель лишилась як необов'язковий тег, який можна
  * змінити прямо тут — без переходу нікуди.
  */
+
+// Той самий фіксований список 1–12, що й у майстрі створення класу.
+const GRADE_OPTIONS = Array.from({ length: 12 }, (_, i) => {
+  const n = String(i + 1);
+  return { value: n, label: `${n} клас` };
+});
 
 export interface AdminClassCard {
   id: string;
@@ -96,7 +102,6 @@ function ClassCard({ cls, parallels }: { cls: AdminClassCard; parallels: Paralle
   const supabase = getSupabaseClient();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [newName, setNewName] = useState("");
   const currentParallel = parallels.find((p) => p.id === cls.parallel_id) ?? null;
 
   async function applyParallel(value: string | null) {
@@ -111,17 +116,18 @@ function ClassCard({ cls, parallels }: { cls: AdminClassCard; parallels: Paralle
     router.refresh();
   }
 
-  async function createAndApply() {
-    const name = newName.trim();
-    if (!name) return;
-    setSaving(true);
-    const { id, error } = await upsertParallelByName(supabase, name);
-    if (error || !id) {
-      setSaving(false);
-      message.error("Не вдалося створити паралель");
+  async function onGradeChange(grade: string | undefined) {
+    if (!grade) {
+      await applyParallel(null);
       return;
     }
-    setNewName("");
+    setSaving(true);
+    const { id, error } = await upsertParallelByName(supabase, grade);
+    if (error || !id) {
+      setSaving(false);
+      message.error("Не вдалося змінити паралель");
+      return;
+    }
     await applyParallel(id);
   }
 
@@ -144,36 +150,16 @@ function ClassCard({ cls, parallels }: { cls: AdminClassCard; parallels: Paralle
               open={open}
               onOpenChange={setOpen}
               content={
-                <div style={{ width: 220, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ width: 180 }}>
                   <Select
                     style={{ width: "100%" }}
-                    placeholder="Обрати паралель"
+                    placeholder="Клас (1–12)"
                     allowClear
                     loading={saving}
                     disabled={saving}
-                    value={currentParallel?.id}
-                    onClear={() => applyParallel(null)}
-                    onChange={(value) => applyParallel(value)}
-                    options={parallels.map((p) => ({ value: p.id, label: p.name }))}
-                  />
-                  <Input
-                    size="small"
-                    placeholder="Нова паралель, напр. 7-А"
-                    value={newName}
-                    disabled={saving}
-                    onChange={(e) => setNewName(e.target.value)}
-                    onPressEnter={createAndApply}
-                    suffix={
-                      <Button
-                        type="link"
-                        size="small"
-                        disabled={!newName.trim() || saving}
-                        onClick={createAndApply}
-                        style={{ padding: 0, fontWeight: 700 }}
-                      >
-                        Додати
-                      </Button>
-                    }
+                    value={currentParallel?.name}
+                    onChange={onGradeChange}
+                    options={GRADE_OPTIONS}
                   />
                 </div>
               }

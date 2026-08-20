@@ -22,7 +22,7 @@ import {
   type ClassPrize,
   type IndividualPrize,
 } from "@/lib/admin/classConfig";
-import { loadParallels, upsertParallelByName, type Parallel } from "@/lib/admin/parallels";
+import { upsertParallelByName } from "@/lib/admin/parallels";
 import {
   getOnboardingProgress,
   type OnboardingProgress,
@@ -58,6 +58,13 @@ const WIZARD_STEPS: Array<{ key: OnboardingStepKey; title: string }> = [
   { key: "prizes", title: "Призи" },
 ];
 
+// Паралель — номер класу (1–12), фіксований список: учитель обирає
+// готовий варіант, а не вигадує назву окремої "теки" (Етап 9, live-фідбек).
+const GRADE_OPTIONS = Array.from({ length: 12 }, (_, i) => {
+  const n = String(i + 1);
+  return { value: n, label: `${n} клас` };
+});
+
 interface ClassRow {
   id: string;
   name: string;
@@ -83,9 +90,9 @@ export default function OnboardingWizard() {
   const [current, setCurrent] = useState(0);
   const [loading, setLoading] = useState(Boolean(classIdParam));
 
-  const [parallels, setParallels] = useState<Parallel[]>([]);
   const [parallelId, setParallelId] = useState<string | null>(null);
-  const [newParallelName, setNewParallelName] = useState("");
+  const [selectedGrade, setSelectedGrade] = useState<string | undefined>(undefined);
+  const [resolvingGrade, setResolvingGrade] = useState(false);
   const [individualPrizes, setIndividualPrizes] = useState<IndividualPrize[]>([]);
   const [classPrizes, setClassPrizes] = useState<ClassPrize[]>([]);
   const [students, setStudents] = useState<StudentLite[]>([]);
@@ -122,15 +129,11 @@ export default function OnboardingWizard() {
     [supabase]
   );
 
-  // Початкове завантаження: паралелі для кроку 1 + клас, якщо повернулися в майстер.
+  // Початкове завантаження: клас, якщо повернулися в майстер.
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      const p = await loadParallels(supabase);
-      if (cancelled) return;
-      setParallels(p);
-
       if (!classIdParam) {
         setLoading(false);
         return;
@@ -170,6 +173,18 @@ export default function OnboardingWizard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress?.classId]);
 
+  async function onGradeChange(grade: string | undefined) {
+    setSelectedGrade(grade);
+    if (!grade) {
+      setParallelId(null);
+      return;
+    }
+    setResolvingGrade(true);
+    const { id } = await upsertParallelByName(supabase, grade);
+    setResolvingGrade(false);
+    setParallelId(id);
+  }
+
   async function createClass(values: { name: string }) {
     setCreating(true);
 
@@ -180,26 +195,12 @@ export default function OnboardingWizard() {
       return;
     }
 
-    let resolvedParallelId = parallelId;
-    if (!resolvedParallelId && newParallelName.trim()) {
-      const { id, error: parallelError } = await upsertParallelByName(
-        supabase,
-        newParallelName
-      );
-      if (parallelError) {
-        setCreating(false);
-        message.error("Не вдалося створити паралель");
-        return;
-      }
-      resolvedParallelId = id;
-    }
-
     const { data, error } = await supabase
       .from("classes")
       .insert({
         name: values.name.trim(),
         teacher_id: user.user.id,
-        parallel_id: resolvedParallelId,
+        parallel_id: parallelId,
       })
       .select("id, name, public_code")
       .single();
@@ -299,7 +300,7 @@ export default function OnboardingWizard() {
           <div>
             <StepHeader
               title="Створіть клас"
-              hint="Назва — єдине обов'язкове поле. Паралель можна не вказувати."
+              hint="Паралель — це номер (1–12), необов'язково. Назва — як ви самі називаєте клас: «А», «Б», «11-PM2» тощо."
             />
 
             {cls ? (
@@ -316,6 +317,18 @@ export default function OnboardingWizard() {
               />
             ) : (
               <Form form={classForm} layout="vertical" onFinish={createClass}>
+                <Form.Item label={<span style={{ fontWeight: 700 }}>Паралель (необов&apos;язково)</span>}>
+                  <Select
+                    size="large"
+                    allowClear
+                    loading={resolvingGrade}
+                    placeholder="Клас (1–12)"
+                    value={selectedGrade}
+                    onChange={onGradeChange}
+                    options={GRADE_OPTIONS}
+                  />
+                </Form.Item>
+
                 <Form.Item
                   name="name"
                   label={<span style={{ fontWeight: 700 }}>Назва класу</span>}
@@ -324,26 +337,7 @@ export default function OnboardingWizard() {
                     { max: 60, message: "Занадто довга назва" },
                   ]}
                 >
-                  <Input size="large" placeholder="7-А" autoFocus />
-                </Form.Item>
-
-                <Form.Item label={<span style={{ fontWeight: 700 }}>Паралель (необов&apos;язково)</span>}>
-                  <Select
-                    size="large"
-                    allowClear
-                    placeholder="Обрати наявну"
-                    value={parallelId ?? undefined}
-                    onChange={(v) => setParallelId(v ?? null)}
-                    options={parallels.map((p) => ({ value: p.id, label: p.name }))}
-                    style={{ marginBottom: 8 }}
-                  />
-                  {!parallelId && (
-                    <Input
-                      placeholder="Або впишіть нову, напр. 7-А"
-                      value={newParallelName}
-                      onChange={(e) => setNewParallelName(e.target.value)}
-                    />
-                  )}
+                  <Input size="large" placeholder="А, Б, 11-PM2…" autoFocus />
                 </Form.Item>
 
                 <Button

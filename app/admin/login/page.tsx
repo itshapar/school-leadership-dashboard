@@ -4,13 +4,11 @@ import { useState } from "react";
 import { Form, Input, Button, Alert, Card, Divider } from "antd";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   async function onFinish(values: { email: string; password: string }) {
     setLoading(true);
@@ -24,7 +22,11 @@ export default function AdminLoginPage() {
       setError("Невірний email або пароль.");
       setLoading(false);
     } else {
-      router.push("/admin");
+      // ПОВНЕ перезавантаження, НЕ router.push: клієнтський Router Cache
+      // Next.js тримає RSC-пейлоад /admin попереднього користувача до 30с
+      // і router.push міг би показати старі дані ПОПЕРЕДНЬОГО акаунта —
+      // критична витік між акаунтами, знайдений при тестуванні Етапу 9.
+      window.location.href = "/admin";
     }
   }
 
@@ -72,21 +74,14 @@ export default function AdminLoginPage() {
               label={<span style={{ color: "var(--color-text-muted)" }}>Email</span>}
               rules={[{ required: true, type: "email", message: "Введіть email" }]}
             >
-              <Input
-                size="large"
-                placeholder="teacher@school.ua"
-                style={{ background: "var(--bg-elevated)", border: "1px solid var(--color-border)", color: "var(--color-text)" }}
-              />
+              <Input size="large" placeholder="teacher@school.ua" autoComplete="email" />
             </Form.Item>
             <Form.Item
               name="password"
               label={<span style={{ color: "var(--color-text-muted)" }}>Пароль</span>}
               rules={[{ required: true, message: "Введіть пароль" }]}
             >
-              <Input.Password
-                size="large"
-                style={{ background: "var(--bg-elevated)", border: "1px solid var(--color-border)", color: "var(--color-text)" }}
-              />
+              <Input.Password size="large" autoComplete="current-password" />
             </Form.Item>
             <Button
               type="primary"

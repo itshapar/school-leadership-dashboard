@@ -31,6 +31,7 @@ export default async function ClassSettingsPage({ params }: Props) {
         classId={cls.id}
         classCode={cls.public_code}
         className={cls.name}
+        initialArchived={Boolean(cls.archived_at)}
         initialStudents={(students ?? []) as StudentRow[]}
       />
     </div>

@@ -25,7 +25,11 @@ export default async function DashboardPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/admin/login");
 
-  const parallels = await loadParallels(supabase);
+  // Назва паралелі — "1".."12" (Етап 9), сортуємо числово, інакше "10" йде
+  // перед "2" за звичайним рядковим порядком з БД.
+  const parallels = (await loadParallels(supabase)).sort(
+    (a, b) => Number(a.name) - Number(b.name)
+  );
 
   // Паралель без явно обраного класу — фільтр за всіма класами цієї паралелі,
   // не за одним. Один клас лишається пріоритетним, якщо обидва в URL.
@@ -107,7 +111,7 @@ export default async function DashboardPage({
                   href={`/dashboard?parallelId=${p.id}`}
                   className={`filter-btn ${!classId && parallelId === p.id ? 'active' : ''}`}
                 >
-                  {p.name}
+                  {p.name} клас
                 </Link>
               ))}
             </div>

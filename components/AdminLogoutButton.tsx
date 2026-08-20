@@ -1,15 +1,14 @@
 "use client";
 
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 export default function AdminLogoutButton() {
-  const router = useRouter();
-
   async function logout() {
     const supabase = getSupabaseClient();
     await supabase.auth.signOut();
-    router.push("/admin/login");
+    // Повне перезавантаження, не router.push — той самий ризик витоку між
+    // акаунтами через клієнтський Router Cache, що й на вході (login/page.tsx).
+    window.location.href = "/admin/login";
   }
 
   return (
