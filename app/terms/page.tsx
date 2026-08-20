@@ -3,17 +3,19 @@ import LegalPage, { type LegalSection } from "@/components/Legal/LegalPage";
 
 export const metadata: Metadata = {
   title: "Умови використання — StarBoard",
-  description: "Умови використання StarBoard (чернетка, до рев'ю юриста)",
+  description: "Умови використання StarBoard",
 };
 
 /**
- * Умови використання, чернетка v0.2.
+ * Умови використання.
  *
  * Нумерація розділів ЗАКРІПЛЕНА: чекбокс при реєстрації посилається саме на
  * «розділ 5», тому вставляти новий розділ вище п'ятого не можна, не змінивши
  * текст чекбокса в lib/legal/terms.ts.
  *
- * Робоча копія для роботи з юристом — docs/legal/terms-v0.2.md.
+ * Ця сторінка — джерело правди; docs/legal/terms.md — редагована копія для
+ * правок. Будь-яка змістовна зміна вимагає підняти TERMS_VERSION, інакше
+ * вчителі не побачать нової редакції і не приймуть її.
  */
 
 const SECTIONS: LegalSection[] = [

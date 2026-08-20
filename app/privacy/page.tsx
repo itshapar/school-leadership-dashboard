@@ -3,17 +3,17 @@ import LegalPage, { type LegalSection } from "@/components/Legal/LegalPage";
 
 export const metadata: Metadata = {
   title: "Політика приватності — StarBoard",
-  description: "Політика приватності StarBoard (чернетка, до рев'ю юриста)",
+  description: "Політика приватності StarBoard",
 };
 
 /**
- * Політика приватності, чернетка v0.2.
+ * Політика приватності.
  *
  * Пише те, що система РОБИТЬ насправді, а не те, що зазвичай пишуть у таких
  * документах: перелік полів звірено зі схемою БД, місця зберігання — з
  * фактичними регіонами Supabase (eu-west-1) і Vercel (fra1, vercel.json).
  *
- * Робоча копія для роботи з юристом — docs/legal/privacy-v0.2.md.
+ * Ця сторінка — джерело правди; docs/legal/privacy.md — редагована копія.
  */
 
 const SECTIONS: LegalSection[] = [

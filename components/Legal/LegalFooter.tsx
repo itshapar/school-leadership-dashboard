@@ -33,7 +33,7 @@ export default function LegalFooter() {
           Умови
         </Link>
         <span aria-hidden>·</span>
-        <span>{TERMS_VERSION} — чернетка</span>
+        <span>Редакція {TERMS_VERSION}</span>
       </nav>
     </footer>
   );

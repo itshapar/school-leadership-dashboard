@@ -15,10 +15,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  */
 
 /**
- * Версія Умов. Змінити тут → guard попросить акцепт заново в усіх вчителів.
- * Саме так планується перехід на v1.0 після рев'ю юриста.
+ * Версія Умов. Змінити тут → TermsGate попросить акцепт заново в усіх
+ * вчителів, бо terms_acceptances ключується парою (user_id, версія).
+ * Це єдиний перемикач переакцепту — жодних міграцій для цього не треба.
  */
-export const TERMS_VERSION = "v0.2-draft";
+export const TERMS_VERSION = "v1.0";
 
 export const TERMS_ACCEPT_LABEL =
   "Приймаю Умови використання та Політику приватності";
