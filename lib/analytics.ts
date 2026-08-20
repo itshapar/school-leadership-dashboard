@@ -1,7 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
 
-/** Учень у вибірці дашборда: select("*"), але потрібні лише ці поля. */
+/** Учень у вибірці дашборда — рівно ті поля, які потрібні рейтингу. */
 interface StudentRow {
   id: string;
   class_id: string;
@@ -9,6 +9,14 @@ interface StudentRow {
   nickname: string | null;
   avatar_emoji: string;
   group_id: string | null;
+}
+
+/** Нарахування у вибірці дашборда — лише поля, що беруть участь в агрегатах. */
+interface StarEntryRow {
+  student_id: string | null;
+  amount: number;
+  created_at: string;
+  entry_type_id: string | null;
 }
 
 /** Класовий приз у тому вигляді, в якому його показують віджети дашборда. */
@@ -25,7 +33,16 @@ export type TimeFrame = "all_time" | "last_30_days" | "last_7_days";
 
 export async function getDashboardData(supabase: SupabaseClient, classIdFilter?: string | null) {
   // 1. Fetch Classes
-  const { data: classes } = await supabase.from("classes").select("*").order("name");
+  //
+  // Явний перелік стовпців, а не select("*"): усе, що звідси повертається,
+  // серіалізується в RSC-payload і їде в браузер через BentoGrid. select("*")
+  // тягнув би legacy_code — старий 4-значний код класу, якому в браузері
+  // робити нічого.
+  const { data: classes } = await supabase
+    .from("classes")
+    .select("id, name, public_code, archived_at, is_demo")
+    .is("deleted_at", null)
+    .order("name");
   const classMap = new Map((classes ?? []).map((c) => [c.id, c]));
 
   // 1b. Класові призи — джерело правди для «Епічних цілей» замість двох
@@ -63,46 +80,42 @@ export async function getDashboardData(supabase: SupabaseClient, classIdFilter?:
   const isBonusEntry = (entryTypeId: string | null) =>
     entryTypeId ? typeById.get(entryTypeId)?.is_lesson_bound === false : false;
 
-  // 2. Fetch Students (посторінково: до 20 класів × 60 учнів = 1200 рядків,
-  // а PostgREST мовчки віддає максимум 1000)
+  // 2. Fetch Students
+  //
+  // ДВА виправлення проти попередньої версії, обидва суттєві:
+  //
+  //  • select("*") тягнув pin_hash / pin_set_at / pin_generation, а рядок
+  //    учня далі кладеться в leaderboard як `student: s` і потрапляє в
+  //    BentoGrid — клієнтський компонент. Тобто bcrypt-хеші PIN-ів усього
+  //    класу їхали в браузер учителя. Це не витік між вчителями (дані
+  //    власні), але хешам у браузері робити нічого. Тепер — явний перелік.
+  //
+  //  • не було фільтра deleted_at (його додала міграція 018, аналітику не
+  //    оновили), тож видалений учень лишався в рейтингу й у сумах.
+  //
+  // Посторінково: до 20 класів × 60 учнів = 1200 рядків, а PostgREST мовчки
+  // віддає максимум 1000.
   const students = await fetchAllRows<StudentRow>(() => {
-    const q = supabase.from("students").select("*");
+    const q = supabase
+      .from("students")
+      .select("id, class_id, full_name, nickname, avatar_emoji, group_id")
+      .is("deleted_at", null);
     return classIdFilter ? q.eq("class_id", classIdFilter) : q;
   });
   const studentMap = new Map(students.map((s) => [s.id, s]));
 
-  // 3. Fetch Star Entries (Paginated to retrieve all rows)
-  let starEntries: any[] = [];
-  let from = 0;
-  const limit = 1000;
-  let hasMore = true;
-
-  while (hasMore) {
-    let starsQuery = supabase
+  // 3. Fetch Star Entries
+  //
+  // Лише ті стовпці, які тут справді рахуються. Раніше було select("*"), що
+  // тягнуло ще й `note` — нотатки вчителя до нарахувань — для 1374 рядків,
+  // хоча агрегати їх не використовують. Заразом це знімає залежність від
+  // стовпця `type`, який дропає міграція 020.
+  const starEntries = await fetchAllRows<StarEntryRow>(() => {
+    const q = supabase
       .from("star_entries")
-      .select("*")
-      .range(from, from + limit - 1);
-    
-    if (classIdFilter) {
-      starsQuery = starsQuery.eq("class_id", classIdFilter);
-    }
-    
-    const { data: chunk, error: enError } = await starsQuery;
-    if (enError) {
-      console.error("Database error in analytics.ts star_entries fetch:", enError);
-      throw new Error("Failed to load dashboard data");
-    }
-
-    if (chunk && chunk.length > 0) {
-      starEntries = starEntries.concat(chunk);
-      from += limit;
-      if (chunk.length < limit) {
-        hasMore = false;
-      }
-    } else {
-      hasMore = false;
-    }
-  }
+      .select("student_id, amount, created_at, entry_type_id");
+    return classIdFilter ? q.eq("class_id", classIdFilter) : q;
+  });
 
   // 4. Calculate Basic Stats
   const now = new Date();
@@ -122,7 +135,7 @@ export async function getDashboardData(supabase: SupabaseClient, classIdFilter?:
   let attendedCount = 0;
   let absenceCount = 0;
 
-  for (const entry of starEntries ?? []) {
+  for (const entry of starEntries) {
     const entryDate = new Date(entry.created_at);
     
     // KPI Stats (Bonuses)
@@ -166,7 +179,7 @@ export async function getDashboardData(supabase: SupabaseClient, classIdFilter?:
   // We define "trend" as how many positions they gained/lost compared to last week.
   // To do this simply: rank them by total stars up to today, and rank them by total stars up to 7 days ago.
   const starsUpToLastWeek = new Map<string, number>();
-  for (const entry of starEntries ?? []) {
+  for (const entry of starEntries) {
     if (!entry.student_id || entry.amount <= 0) continue;
     const entryDate = new Date(entry.created_at);
     if (entryDate < sevenDaysAgo) {
@@ -221,7 +234,7 @@ export async function getDashboardData(supabase: SupabaseClient, classIdFilter?:
 
   // Additional KPIs
   const totalStudents = students?.length ?? 0;
-  const totalClassStars = (starEntries ?? []).reduce((sum, e) => sum + (e.amount > 0 ? e.amount : 0), 0); // approx
+  const totalClassStars = starEntries.reduce((sum, e) => sum + (e.amount > 0 ? e.amount : 0), 0); // approx
   
   // To get exact total lessons, we should really fetch from lessons table, but let's approximate by unique dates in starEntries of type lesson, or just count maximum lessons attended by any student
   const totalLessons = studentLessons.size > 0 ? Math.max(...Array.from(studentLessons.values())) : 0;

@@ -3,7 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import ClassProgressBars from "@/components/ClassProgress";
 import { StarFilled } from "@ant-design/icons";
 import { getPublicClassOverview } from "@/lib/public/classData";
-import { formatClassCode } from "@/lib/classCodes";
+import { formatClassCode, isLegacyClassCode } from "@/lib/classCodes";
+import LegacyCodeNotice from "@/components/LegacyCodeNotice";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,16 @@ export default async function ClassPage({ params }: Props) {
   // (11111111-0000-0000-0000-00000000000N), тож прямий доступ за id був
   // окремою дірою поряд із перебором 4-значного коду.
   const overview = await getPublicClassOverview(classParam);
+
+  // Старі 4-значні коди відключені (Етап 8). Дитина з роздрукованої торік
+  // пам'ятки не має впертись у голий 404 — показуємо, що робити далі.
+  //
+  // Повідомлення однакове для БУДЬ-ЯКОГО 4-значного коду, і це навмисно:
+  // перевіряється лише ФОРМАТ, а не існування класу, тож екран не працює
+  // оракулом «такий клас є / такого немає».
+  if (!overview && isLegacyClassCode(classParam)) {
+    return <LegacyCodeNotice />;
+  }
   if (!overview) return notFound();
 
   // Прийшли за старим кодом — тихо переводимо на новий.
@@ -195,23 +206,23 @@ export default async function ClassPage({ params }: Props) {
         </div>
       </Link>
 
-      {/* Student List (за публічним іменем, без ПІБ) */}
+      {/*
+        Список класу — за публічним іменем, без ПІБ і БЕЗ посилань.
+        Раніше кожен рядок вів на /class/[code]/student/[id]. Після 024+026
+        персональна сторінка вимагає PIN-сесію, тож ці посилання перетворились
+        би на 19 однакових редіректів у форму PIN. Замість цього — один
+        зрозумілий вхід «Мій дашборд» вище.
+      */}
       <div className="star-card" style={{ padding: "24px 16px" }}>
         {students.map((student) => (
-          <Link
-            key={student.id}
-            href={`/class/${overview.public_code}/student/${student.id}`}
-            style={{ textDecoration: "none" }}
-          >
-            <div className="leaderboard-row">
-              <div style={{ fontSize: "1.8rem" }}>{student.avatar_emoji}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 850, fontSize: "1.1rem", color: "#000000" }}>
-                  {student.display_name}
-                </div>
+          <div key={student.id} className="leaderboard-row">
+            <div style={{ fontSize: "1.8rem" }}>{student.avatar_emoji}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 850, fontSize: "1.1rem", color: "#000000" }}>
+                {student.display_name}
               </div>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
 

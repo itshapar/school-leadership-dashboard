@@ -11,8 +11,16 @@ export default async function TotalDashboardPage() {
     { data: students, error: stError },
     { data: classes, error: clError }
   ] = await Promise.all([
-    supabase.from("students").select("id, full_name, avatar_emoji, class_id"),
-    supabase.from("classes").select("id, name, public_code")
+    // Фільтри deleted_at додала міграція 018 — цей рейтинг тоді не оновили,
+    // тож видалені учні й видалені класи лишалися у видачі.
+    supabase
+      .from("students")
+      .select("id, full_name, avatar_emoji, class_id")
+      .is("deleted_at", null),
+    supabase
+      .from("classes")
+      .select("id, name, public_code")
+      .is("deleted_at", null)
   ]);
 
   if (stError || clError) {

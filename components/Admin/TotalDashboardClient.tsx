@@ -56,7 +56,7 @@ export default function TotalDashboardClient({ initialData }: { initialData: Stu
       key: "student",
       sorter: (a: StudentData, b: StudentData) => a.full_name.localeCompare(b.full_name),
       render: (record: StudentData) => (
-        <Link href={`/class/${record.classCode}/student/${record.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+        <Link href={`/admin/${record.classCode}`} style={{ textDecoration: "none", color: "inherit" }}>
           <div className="student-profile-link" style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
             <span style={{ fontSize: "1.5rem" }}>{record.avatar_emoji}</span>
             <span style={{ fontWeight: 850, fontSize: "1rem" }} className="student-name-text">

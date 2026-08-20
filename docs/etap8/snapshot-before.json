@@ -1,0 +1,258 @@
+{
+  "takenAt": "2026-08-20T20:48:46.462Z",
+  "phase": "before",
+  "totals": {
+    "classes": 6,
+    "students": 87,
+    "lessons": 140,
+    "entries": 1374,
+    "sumAmount": 1495
+  },
+  "classes": [
+    {
+      "id": "11111111-0000-0000-0000-000000000001",
+      "name": "7А",
+      "public_code": "KBCDTRVGM4",
+      "legacy_code": "1430",
+      "students": 19,
+      "lessons": 16,
+      "entries": 251,
+      "sumAmount": 339,
+      "sumPositive": 359,
+      "entryTypes": [
+        "Урок:+1",
+        "Бонус:+1",
+        "Штраф:-1"
+      ],
+      "classPrizes": [
+        "Game day:250",
+        "Pizza day:400"
+      ],
+      "individualPrizes": [
+        "Кіндер:10",
+        "Стікери:20",
+        "Пін:30",
+        "3Д Друк:40"
+      ]
+    },
+    {
+      "id": "11111111-0000-0000-0000-000000000002",
+      "name": "7Б",
+      "public_code": "WQV9VVS8SK",
+      "legacy_code": "3811",
+      "students": 15,
+      "lessons": 28,
+      "entries": 265,
+      "sumAmount": 316,
+      "sumPositive": 346,
+      "entryTypes": [
+        "Урок:+1",
+        "Бонус:+1",
+        "Штраф:-1"
+      ],
+      "classPrizes": [
+        "Game day:250",
+        "Pizza day:500"
+      ],
+      "individualPrizes": [
+        "Кіндер:10",
+        "Стікери:20",
+        "Пін:30",
+        "3Д Друк:50"
+      ]
+    },
+    {
+      "id": "11111111-0000-0000-0000-000000000003",
+      "name": "7В",
+      "public_code": "P5XST4SQ4G",
+      "legacy_code": "6192",
+      "students": 13,
+      "lessons": 15,
+      "entries": 148,
+      "sumAmount": 152,
+      "sumPositive": 176,
+      "entryTypes": [
+        "Урок:+1",
+        "Бонус:+1",
+        "Штраф:-1"
+      ],
+      "classPrizes": [
+        "Game day:100",
+        "Pizza day:200"
+      ],
+      "individualPrizes": [
+        "Кіндер:10",
+        "Стікери:20",
+        "Пін:30",
+        "3Д Друк:40"
+      ]
+    },
+    {
+      "id": "11111111-0000-0000-0000-000000000004",
+      "name": "7Г",
+      "public_code": "WWS6B8Z92P",
+      "legacy_code": "9525",
+      "students": 13,
+      "lessons": 28,
+      "entries": 265,
+      "sumAmount": 228,
+      "sumPositive": 285,
+      "entryTypes": [
+        "Урок:+1",
+        "Бонус:+1",
+        "Штраф:-1"
+      ],
+      "classPrizes": [
+        "Game day:200",
+        "Pizza day:400"
+      ],
+      "individualPrizes": [
+        "Кіндер:10",
+        "Стікери:20",
+        "Пін:30",
+        "3Д Друк:50"
+      ]
+    },
+    {
+      "id": "11111111-0000-0000-0000-000000000005",
+      "name": "7Д",
+      "public_code": "9FSRRR62H8",
+      "legacy_code": "1906",
+      "students": 15,
+      "lessons": 27,
+      "entries": 240,
+      "sumAmount": 262,
+      "sumPositive": 301,
+      "entryTypes": [
+        "Урок:+1",
+        "Бонус:+1",
+        "Штраф:-1"
+      ],
+      "classPrizes": [
+        "Game day:200",
+        "Pizza day:400"
+      ],
+      "individualPrizes": [
+        "Кіндер:10",
+        "Стікери:20",
+        "Пін:30",
+        "3Д Друк:50"
+      ]
+    },
+    {
+      "id": "11111111-0000-0000-0000-000000000006",
+      "name": "7Е",
+      "public_code": "FJZX4G5VS4",
+      "legacy_code": "4287",
+      "students": 12,
+      "lessons": 26,
+      "entries": 205,
+      "sumAmount": 198,
+      "sumPositive": 238,
+      "entryTypes": [
+        "Урок:+1",
+        "Бонус:+1",
+        "Штраф:-1"
+      ],
+      "classPrizes": [
+        "Game day:200",
+        "Pizza day:350"
+      ],
+      "individualPrizes": [
+        "Кіндер:10",
+        "Стікери:20",
+        "Пін:30",
+        "3Д Друк:50"
+      ]
+    }
+  ],
+  "studentStars": {
+    "101bfcb5-8657-41fc-bbc5-24fa21e401e9": 10,
+    "d2087e8b-26e8-4a2a-ad56-58e5cfc6afee": 31,
+    "73aef504-517b-41ef-938f-2cae6555e845": 23,
+    "b7474a35-15c9-448b-9d20-6f3e91c9d94e": 18,
+    "39e29126-8afc-4abb-9a5e-cc49b498c6b5": 21,
+    "3e278f30-7dba-4658-a38a-cd5558e87dcc": -7,
+    "ecd26fc6-200f-4039-8c1a-6c8f0bff818c": 19,
+    "7e4aa49b-320a-4e95-a27b-a333f6a9e5d5": 11,
+    "a356c5b8-c319-4282-abc6-d2211882848c": 28,
+    "a27fbfea-57e7-4ab8-b0c4-0300bc0c2bfb": 15,
+    "60e8796f-1019-41ab-aaef-e214d7211321": 8,
+    "2124046c-b993-42e4-acdd-7b79c32098b2": 2,
+    "9bb3ba8c-2597-4541-88a2-437d83088d9a": 14,
+    "5a958ce6-af3f-43a9-9320-488ea371412a": 12,
+    "d4821861-db2c-42d0-9ab4-a6d52a7964bc": 11,
+    "6ef813d8-b866-4cc3-9119-380185117509": 12,
+    "81b23508-ad22-4ed8-b567-f35419c8e5fd": -4,
+    "fe352d42-dd8e-47de-9e6b-010df36eb47c": 7,
+    "f649c85f-9c15-41e2-9ccc-e44a789e4a9a": 15,
+    "4ba487fe-f9a4-4feb-91e7-ce888d323120": 23,
+    "0f3d4b22-de33-4436-b347-c0b40136deb1": 3,
+    "0e4daca2-c72a-4fbd-958a-9952d22df365": 18,
+    "1a3678b4-de35-4b39-8d08-cf04634d2681": 13,
+    "5b8db8d0-2664-4da4-87dc-89946fde84b9": 25,
+    "6ca8452b-29d6-4949-aef2-b9ecec2d24f6": 20,
+    "0b82b580-8c40-4aa4-9613-ccd7de2b9821": 10,
+    "c1aa9a4a-6b8b-4db3-b285-8203c565adca": 18,
+    "6494e4ae-9293-4cd8-a5e5-4f43064d1b47": 15,
+    "59b2caaa-2cf7-4430-86a3-e127c0b0bf89": 19,
+    "25af1308-7cb3-4fe5-b549-faf149d17d3e": 20,
+    "d19d919c-8460-46b2-bed5-5bd1ba518bf4": 18,
+    "bde93167-e1ea-4447-87ec-e6eaa69654f6": 23,
+    "79499d73-0b50-4a87-87dc-707a981287ae": 25,
+    "53f9a66e-e36c-410a-b320-2449d555bc6d": 27,
+    "6c04a375-e088-42d3-8e33-eb3f1314c1a8": 27,
+    "9e579f8f-b33b-447c-b977-09ab098b3fcf": 20,
+    "a06f50f5-9177-4d99-93ad-3f245cc07ff1": 14,
+    "792b7498-551a-4872-ae68-87a0a5d0cc24": 29,
+    "072c9e1e-d582-4314-9446-6fb88af864fb": 6,
+    "ac7518ec-c7ef-4e8c-ae22-32b86012b242": 7,
+    "6761f1a7-d09f-434f-b930-5ef4619b00a9": 18,
+    "32d76451-7c5d-40b4-94fc-0af7db3c0320": 18,
+    "11673d48-c214-443e-968b-b6cebc3efe86": 32,
+    "87d67e78-4a89-45ea-9837-e88a370b03d9": 9,
+    "506d0af0-c999-4ff0-bad5-7a73880edf4a": 38,
+    "b9ed3709-7529-42e2-a8cf-0b244c07b673": 19,
+    "c7f693c1-a67f-42b1-bf2b-4bd1f68cd849": 22,
+    "08f8255a-1e18-4861-acc7-b07c8ddb928c": 1,
+    "90e05a60-6ff1-4422-ba9d-d3d539234005": 30,
+    "7b350a0f-9f23-432d-8857-1f0a660ded62": 9,
+    "188f6950-86b7-440f-a615-72f8489ee8a3": 13,
+    "167af1f4-6507-4048-ad12-6251143fa2d1": 23,
+    "a171aa53-fe36-4637-b06b-8784adefe984": 6,
+    "248ce9ce-edbc-40fd-9f12-f39f9998ee00": 7,
+    "1285123c-efcc-4327-836d-2e403dc67e95": 26,
+    "e737654e-724b-4f0a-b12b-6acb75a23840": 40,
+    "f222d294-f592-4ba7-bfc3-2da3c55787ee": 32,
+    "28672d8a-010e-4b54-b8e8-faef828ce1bd": 34,
+    "7405a107-56b3-4bfc-94cf-20dccf00e11a": 24,
+    "131d558f-69e3-430d-8d55-42aad4cff69e": 12,
+    "cfe20eba-b660-462d-9203-9452ced7d3c6": 19,
+    "d01d459b-9753-478e-a501-667e3468a418": 21,
+    "98f493c2-dbd6-4016-945d-37691ca46291": 18,
+    "6452b065-dda7-4ecc-a585-5a2858f48f2e": 21,
+    "f52d02e9-01a8-4b9e-a4f7-7dd7bd0d1ff9": 14,
+    "3d868901-c2b9-4c4b-9f59-e4c9144f054f": 13,
+    "3d3c3878-93e3-4389-a288-ec17176ad2d2": 14,
+    "3d54f47c-f2d8-4382-95e7-4f7c7e27798f": 8,
+    "21b7a2e4-4165-4c72-84ec-537d3bb8c6e0": 30,
+    "dfdf70a2-60a3-4c23-a7e9-26ef6439bedb": -5,
+    "5c728ea9-6ed3-4beb-b6e1-e022c50d5d99": 8,
+    "dd373a00-9255-4456-803d-1d12cc15d4f3": 14,
+    "476f2a36-2432-4f89-bdfa-8e0d052e3ffa": 27,
+    "302f2ab3-2579-44f5-a41e-4d23cf7d90ff": 29,
+    "acfb10a9-b698-4323-b8bc-e1f55ffa7078": 19,
+    "9832d74c-69b6-4b8a-9237-dfc8dd85cefa": 28,
+    "ccf01bb5-d8e5-4c54-9f5a-ebec0bf71464": 16,
+    "021f71c1-c10c-49de-8a43-1a7781e01770": 11,
+    "d40b1fb8-4798-4c31-84ba-d8cc1f8f8595": 18,
+    "59dfa756-42a5-4dcd-873d-6a3f9ffafe5b": 29,
+    "47659462-267d-494e-902f-00783805e650": 1,
+    "2f1e1a29-2293-4e98-ba95-6ee243a53367": 26,
+    "cf814dc1-adb2-4f30-8574-3ee744a87cf4": 23,
+    "3d25270b-b5a1-46ce-a402-53e51bb0accd": 11,
+    "3ad7e26f-e810-4ea3-8950-3d4fbfccf33a": 15,
+    "15501a64-9e40-46a7-b884-524137fa7ab9": 8,
+    "11f06016-bbd6-4201-82d3-bd824e70de64": 20
+  }
+}

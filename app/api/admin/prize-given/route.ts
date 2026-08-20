@@ -24,16 +24,23 @@ export async function POST(request: Request) {
 
   const { student_id, prize_id, given } = body;
 
-  // Find class_id for the student to perform auto-claim
+  // Клас учня + перевірка власності. Раніше тут результат assertClassOwnership
+  // обчислювався і ВІДКИДАВСЯ («RLS will handle it») — RLS справді захищає,
+  // але код виглядав як перевірка, не будучи нею. Тепер або перевіряємо
+  // по-справжньому, або не робимо вигляд.
   const { data: student } = await supabaseForRls
     .from("students")
     .select("class_id")
     .eq("id", student_id)
-    .single();
+    .maybeSingle();
 
-  if (student?.class_id) {
-    const claim = await assertClassOwnership(supabaseForRls, student.class_id, user.id);
-    // We don't block if claim fails here, RLS will handle the final decision
+  if (!student?.class_id) {
+    return NextResponse.json({ error: "Учня не знайдено" }, { status: 404 });
+  }
+
+  const claim = await assertClassOwnership(supabaseForRls, student.class_id, user.id);
+  if (!claim.success) {
+    return NextResponse.json({ error: claim.error || "Permission denied" }, { status: 403 });
   }
 
   if (given) {
