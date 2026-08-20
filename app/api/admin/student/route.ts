@@ -2,19 +2,42 @@ import { NextResponse } from "next/server";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
 import { assertClassOwnership } from "@/lib/admin/classOwnership";
+import { normalizeFullName, validateFullName } from "@/lib/students/fullName";
+
+/**
+ * CRUD учня.
+ *
+ * Етап 5/6: `full_name` лишається обов'язковим і зберігається САМЕ у форматі
+ * «Прізвище Ім'я» — публічний fallback у БД (student_display_name) віддає
+ * ДРУГЕ слово, тож інший порядок означав би витік прізвища на публічну
+ * сторінку класу. Валідація «щонайменше два слова» стоїть і тут, а не лише
+ * у формі: форму можна обійти прямим запитом до API.
+ *
+ * `group_id` (міграція 014) — опційна група всередині класу; композитний FK
+ * students_group_same_class_fk не дасть прив'язати учня до групи чужого класу.
+ */
+
+const FullNameField = z
+  .string()
+  .transform(normalizeFullName)
+  .refine((v) => validateFullName(v).ok, {
+    message: "Потрібні два слова: спершу прізвище, потім ім'я",
+  });
 
 const PatchStudentSchema = z.object({
-  id: z.string(),
-  full_name: z.string().optional(),
-  nickname: z.string().optional().nullable(),
-  avatar_emoji: z.string().optional(),
+  id: z.string().uuid(),
+  full_name: FullNameField.optional(),
+  nickname: z.string().max(60).optional().nullable(),
+  avatar_emoji: z.string().max(16).optional(),
+  group_id: z.string().uuid().nullable().optional(),
 });
 
 const PostStudentSchema = z.object({
-  full_name: z.string().min(1),
-  nickname: z.string().optional().nullable(),
-  avatar_emoji: z.string().min(1),
-  class_id: z.string(),
+  full_name: FullNameField,
+  nickname: z.string().max(60).optional().nullable(),
+  avatar_emoji: z.string().min(1).max(16),
+  class_id: z.string().uuid(),
+  group_id: z.string().uuid().nullable().optional(),
 });
 
 export async function PATCH(request: Request) {
@@ -27,19 +50,28 @@ export async function PATCH(request: Request) {
   try {
     body = PatchStudentSchema.parse(await request.json());
   } catch (err) {
-    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
+    const message =
+      err instanceof z.ZodError
+        ? err.issues[0]?.message ?? "Invalid request data"
+        : "Invalid request data";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  const { id, full_name, nickname, avatar_emoji } = body;
+  const { id, ...rest } = body;
 
-  const { error } = await supabaseForRls
-    .from("students")
-    .update({
-      full_name,
-      nickname,
-      avatar_emoji,
-    })
-    .eq("id", id);
+  // Надсилаємо лише те, що клієнт справді передав: інакше PATCH з однією
+  // групою затер би нікнейм у NULL.
+  const patch: Record<string, unknown> = {};
+  if (rest.full_name !== undefined) patch.full_name = rest.full_name;
+  if (rest.nickname !== undefined) patch.nickname = rest.nickname;
+  if (rest.avatar_emoji !== undefined) patch.avatar_emoji = rest.avatar_emoji;
+  if (rest.group_id !== undefined) patch.group_id = rest.group_id;
+
+  if (Object.keys(patch).length === 0) {
+    return NextResponse.json({ ok: true });
+  }
+
+  const { error } = await supabaseForRls.from("students").update(patch).eq("id", id);
 
   if (error) {
     console.error("Supabase error (student update):", error);
@@ -59,10 +91,14 @@ export async function POST(request: Request) {
   try {
     body = PostStudentSchema.parse(await request.json());
   } catch (err) {
-    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
+    const message =
+      err instanceof z.ZodError
+        ? err.issues[0]?.message ?? "Invalid request data"
+        : "Invalid request data";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  const { full_name, nickname, avatar_emoji, class_id } = body;
+  const { full_name, nickname, avatar_emoji, class_id, group_id } = body;
 
   // Клас має належати цьому вчителю (без винятку для teacher_id IS NULL)
   const claim = await assertClassOwnership(supabaseForRls, class_id, user.id);
@@ -74,16 +110,23 @@ export async function POST(request: Request) {
     .from("students")
     .insert({
       full_name,
-      nickname,
+      nickname: nickname ?? null,
       avatar_emoji,
       class_id,
+      group_id: group_id ?? null,
     })
-    .select()
+    .select("id, full_name, nickname, avatar_emoji, group_id")
     .single();
 
   if (error) {
     console.error("Supabase error (student insert):", error);
-    return NextResponse.json({ error: "Failed to create student" }, { status: 400 });
+    // Ліміт 60 учнів на клас приходить із тригера БД (міграція 019) —
+    // показуємо вчителю причину, а не «щось пішло не так».
+    const limitHit = error.message?.includes("Досягнуто ліміт");
+    return NextResponse.json(
+      { error: limitHit ? "Досягнуто ліміт: не більше 60 учнів у класі" : "Failed to create student" },
+      { status: 400 }
+    );
   }
 
   return NextResponse.json({ ok: true, student: data });

@@ -24,14 +24,30 @@ export interface PublicClassEntry {
   created_at: string;
 }
 
+/** Класовий приз: поріг порівнюється із сумарними зірками КЛАСУ. */
+export interface PublicClassPrize {
+  id: string;
+  name: string;
+  emoji: string;
+  threshold: number;
+  sort_order: number;
+  given_count: number;
+}
+
 export interface PublicClassOverview {
   class_id: string;
   name: string;
   public_code: string;
   /** true, якщо користувач прийшов за старим 4-значним кодом */
   requested_legacy: boolean;
-  game_day_threshold: number;
-  pizza_day_threshold: number;
+  archived: boolean;
+  /**
+   * Джерело правди для порогів класу (міграція 016). Старі ключі
+   * game_day_threshold / pizza_day_threshold свідомо НЕ описані тут:
+   * фронтенд їх більше не читає, тому міграція 020 може їх прибрати
+   * з RPC, нічого не зламавши.
+   */
+  class_prizes: PublicClassPrize[];
   personal_stars: number;
   class_bonus: number;
   total_stars: number;
@@ -39,9 +55,18 @@ export interface PublicClassOverview {
   students: PublicStudentSummary[];
 }
 
+/**
+ * Запис історії учня.
+ *
+ * `type_name`/`type_icon` — назва й іконка типу нарахування (entry_types).
+ * Старого ключа `type` (enum lesson/bonus/penalty) тут немає: до 020 RPC
+ * віддає обидва набори, після 020 — лише нові. Фронтенд читає лише нові,
+ * тому працює однаково в обох станах.
+ */
 export interface PublicHistoryEntry {
   amount: number;
-  type: string;
+  type_name: string | null;
+  type_icon: string | null;
   note: string | null;
   created_at: string;
 }

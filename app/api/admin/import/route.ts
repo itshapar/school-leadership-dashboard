@@ -1,41 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as XLSX from "xlsx";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { assertClassOwnership } from "@/lib/admin/classOwnership";
+import { resolveEntryTypes } from "@/lib/admin/entryTypeResolver";
+import { parseImportWorkbook, validateImportFile } from "@/lib/admin/importParsing";
+import {
+  buildNamePreview,
+  normalizeFullName,
+  swapNameOrder,
+  validateFullName,
+  type NamePreviewRow,
+} from "@/lib/students/fullName";
 
-// Column structure per the spec:
-// col 0: full_name
-// col 1: total_stars (formula result — validation only)
-// col 2: avatar_emoji
-// col 3: nickname
-// col 4: bonus_offset (numeric) OR 'Кіндер' prize column
-// Then: prize columns (True/False)
-// Then: date columns (datetime → star strings ⭐⭐⭐)
-
-function countStars(val: unknown): number {
-  if (typeof val === "string") {
-    // Count ⭐ characters
-    const count = Array.from(val).filter((c) => c === "⭐").length;
-    return count;
-  }
-  if (typeof val === "number") return Math.floor(Math.abs(val));
-  return 0;
-}
-
-function isDateLike(header: unknown): boolean {
-  if (header instanceof Date) return true;
-  if (typeof header === "number" && header > 40000) return true; // Excel date serial
-  return false;
-}
+/**
+ * Імпорт учнів і зірок із CSV/XLSX.
+ *
+ * ДВА РЕЖИМИ, і це головна зміна Етапу 6:
+ *   mode=preview — нічого не пише, повертає розібрані імена як «прізвище | ім'я»
+ *                  з позначками підозрілого порядку;
+ *   mode=commit  — пише, застосувавши підтверджені вчителем перестановки.
+ *
+ * Навіщо прев'ю: публічний fallback у БД показує ДРУГЕ слово full_name як
+ * ім'я. Файл із порядком «Ім'я Прізвище» тихо виставив би прізвища всіх учнів
+ * на публічну сторінку класу. Тому імпорт без підтвердження порядку
+ * неможливий — це не UX-люб'язність, а бар'єр.
+ *
+ * Замість enum star_type пишемо entry_type_id реальних типів цього класу
+ * (порожньому класу спершу накочується системний шаблон).
+ */
 
 export async function POST(request: NextRequest) {
   const { user, supabaseForRls } = await getSupabaseForAdminApi(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  const supabase = createSupabaseAdminClient() ?? supabaseForRls;
 
   let formData: FormData;
   try {
@@ -46,82 +44,133 @@ export async function POST(request: NextRequest) {
 
   const file = formData.get("file") as File | null;
   const classId = formData.get("classId") as string | null;
+  const mode = (formData.get("mode") as string | null) ?? "preview";
 
   if (!file || !classId) {
     return NextResponse.json({ error: "Missing file or classId" }, { status: 400 });
   }
 
-  // File size and type validation
-  if (file.size > 5 * 1024 * 1024) { // 5MB limit
-    return NextResponse.json({ error: "File too large. Maximum 5MB." }, { status: 400 });
+  const fileError = validateImportFile(file);
+  if (fileError) {
+    return NextResponse.json({ error: fileError }, { status: 400 });
   }
 
-  const validTypes = [
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
-    "application/vnd.ms-excel",
-    "text/csv"
-  ];
-  if (!validTypes.includes(file.type) && !file.name.endsWith('.xlsx') && !file.name.endsWith('.csv')) {
-    return NextResponse.json({ error: "Invalid file type. Please upload an Excel or CSV file." }, { status: 400 });
-  }
-
-  // Клас має належати цьому вчителю (без винятку для teacher_id IS NULL)
+  // Клас має належати цьому вчителю. Перевірка ДО будь-якого розбору і,
+  // головне, до переходу на service-role нижче — той RLS не перевіряє взагалі.
   const claim = await assertClassOwnership(supabaseForRls, classId, user.id);
   if (!claim.success) {
     return NextResponse.json({ error: claim.error || "Permission denied" }, { status: 403 });
   }
 
   const arrayBuffer = await file.arrayBuffer();
-  const workbook = XLSX.read(Buffer.from(arrayBuffer), { type: "buffer", cellDates: true });
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const rows: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, dateNF: "yyyy-mm-dd" });
+  const parsed = parseImportWorkbook(Buffer.from(arrayBuffer));
 
-  if (rows.length < 2) {
-    return NextResponse.json({ error: "Empty sheet" }, { status: 400 });
+  if (parsed.rows.length === 0) {
+    return NextResponse.json({ error: "У файлі немає рядків з учнями" }, { status: 400 });
   }
 
-  const headers = rows[0] as unknown[];
-  const dataRows = rows.slice(1).filter((row) => row[0]); // Skip empty rows
+  // -------------------------------------------------------------------------
+  // Режим прев'ю: показуємо розбір, нічого не чіпаємо.
+  // -------------------------------------------------------------------------
+  if (mode === "preview") {
+    const preview = buildNamePreview(parsed.rows.map((r) => r.rawName));
+    return NextResponse.json({
+      mode: "preview",
+      rows: preview,
+      lessonColumns: parsed.dateColumnCount,
+      suspiciousCount: preview.filter((r) => r.suspicious).length,
+      invalidCount: preview.filter((r) => !r.valid).length,
+    });
+  }
 
-  // Identify date columns (index ≥ 4)
-  const dateColIndices: number[] = [];
-  const dateCellDates: Date[] = [];
+  if (mode !== "commit") {
+    return NextResponse.json({ error: "Unknown mode" }, { status: 400 });
+  }
 
-  for (let i = 4; i < headers.length; i++) {
-    const h = headers[i];
-    if (isDateLike(h)) {
-      dateColIndices.push(i);
-      if (h instanceof Date) {
-        dateCellDates.push(h);
-      } else if (typeof h === "number") {
-        // Excel serial date to JS Date
-        const d = XLSX.SSF.parse_date_code(h);
-        dateCellDates.push(new Date(d.y, d.m - 1, d.d));
+  // -------------------------------------------------------------------------
+  // Режим запису.
+  // -------------------------------------------------------------------------
+  let swapIndices: number[] = [];
+  const rawSwap = formData.get("swapIndices");
+  if (typeof rawSwap === "string" && rawSwap.trim()) {
+    try {
+      const parsedSwap = JSON.parse(rawSwap);
+      if (Array.isArray(parsedSwap)) {
+        swapIndices = parsedSwap.filter((n) => Number.isInteger(n));
       }
+    } catch {
+      return NextResponse.json({ error: "Invalid swapIndices" }, { status: 400 });
     }
+  }
+  const swapSet = new Set(swapIndices);
+
+  // Імена, які не проходять валідацію, не імпортуються взагалі: краще
+  // недоімпортувати і сказати про це, ніж завести учня «Петренко» без імені,
+  // у якого публічним іменем стане «Учень».
+  const prepared: Array<{
+    row: (typeof parsed.rows)[number];
+    fullName: string;
+  }> = [];
+  const skipped: string[] = [];
+
+  for (const row of parsed.rows) {
+    const candidate = swapSet.has(row.index)
+      ? swapNameOrder(row.rawName)
+      : normalizeFullName(row.rawName);
+    if (!validateFullName(candidate).ok) {
+      skipped.push(row.rawName);
+      continue;
+    }
+    prepared.push({ row, fullName: candidate });
+  }
+
+  if (prepared.length === 0) {
+    return NextResponse.json(
+      { error: "Жоден рядок не пройшов перевірку «прізвище та ім'я»" },
+      { status: 400 }
+    );
+  }
+
+  const supabase = createSupabaseAdminClient() ?? supabaseForRls;
+
+  const entryTypes = await resolveEntryTypes(supabase, classId);
+  if (!entryTypes) {
+    return NextResponse.json(
+      { error: "У класі немає типів нарахувань — налаштуйте систему балів" },
+      { status: 400 }
+    );
+  }
+
+  // Уроки створюємо один раз на дату, а не на кожного учня.
+  const lessonIdByDate = new Map<string, string>();
+  const allDates = new Set<string>();
+  prepared.forEach(({ row }) => row.lessonStars.forEach((l) => allDates.add(l.date)));
+
+  for (const date of Array.from(allDates)) {
+    const { data: existing } = await supabase
+      .from("lessons")
+      .select("id")
+      .eq("class_id", classId)
+      .eq("date", date)
+      .maybeSingle();
+
+    if (existing) {
+      lessonIdByDate.set(date, existing.id);
+      continue;
+    }
+    const { data: created } = await supabase
+      .from("lessons")
+      .insert({ class_id: classId, date })
+      .select("id")
+      .single();
+    if (created) lessonIdByDate.set(date, created.id);
   }
 
   let studentsInserted = 0;
   let entriesInserted = 0;
   const errors: string[] = [];
 
-  for (const row of dataRows) {
-    const fullName = String(row[0] ?? "").trim();
-    if (!fullName) continue;
-
-    const avatarEmoji = String(row[2] ?? "⭐").trim() || "⭐";
-    const nickname = row[3] ? String(row[3]).trim() : null;
-
-    // Bonus offset (col 4 if numeric)
-    let bonusOffset = 0;
-    const col4 = row[4];
-    if (typeof col4 === "number") {
-      bonusOffset = Math.floor(col4);
-    } else if (typeof col4 === "string" && /^-?\d+$/.test(col4.trim())) {
-      bonusOffset = parseInt(col4.trim(), 10);
-    }
-
-    // Upsert student
+  for (const { row, fullName } of prepared) {
     const { data: existingStudent } = await supabase
       .from("students")
       .select("id")
@@ -135,77 +184,82 @@ export async function POST(request: NextRequest) {
     } else {
       const { data: newStudent, error: insErr } = await supabase
         .from("students")
-        .insert({ class_id: classId, full_name: fullName, nickname, avatar_emoji: avatarEmoji })
+        .insert({
+          class_id: classId,
+          full_name: fullName,
+          nickname: row.nickname,
+          avatar_emoji: row.avatarEmoji,
+        })
         .select("id")
         .single();
       if (insErr || !newStudent) {
-        errors.push(`Failed to insert student: ${fullName}`);
+        // Прізвище в помилку НЕ кладемо: відповідь API потрапляє в логи.
+        errors.push(`Рядок ${row.index + 2}: не вдалося створити учня`);
         continue;
       }
       studentId = newStudent.id;
       studentsInserted++;
     }
 
-    // Insert bonus offset as a 'bonus' entry if non-zero
-    if (bonusOffset !== 0) {
-      await supabase.from("star_entries").insert({
+    const rows: Array<Record<string, unknown>> = [];
+
+    if (row.bonusOffset !== 0) {
+      rows.push({
         student_id: studentId,
         class_id: classId,
-        type: bonusOffset > 0 ? "bonus" : "penalty",
-        amount: bonusOffset,
+        entry_type_id:
+          row.bonusOffset > 0 ? entryTypes.positive : entryTypes.negative,
+        amount: row.bonusOffset,
+        scope: "student",
         note: "Імпортовано: початковий бонус",
       });
-      entriesInserted++;
     }
 
-    // Insert star entries for each date column
-    for (let di = 0; di < dateColIndices.length; di++) {
-      const colIdx = dateColIndices[di];
-      const cellVal = row[colIdx];
-      const stars = countStars(cellVal);
-      if (stars === 0) continue;
-
-      const lessonDate = dateCellDates[di];
-      const dateStr = lessonDate
-        ? `${lessonDate.getFullYear()}-${String(lessonDate.getMonth() + 1).padStart(2, "0")}-${String(lessonDate.getDate()).padStart(2, "0")}`
-        : "2024-01-01";
-
-      // Upsert lesson for this date
-      const { data: existingLesson } = await supabase
-        .from("lessons")
-        .select("id")
-        .eq("class_id", classId)
-        .eq("date", dateStr)
-        .maybeSingle();
-
-      let lessonId: string;
-      if (existingLesson) {
-        lessonId = existingLesson.id;
-      } else {
-        const { data: newLesson } = await supabase
-          .from("lessons")
-          .insert({ class_id: classId, date: dateStr })
-          .select("id")
-          .single();
-        lessonId = newLesson?.id ?? "";
-      }
-
-      await supabase.from("star_entries").insert({
+    for (const lesson of row.lessonStars) {
+      const lessonId = lessonIdByDate.get(lesson.date);
+      if (!lessonId) continue;
+      rows.push({
         student_id: studentId,
         class_id: classId,
-        lesson_id: lessonId || null,
-        type: "lesson",
-        amount: stars,
+        lesson_id: lessonId,
+        entry_type_id: entryTypes.lesson,
+        amount: lesson.stars,
+        scope: "student",
         note: "Імпортовано",
       });
-      entriesInserted++;
     }
+
+    if (rows.length === 0) continue;
+
+    // upsert, а не insert: повторний імпорт того самого файлу оновить оцінки,
+    // а не подвоїть їх (опора — star_entries_lesson_slot_uq з 025/025a).
+    const { error: entriesErr } = await supabase
+      .from("star_entries")
+      .upsert(rows, { onConflict: "student_id,lesson_id,entry_type_id" });
+
+    if (entriesErr) {
+      errors.push(`Рядок ${row.index + 2}: не вдалося зберегти зірки`);
+      continue;
+    }
+    entriesInserted += rows.length;
+  }
+
+  const parts = [`Імпортовано: ${studentsInserted} учнів, ${entriesInserted} записів зірок`];
+  if (skipped.length) {
+    parts.push(`Пропущено рядків без прізвища та імені: ${skipped.length}`);
+  }
+  if (errors.length) {
+    parts.push(errors.join("; "));
   }
 
   return NextResponse.json({
-    message: `✅ Імпортовано: ${studentsInserted} учнів, ${entriesInserted} записів зірок${errors.length ? `. Помилки: ${errors.join("; ")}` : ""}`,
+    mode: "commit",
+    message: `✅ ${parts.join(". ")}`,
     studentsInserted,
     entriesInserted,
+    skippedCount: skipped.length,
     errors,
   });
 }
+
+export type { NamePreviewRow };

@@ -6,6 +6,13 @@ import { UserOutlined, SmileOutlined, SaveOutlined, ArrowLeftOutlined } from "@a
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
+import {
+  FULL_NAME_LABEL,
+  FULL_NAME_ORDER_HINT,
+  FULL_NAME_PLACEHOLDER,
+  MINIMIZATION_HINT,
+  fullNameRule,
+} from "@/lib/students/fullName";
 
 interface Student {
   id: string;
@@ -78,11 +85,17 @@ export default function StudentEditForm({
           size="large"
         >
           <Form.Item
-            label={<span style={{ fontWeight: 800 }}>Повне ім’я</span>}
+            label={<span style={{ fontWeight: 800 }}>{FULL_NAME_LABEL}</span>}
             name="full_name"
-            rules={[{ required: true, message: "Введіть повне ім’я" }]}
+            rules={[fullNameRule]}
+            extra={
+              <span style={{ color: "#868e96", fontSize: "0.8rem", display: "block", lineHeight: 1.55 }}>
+                ⓘ {FULL_NAME_ORDER_HINT}
+                <br />ⓘ {MINIMIZATION_HINT}
+              </span>
+            }
           >
-            <Input prefix={<UserOutlined />} placeholder="Наприклад: Олександр Петренко" />
+            <Input prefix={<UserOutlined />} placeholder={FULL_NAME_PLACEHOLDER} />
           </Form.Item>
 
           <Form.Item

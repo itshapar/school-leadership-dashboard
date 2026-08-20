@@ -23,8 +23,9 @@ export default async function AdminClassPage({ params }: Props) {
 
   const { data: students } = await supabase
     .from("students")
-    .select("id, full_name, nickname, avatar_emoji")
+    .select("id, full_name, nickname, avatar_emoji, group_id")
     .eq("class_id", classId)
+    .is("deleted_at", null)
     .order("full_name");
 
   const journalInitial = await loadManagementJournalData(supabase, classId);
@@ -66,7 +67,11 @@ export default async function AdminClassPage({ params }: Props) {
           <h1 style={{ fontSize: "1.5rem", fontWeight: 900, margin: 0, textTransform: "uppercase" }}>{cls.name}</h1>
         </div>
 
-        <AdminClassToolbar classId={classId} students={students ?? []} />
+        <AdminClassToolbar
+          classId={classId}
+          classCode={cls.public_code}
+          students={students ?? []}
+        />
       </div>
 
       {/* Full Width Table Area */}

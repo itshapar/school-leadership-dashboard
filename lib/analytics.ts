@@ -1,4 +1,25 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { fetchAllRows } from "@/lib/supabase/fetchAll";
+
+/** Учень у вибірці дашборда: select("*"), але потрібні лише ці поля. */
+interface StudentRow {
+  id: string;
+  class_id: string;
+  full_name: string;
+  nickname: string | null;
+  avatar_emoji: string;
+  group_id: string | null;
+}
+
+/** Класовий приз у тому вигляді, в якому його показують віджети дашборда. */
+export interface ClassPrizeLite {
+  id: string;
+  class_id: string;
+  name: string;
+  emoji: string;
+  threshold: number;
+  sort_order: number;
+}
 
 export type TimeFrame = "all_time" | "last_30_days" | "last_7_days";
 
@@ -7,13 +28,48 @@ export async function getDashboardData(supabase: SupabaseClient, classIdFilter?:
   const { data: classes } = await supabase.from("classes").select("*").order("name");
   const classMap = new Map((classes ?? []).map((c) => [c.id, c]));
 
-  // 2. Fetch Students
-  let studentQuery = supabase.from("students").select("*");
-  if (classIdFilter) {
-    studentQuery = studentQuery.eq("class_id", classIdFilter);
-  }
-  const { data: students } = await studentQuery;
-  const studentMap = new Map((students ?? []).map((s) => [s.id, s]));
+  // 1b. Класові призи — джерело правди для «Епічних цілей» замість двох
+  // зашитих стовпців classes.game_day_threshold / pizza_day_threshold.
+  const { data: classPrizes } = await supabase
+    .from("class_prizes")
+    .select("id, class_id, name, emoji, threshold, sort_order")
+    .is("deleted_at", null)
+    .order("sort_order");
+
+  const prizesByClass = new Map<string, ClassPrizeLite[]>();
+  (classPrizes ?? []).forEach((p) => {
+    const list = prizesByClass.get(p.class_id) ?? [];
+    list.push(p as ClassPrizeLite);
+    prizesByClass.set(p.class_id, list);
+  });
+
+  // 1c. Типи нарахувань: замінюють enum star_type. Семантика, від якої
+  // залежить аналітика, тепер властивість типу, а не магічний рядок:
+  //   «урок»  = is_lesson_bound
+  //   «бонус» = НЕ прив'язаний до уроку і додатний
+  const { data: entryTypeRows } = await supabase
+    .from("entry_types")
+    .select("id, class_id, is_lesson_bound, sign");
+
+  const typeById = new Map<string, { is_lesson_bound: boolean; sign: number }>(
+    (entryTypeRows ?? []).map((t) => [
+      t.id as string,
+      { is_lesson_bound: Boolean(t.is_lesson_bound), sign: Number(t.sign) },
+    ])
+  );
+
+  const isLessonEntry = (entryTypeId: string | null) =>
+    entryTypeId ? typeById.get(entryTypeId)?.is_lesson_bound === true : false;
+  const isBonusEntry = (entryTypeId: string | null) =>
+    entryTypeId ? typeById.get(entryTypeId)?.is_lesson_bound === false : false;
+
+  // 2. Fetch Students (посторінково: до 20 класів × 60 учнів = 1200 рядків,
+  // а PostgREST мовчки віддає максимум 1000)
+  const students = await fetchAllRows<StudentRow>(() => {
+    const q = supabase.from("students").select("*");
+    return classIdFilter ? q.eq("class_id", classIdFilter) : q;
+  });
+  const studentMap = new Map(students.map((s) => [s.id, s]));
 
   // 3. Fetch Star Entries (Paginated to retrieve all rows)
   let starEntries: any[] = [];
@@ -70,7 +126,7 @@ export async function getDashboardData(supabase: SupabaseClient, classIdFilter?:
     const entryDate = new Date(entry.created_at);
     
     // KPI Stats (Bonuses)
-    if (entry.type === "bonus" && entry.amount > 0) {
+    if (isBonusEntry(entry.entry_type_id) && entry.amount > 0) {
       if (entryDate >= firstDayOfMonth) {
         totalBonusesMonth += entry.amount;
       } else if (entryDate >= firstDayOfLastMonth && entryDate < firstDayOfMonth) {
@@ -93,7 +149,7 @@ export async function getDashboardData(supabase: SupabaseClient, classIdFilter?:
     }
 
     // Student Lessons (for efficiency)
-    if (entry.type === "lesson") {
+    if (isLessonEntry(entry.entry_type_id)) {
       if (entry.amount > 0) {
         attendedCount++;
         studentLessons.set(entry.student_id, (studentLessons.get(entry.student_id) ?? 0) + 1);
@@ -171,7 +227,10 @@ export async function getDashboardData(supabase: SupabaseClient, classIdFilter?:
   const totalLessons = studentLessons.size > 0 ? Math.max(...Array.from(studentLessons.values())) : 0;
 
   return {
-    classes: classes ?? [],
+    classes: (classes ?? []).map((c) => ({
+      ...c,
+      class_prizes: prizesByClass.get(c.id) ?? [],
+    })),
     students: students ?? [],
     leaderboard,
     topVelocity,

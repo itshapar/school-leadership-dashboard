@@ -10,7 +10,14 @@ import { getSupabaseClient } from "@/lib/supabase/client";
  * Якщо email від Google збігається з наявним підтвердженим акаунтом,
  * Supabase лінкує identity до нього — дубль не створюється.
  */
-export default function GoogleSignInButton({ label }: { label?: string }) {
+export default function GoogleSignInButton({
+  label,
+  disabled,
+}: {
+  label?: string;
+  /** Реєстрація: кнопка неактивна, доки не позначені обидва чекбокси Умов. */
+  disabled?: boolean;
+}) {
   const [loading, setLoading] = useState(false);
 
   async function onClick() {
@@ -32,6 +39,7 @@ export default function GoogleSignInButton({ label }: { label?: string }) {
       block
       icon={<GoogleOutlined />}
       loading={loading}
+      disabled={disabled}
       onClick={onClick}
       style={{ fontWeight: 600 }}
     >

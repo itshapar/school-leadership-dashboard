@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Table, Select, Spin, message, Space, Checkbox } from "antd";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Table, Select, Spin, message, Checkbox, Alert, Segmented } from "antd";
+import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import dayjs from "dayjs";
-import { UserOutlined } from "@ant-design/icons";
 import {
   loadManagementJournalData,
   type ManagementJournalData,
@@ -12,6 +12,7 @@ import {
   type ManagementJournalLesson,
   type ManagementJournalPrize,
 } from "@/lib/admin/managementJournalData";
+import type { ClassGroup, EntryType } from "@/lib/admin/classConfig";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 
 type Student = ManagementJournalStudent;
@@ -26,23 +27,46 @@ const STAR_OPTIONS = [
   { value: 3, label: "3" },
 ];
 
-function applyJournalState(
-  data: ManagementJournalData,
-  setters: {
-    setStudents: (v: Student[]) => void;
-    setLessons: (v: Lesson[]) => void;
-    setPrizes: (v: Prize[]) => void;
-    setEntries: (v: Record<string, Record<string, number>>) => void;
-    setGivenPrizes: (v: Record<string, Record<string, boolean>>) => void;
-    setTotalStars: (v: Record<string, number>) => void;
-  }
-) {
-  setters.setStudents(data.students);
-  setters.setLessons(data.lessons);
-  setters.setPrizes(data.prizes);
-  setters.setEntries(data.entries);
-  setters.setGivenPrizes(data.givenPrizes);
-  setters.setTotalStars(data.totalStars);
+/** Псевдо-значення фільтра груп: усі учні / учні без групи. */
+const GROUP_ALL = "__all__";
+const GROUP_NONE = "__none__";
+
+interface JournalState {
+  students: Student[];
+  lessons: Lesson[];
+  prizes: Prize[];
+  groups: ClassGroup[];
+  entryTypes: EntryType[];
+  lessonType: EntryType | null;
+  entries: Record<string, Record<string, number>>;
+  givenPrizes: Record<string, Record<string, boolean>>;
+  totalStars: Record<string, number>;
+}
+
+const EMPTY_STATE: JournalState = {
+  students: [],
+  lessons: [],
+  prizes: [],
+  groups: [],
+  entryTypes: [],
+  lessonType: null,
+  entries: {},
+  givenPrizes: {},
+  totalStars: {},
+};
+
+function toState(data: ManagementJournalData): JournalState {
+  return {
+    students: data.students,
+    lessons: data.lessons,
+    prizes: data.prizes,
+    groups: data.groups,
+    entryTypes: data.entryTypes,
+    lessonType: data.lessonType,
+    entries: data.entries,
+    givenPrizes: data.givenPrizes,
+    totalStars: data.totalStars,
+  };
 }
 
 export default function ManagementTable({
@@ -52,46 +76,40 @@ export default function ManagementTable({
   classId: string;
   initialData?: ManagementJournalData;
 }) {
-  const [students, setStudents] = useState<Student[]>(initialData?.students ?? []);
-  const [lessons, setLessons] = useState<Lesson[]>(initialData?.lessons ?? []);
-  const [prizes, setPrizes] = useState<Prize[]>(initialData?.prizes ?? []);
-  const [entries, setEntries] = useState<Record<string, Record<string, number>>>(
-    initialData?.entries ?? {}
+  const [state, setState] = useState<JournalState>(
+    initialData ? toState(initialData) : EMPTY_STATE
   );
-  const [givenPrizes, setGivenPrizes] = useState<Record<string, Record<string, boolean>>>(
-    initialData?.givenPrizes ?? {}
-  );
-  const [totalStars, setTotalStars] = useState<Record<string, number>>(initialData?.totalStars ?? {});
-
+  const [groupFilter, setGroupFilter] = useState<string>(GROUP_ALL);
   const [loading, setLoading] = useState(!initialData);
 
   const supabase = getSupabaseClient();
 
-  const loadData = useCallback(
-    async (opts?: { silent?: boolean }) => {
-      if (!opts?.silent) setLoading(true);
-      try {
-        const data = await loadManagementJournalData(supabase, classId);
-        applyJournalState(data, {
-          setStudents,
-          setLessons,
-          setPrizes,
-          setEntries,
-          setGivenPrizes,
-          setTotalStars,
-        });
-      } catch (err) {
-        console.error(err);
-        message.error("Помилка завантаження даних");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [classId, supabase]
-  );
+  const {
+    students,
+    lessons,
+    prizes,
+    groups,
+    lessonType,
+    entries,
+    givenPrizes,
+    totalStars,
+  } = state;
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await loadManagementJournalData(supabase, classId);
+      setState(toState(data));
+    } catch (err) {
+      console.error(err);
+      message.error("Помилка завантаження даних");
+    } finally {
+      setLoading(false);
+    }
+  }, [classId, supabase]);
 
   useEffect(() => {
-    // Якщо SSR вже передав initialData — не робимо повторний refetch.
+    // Якщо SSR уже передав initialData — не робимо повторний refetch.
     // Компонент ремаунтиться на `key={classId}` у сторінці адмін-класу.
     if (!initialData) {
       void loadData();
@@ -100,35 +118,53 @@ export default function ManagementTable({
 
   // Sync state when initialData changes (e.g. after router.refresh())
   useEffect(() => {
-    if (initialData) {
-      applyJournalState(initialData, {
-        setStudents,
-        setLessons,
-        setPrizes,
-        setEntries,
-        setGivenPrizes,
-        setTotalStars,
-      });
-    }
+    if (initialData) setState(toState(initialData));
   }, [initialData]);
+
+  /**
+   * Фільтр за групою застосовується лише до РЯДКІВ і до сум Σ. Дані
+   * лишаються повними: перемикання фільтра не має ходити в мережу.
+   */
+  const visibleStudents = useMemo(() => {
+    if (groupFilter === GROUP_ALL) return students;
+    if (groupFilter === GROUP_NONE) return students.filter((s) => !s.group_id);
+    return students.filter((s) => s.group_id === groupFilter);
+  }, [students, groupFilter]);
+
+  const groupOptions = useMemo(() => {
+    if (groups.length === 0) return [];
+    const options: Array<{ label: string; value: string }> = [
+      { label: "Усі", value: GROUP_ALL },
+      ...groups.map((g) => ({ label: g.name, value: g.id })),
+    ];
+    if (students.some((s) => !s.group_id)) {
+      options.push({ label: "Без групи", value: GROUP_NONE });
+    }
+    return options;
+  }, [groups, students]);
 
   // Auto-save star amount (через API з серверною сесією — RLS у Supabase для запису)
   const handleStarChange = async (studentId: string, lessonId: string, amount: number) => {
+    if (!lessonType) {
+      message.error("У класі немає типу нарахування, прив'язаного до уроку");
+      return;
+    }
+
     const oldAmount = entries[studentId]?.[lessonId] ?? 0;
     const getStarsVal = (v: number) => (v > 0 ? v : 0);
     const diff = getStarsVal(amount) - getStarsVal(oldAmount);
 
-    setEntries((prev) => ({
+    setState((prev) => ({
       ...prev,
-      [studentId]: { ...(prev[studentId] || {}), [lessonId]: amount },
+      entries: {
+        ...prev.entries,
+        [studentId]: { ...(prev.entries[studentId] || {}), [lessonId]: amount },
+      },
+      totalStars: {
+        ...prev.totalStars,
+        [studentId]: (prev.totalStars[studentId] ?? 0) + diff,
+      },
     }));
-    setTotalStars((prev) => {
-      const current = prev[studentId] ?? 0;
-      return {
-        ...prev,
-        [studentId]: current + diff,
-      };
-    });
 
     try {
       const res = await adminApiFetch(supabase, "/api/admin/star-entry", {
@@ -138,6 +174,7 @@ export default function ManagementTable({
           student_id: studentId,
           lesson_id: lessonId,
           class_id: classId,
+          entry_type_id: lessonType.id,
           amount,
         }),
       });
@@ -148,22 +185,28 @@ export default function ManagementTable({
     } catch (err) {
       console.error(err);
       message.error(err instanceof Error ? err.message : "Помилка автозбереження");
-      setEntries((prev) => ({
+      setState((prev) => ({
         ...prev,
-        [studentId]: { ...(prev[studentId] || {}), [lessonId]: oldAmount },
-      }));
-      setTotalStars((prev) => ({
-        ...prev,
-        [studentId]: (prev[studentId] ?? 0) - diff,
+        entries: {
+          ...prev.entries,
+          [studentId]: { ...(prev.entries[studentId] || {}), [lessonId]: oldAmount },
+        },
+        totalStars: {
+          ...prev.totalStars,
+          [studentId]: (prev.totalStars[studentId] ?? 0) - diff,
+        },
       }));
     }
   };
 
   const handlePrizeToggle = async (studentId: string, prizeId: string, checked: boolean) => {
     const prevVal = givenPrizes[studentId]?.[prizeId] ?? false;
-    setGivenPrizes((prev) => ({
+    setState((prev) => ({
       ...prev,
-      [studentId]: { ...(prev[studentId] || {}), [prizeId]: checked },
+      givenPrizes: {
+        ...prev.givenPrizes,
+        [studentId]: { ...(prev.givenPrizes[studentId] || {}), [prizeId]: checked },
+      },
     }));
 
     try {
@@ -177,12 +220,20 @@ export default function ManagementTable({
     } catch (err) {
       console.error(err);
       message.error(err instanceof Error ? err.message : "Помилка збереження нагороди");
-      setGivenPrizes((prev) => ({
+      setState((prev) => ({
         ...prev,
-        [studentId]: { ...(prev[studentId] || {}), [prizeId]: prevVal },
+        givenPrizes: {
+          ...prev.givenPrizes,
+          [studentId]: { ...(prev.givenPrizes[studentId] || {}), [prizeId]: prevVal },
+        },
       }));
     }
   };
+
+  const groupNameById = useMemo(
+    () => new Map(groups.map((g) => [g.id, g.name] as const)),
+    [groups]
+  );
 
   const columns = [
     {
@@ -205,14 +256,31 @@ export default function ManagementTable({
           <span style={{ fontSize: "1.4rem", flexShrink: 0 }}>{record.avatar_emoji}</span>
           <div style={{ lineHeight: "1.2" }}>
             <div style={{ fontWeight: 850, fontSize: "1rem" }}>{record.full_name}</div>
-            {record.nickname && (
-              <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontWeight: 700 }}>
-                {record.nickname}
-              </div>
-            )}
+            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+              {record.nickname && (
+                <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontWeight: 700 }}>
+                  {record.nickname}
+                </span>
+              )}
+              {record.group_id && groupNameById.has(record.group_id) && (
+                <span
+                  style={{
+                    fontSize: "0.68rem",
+                    fontWeight: 800,
+                    color: "#495057",
+                    background: "#f1f3f5",
+                    border: "1px solid #dee2e6",
+                    borderRadius: "6px",
+                    padding: "0 5px",
+                  }}
+                >
+                  {groupNameById.get(record.group_id)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      )
+      ),
     },
     {
       title: <div style={{ textAlign: "center", fontWeight: 900 }}>BCЬOГO</div>,
@@ -234,10 +302,9 @@ export default function ManagementTable({
         </div>
       )
     },
-    ...prizes.map((prize, idx) => {
-      const titleText = prize.name;
+    ...prizes.map((prize) => {
       return {
-        title: <div style={{ fontSize: "0.8rem", fontWeight: 900, whiteSpace: "nowrap" }} title={prize.name}>{titleText}</div>,
+        title: <div style={{ fontSize: "0.8rem", fontWeight: 900, whiteSpace: "nowrap" }} title={prize.name}>{prize.name}</div>,
         key: `prize_${prize.id}`,
         width: 100,
         align: "center" as const,
@@ -271,7 +338,7 @@ export default function ManagementTable({
       const lessonDate = dayjs(lesson.date);
       const isToday = dayjs().isSame(lessonDate, "day");
       const isHighlighted = isToday || (idx === lessons.length - 1 && lessonDate.isBefore(dayjs()));
-      
+
       return {
         title: (
           <div style={{
@@ -298,12 +365,13 @@ export default function ManagementTable({
             <Select
               value={score}
               onChange={(val) => handleStarChange(record.id, lesson.id, val)}
-              bordered={false}
+              variant="borderless"
+              disabled={!lessonType}
               className="score-select"
               style={{
                 width: "100%",
                 fontWeight: 900,
-                color: score > 0 ? "#000000" : (score === -1 ? "#fa5252" : (score < 0 ? "#fa5252" : "#adb5bd"))
+                color: score > 0 ? "#000000" : (score < 0 ? "#fa5252" : "#adb5bd")
               }}
               options={STAR_OPTIONS}
             />
@@ -316,16 +384,69 @@ export default function ManagementTable({
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: "120px" }}>
-        <Spin size="large" description="Завантаження журналу..." />
+        <Spin size="large" />
       </div>
     );
   }
 
   return (
     <div style={{ background: "#ffffff", width: "100%", height: "100%" }}>
+      {!lessonType && (
+        <div style={{ padding: "16px 16px 0" }}>
+          <Alert
+            type="warning"
+            showIcon
+            message="У класі немає типу нарахування, прив'язаного до уроку"
+            description={
+              <span>
+                Клітинки журналу заблоковані. Створіть тип із позначкою «прив'язаний
+                до уроку» в{" "}
+                <Link href={`/admin/${classId}/settings`} style={{ fontWeight: 700 }}>
+                  налаштуваннях класу
+                </Link>
+                .
+              </span>
+            }
+          />
+        </div>
+      )}
+
+      {groupOptions.length > 0 && (
+        <div
+          style={{
+            padding: "12px 16px",
+            borderBottom: "1px solid #eee",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            flexWrap: "wrap",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "0.75rem",
+              fontWeight: 900,
+              textTransform: "uppercase",
+              color: "#868e96",
+            }}
+          >
+            Група
+          </span>
+          <Segmented
+            size="small"
+            value={groupFilter}
+            onChange={(v) => setGroupFilter(String(v))}
+            options={groupOptions}
+          />
+          <span style={{ fontSize: "0.8rem", color: "#868e96", fontWeight: 700 }}>
+            {visibleStudents.length} з {students.length}
+          </span>
+        </div>
+      )}
+
       <div style={{ padding: "0" }} className="full-width-table">
         <Table
-          dataSource={students}
+          dataSource={visibleStudents}
           columns={columns}
           rowKey="id"
           pagination={false}
@@ -352,17 +473,18 @@ export default function ManagementTable({
                       <div style={{ textAlign: "center", color: "#adb5bd" }}>-</div>
                     </Table.Summary.Cell>
                   ))}
-                  {/* Lesson sum columns */}
+                  {/* Lesson sum columns — рахуємо по ВИДИМИХ учнях, щоб фільтр
+                      групи давав суму саме цієї групи, а не всього класу. */}
                   {lessons.map((lesson, i) => {
-                    const lessonTotal = students.reduce((sum, st) => {
+                    const lessonTotal = visibleStudents.reduce((sum, st) => {
                       const val = entries[st.id]?.[lesson.id] ?? 0;
                       return sum + (val > 0 ? val : 0);
                     }, 0);
                     return (
                       <Table.Summary.Cell key={lesson.id} index={3 + prizes.length + i} className="sticky-summary-cell">
-                        <div style={{ 
-                          textAlign: "center", 
-                          fontWeight: 950, 
+                        <div style={{
+                          textAlign: "center",
+                          fontWeight: 950,
                           fontSize: "1.1rem",
                           color: lessonTotal > 0 ? "#2b8a3e" : "#adb5bd",
                           textShadow: lessonTotal > 0 ? "0 0 10px rgba(43,138,62,0.1)" : "none"
@@ -473,7 +595,7 @@ export default function ManagementTable({
         .management-grid .ant-table-summary {
           border-top: none !important;
         }
-        
+
         .ant-checkbox-wrapper:hover .ant-checkbox-inner,
         .ant-checkbox:hover .ant-checkbox-inner {
           border-color: #dee2e6 !important;

@@ -1,10 +1,27 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  loadClassGroups,
+  loadEntryTypes,
+  primaryLessonType,
+  type ClassGroup,
+  type EntryType,
+} from "@/lib/admin/classConfig";
+
+/**
+ * Дані журналу класу — спільні для SSR і клієнтського ManagementTable.
+ *
+ * Етап 6: клітинки уроків фільтруються за `entry_type_id` типу, прив'язаного
+ * до уроку (`is_lesson_bound`), а не за enum `type = 'lesson'`. Стовпець
+ * `star_entries.type` тут більше не читається взагалі — саме тому 020 може
+ * його дропнути.
+ */
 
 export interface ManagementJournalStudent {
   id: string;
   full_name: string;
   nickname: string | null;
   avatar_emoji: string;
+  group_id: string | null;
 }
 
 export interface ManagementJournalLesson {
@@ -23,6 +40,10 @@ export interface ManagementJournalData {
   students: ManagementJournalStudent[];
   lessons: ManagementJournalLesson[];
   prizes: ManagementJournalPrize[];
+  groups: ClassGroup[];
+  entryTypes: EntryType[];
+  /** Тип, яким журнал заповнює клітинки. null → клас без типу для уроків. */
+  lessonType: EntryType | null;
   entries: Record<string, Record<string, number>>;
   givenPrizes: Record<string, Record<string, boolean>>;
   totalStars: Record<string, number>;
@@ -32,7 +53,7 @@ interface StarEntryRow {
   student_id: string | null;
   lesson_id: string | null;
   amount: number;
-  type: string;
+  entry_type_id: string;
 }
 
 interface PrizeGivenRow {
@@ -40,7 +61,6 @@ interface PrizeGivenRow {
   prize_id: string;
 }
 
-/** Shared by server (SSR) and client ManagementTable — one round-trip batch + prizes_given */
 export async function loadManagementJournalData(
   supabase: SupabaseClient,
   classId: string
@@ -50,26 +70,33 @@ export async function loadManagementJournalData(
     { data: lsData },
     { data: enData },
     { data: przData },
+    entryTypes,
+    groups,
   ] = await Promise.all([
     supabase
       .from("students")
-      .select("id, full_name, nickname, avatar_emoji")
+      .select("id, full_name, nickname, avatar_emoji, group_id")
       .eq("class_id", classId)
+      .is("deleted_at", null)
       .order("full_name"),
     supabase
       .from("lessons")
       .select("id, date")
       .eq("class_id", classId)
+      .is("deleted_at", null)
       .order("date", { ascending: true }),
     supabase
       .from("star_entries")
-      .select("student_id, lesson_id, amount, type")
+      .select("student_id, lesson_id, amount, entry_type_id")
       .eq("class_id", classId),
     supabase
       .from("prizes_individual")
       .select("id, name, emoji, stars_required")
       .eq("class_id", classId)
+      .is("deleted_at", null)
       .order("sort_order"),
+    loadEntryTypes(supabase, classId),
+    loadClassGroups(supabase, classId),
   ]);
 
   const stList = (stData ?? []) as ManagementJournalStudent[];
@@ -77,6 +104,7 @@ export async function loadManagementJournalData(
   const lessonList = (lsData ?? []) as ManagementJournalLesson[];
   const prizeList = (przData ?? []) as ManagementJournalPrize[];
   const prizeIds = prizeList.map((p) => p.id);
+  const lessonType = primaryLessonType(entryTypes);
 
   let gvData: PrizeGivenRow[] | null = null;
   if (studentIds.length > 0 && prizeIds.length > 0) {
@@ -90,27 +118,24 @@ export async function loadManagementJournalData(
 
   const entryMap: Record<string, Record<string, number>> = {};
   const totals: Record<string, number> = {};
-  let classWideBonus = 0;
 
   const entries = (enData as StarEntryRow[] | null) ?? [];
-  
-  // First pass: sum class-wide bonuses and individual entries separately
+
   entries.forEach((e) => {
-    if (!e.student_id) {
-      classWideBonus += e.amount;
-    } else {
-      // Individual student entry: only count gains for the total (matches dashboard logic)
-      if (e.amount > 0) {
-        totals[e.student_id] = (totals[e.student_id] ?? 0) + e.amount;
-      }
-      if (e.type === "lesson" && e.lesson_id) {
-        if (!entryMap[e.student_id]) entryMap[e.student_id] = {};
-        entryMap[e.student_id][e.lesson_id] = e.amount;
-      }
+    // Класові нарахування (student_id IS NULL) свідомо не додаються до
+    // індивідуальних сум — та сама семантика, що на публічному дашборді.
+    if (!e.student_id) return;
+
+    if (e.amount > 0) {
+      totals[e.student_id] = (totals[e.student_id] ?? 0) + e.amount;
+    }
+
+    // Клітинка журналу — лише запис типу, яким журнал і заповнюється.
+    if (lessonType && e.entry_type_id === lessonType.id && e.lesson_id) {
+      if (!entryMap[e.student_id]) entryMap[e.student_id] = {};
+      entryMap[e.student_id][e.lesson_id] = e.amount;
     }
   });
-
-  // Second pass: removed. Class-wide bonus is NOT added to individual totals anymore.
 
   const givenMap: Record<string, Record<string, boolean>> = {};
   (gvData ?? []).forEach((g) => {
@@ -122,6 +147,9 @@ export async function loadManagementJournalData(
     students: stList,
     lessons: lessonList,
     prizes: prizeList,
+    groups,
+    entryTypes,
+    lessonType,
     entries: entryMap,
     givenPrizes: givenMap,
     totalStars: totals,

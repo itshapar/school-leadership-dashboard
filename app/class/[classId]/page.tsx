@@ -81,8 +81,7 @@ export default async function ClassPage({ params }: Props) {
         </div>
         <ClassProgressBars
           totalStars={totalClassStars}
-          gameDayThreshold={overview.game_day_threshold}
-          pizzaDayThreshold={overview.pizza_day_threshold}
+          prizes={overview.class_prizes ?? []}
         />
       </div>
 

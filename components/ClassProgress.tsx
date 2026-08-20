@@ -1,58 +1,77 @@
 import { Progress } from "antd";
+import type { PublicClassPrize } from "@/lib/public/classData";
 
-interface Props {
-  totalStars: number;
-  gameDayThreshold: number;
-  pizzaDayThreshold: number;
-}
-
+/**
+ * Прогрес класу до кожного класового призу.
+ *
+ * Раніше було рівно два зашиті рядки — Game Day і Pizza Day — бо пороги
+ * жили двома стовпцями в `classes`. Тепер призи класу конфігуровані
+ * (class_prizes, міграція 016), тож компонент рендерить стільки смуг,
+ * скільки їх завів учитель, у його ж порядку.
+ */
 export default function ClassProgressBars({
   totalStars,
-  gameDayThreshold,
-  pizzaDayThreshold,
-}: Props) {
-  const gamePercent = Math.min(100, Math.round((totalStars / gameDayThreshold) * 100));
-  const pizzaPercent = Math.min(100, Math.round((totalStars / pizzaDayThreshold) * 100));
+  prizes,
+}: {
+  totalStars: number;
+  prizes: PublicClassPrize[];
+}) {
+  if (prizes.length === 0) {
+    return (
+      <div style={{ color: "var(--color-text-muted)", fontWeight: 700, fontSize: "0.9rem" }}>
+        Призи класу ще не налаштовані.
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      <div>
-        <div className="progress-label" style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontWeight: 800 }}>
-          <span>Ігровий день</span>
-          <span style={{ color: gamePercent === 100 ? "#52C41A" : "inherit" }}>
-            {gamePercent}%
-          </span>
-        </div>
-        <Progress
-          percent={gamePercent}
-          strokeColor={gamePercent === 100 ? "#52C41A" : "#000000"}
-          trailColor="#e9ecef"
-          strokeWidth={20}
-          showInfo={false}
-        />
-        <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: "4px", fontWeight: 700 }}>
-          {gameDayThreshold} ЗІРОК
-        </div>
-      </div>
+      {prizes.map((prize) => {
+        const percent =
+          prize.threshold > 0
+            ? Math.min(100, Math.round((totalStars / prize.threshold) * 100))
+            : 0;
+        const reached = percent === 100;
 
-      <div>
-        <div className="progress-label" style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontWeight: 800 }}>
-          <span>Pizza Day</span>
-          <span style={{ color: pizzaPercent === 100 ? "#52C41A" : "inherit" }}>
-            {pizzaPercent}%
-          </span>
-        </div>
-        <Progress
-          percent={pizzaPercent}
-          strokeColor={pizzaPercent === 100 ? "#52C41A" : "#000000"}
-          trailColor="#e9ecef"
-          strokeWidth={20}
-          showInfo={false}
-        />
-        <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: "4px", fontWeight: 700 }}>
-          {pizzaDayThreshold} ЗІРОК
-        </div>
-      </div>
+        return (
+          <div key={prize.id}>
+            <div
+              className="progress-label"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "8px",
+                fontWeight: 800,
+              }}
+            >
+              <span>
+                {prize.emoji} {prize.name}
+              </span>
+              <span style={{ color: reached ? "#52C41A" : "inherit" }}>{percent}%</span>
+            </div>
+            <Progress
+              percent={percent}
+              strokeColor={reached ? "#52C41A" : "#000000"}
+              trailColor="#e9ecef"
+              strokeWidth={20}
+              showInfo={false}
+            />
+            <div
+              style={{
+                color: "var(--color-text-muted)",
+                fontSize: "0.85rem",
+                marginTop: "4px",
+                fontWeight: 700,
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <span>{prize.threshold} ЗІРОК</span>
+              {prize.given_count > 0 && <span>отримано {prize.given_count}×</span>}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

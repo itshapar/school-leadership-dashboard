@@ -17,8 +17,9 @@ export default async function AdminStudentsPage({ params }: Props) {
 
   const { data: students } = await supabase
     .from("students")
-    .select("id, full_name, nickname, avatar_emoji")
+    .select("id, full_name, nickname, avatar_emoji, group_id")
     .eq("class_id", resolvedClassId)
+    .is("deleted_at", null)
     .order("full_name");
 
   return (

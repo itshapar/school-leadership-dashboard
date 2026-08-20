@@ -1,9 +1,16 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
-import { UserOutlined, ReadOutlined, StarFilled } from "@ant-design/icons";
-import { Progress } from "antd";
+import { UserOutlined, ReadOutlined, StarFilled, FolderOpenOutlined } from "@ant-design/icons";
 import { formatClassCode } from "@/lib/classCodes";
+import { buildFolderTree, loadParallels, loadSchools } from "@/lib/admin/folders";
+import { getOnboardingProgressBatch } from "@/lib/admin/onboarding";
+import { fetchAllRows } from "@/lib/supabase/fetchAll";
+import AdminClassList, {
+  type AdminClassCard,
+} from "@/components/Admin/AdminClassList";
+import TermsGate from "@/components/Legal/TermsGate";
+import { hasAcceptedCurrentTerms } from "@/lib/legal/terms";
 
 export const dynamic = "force-dynamic";
 
@@ -17,59 +24,110 @@ export default async function AdminPage() {
     (user?.app_metadata as Record<string, unknown> | undefined)?.platform_role ===
     "admin";
 
-  const { data: classes } = await supabase
-    .from("classes")
-    .select("id, name, public_code, game_day_threshold, pizza_day_threshold")
-    .order("name");
+  // Акцепт Умов: guard для Google OAuth і для наявних акаунтів, які
+  // реєструвалися до появи чекбоксів (Етап 5, п. 9).
+  const termsAccepted = await hasAcceptedCurrentTerms(supabase);
+
+  const [{ data: classes }, schools, parallels] = await Promise.all([
+    supabase
+      .from("classes")
+      .select("id, name, public_code, school_id, parallel_id, is_demo, archived_at")
+      .is("deleted_at", null)
+      .order("name"),
+    loadSchools(supabase),
+    loadParallels(supabase),
+  ]);
+
   const classList = classes ?? [];
+  const classIds = classList.map((c) => c.id);
 
-  // Per-class star totals
-  const classData = await Promise.all(
-    classList.map(async (cls) => {
-      const { data: students } = await supabase
-        .from("students")
-        .select("id")
-        .eq("class_id", cls.id);
+  // Один пакет запитів на всі класи замість N×5 — див. lib/admin/onboarding.
+  const progressByClass = await getOnboardingProgressBatch(supabase, classIds);
 
-      const { data: entries } = await supabase
-        .from("star_entries")
-        .select("student_id, amount")
-        .eq("class_id", cls.id);
+  // Агрегати по класах: учні, уроки, зірки. Публічний RPC тут не годиться —
+  // це кабінет власника, дані беруться під його ж RLS.
+  //
+  // Через fetchAllRows, а не одним select: PostgREST мовчки ріже видачу на
+  // 1000 рядків, і star_entries цю межу вже перетнули (1374 на проді). Без
+  // пагінації суми зірок у списку класів були б просто заниженими, без
+  // жодної помилки.
+  const [allStudents, allLessons, allEntries] = classIds.length
+    ? await Promise.all([
+        fetchAllRows<{ class_id: string }>(() =>
+          supabase
+            .from("students")
+            .select("id, class_id")
+            .in("class_id", classIds)
+            .is("deleted_at", null)
+        ),
+        fetchAllRows<{ class_id: string }>(() =>
+          supabase
+            .from("lessons")
+            .select("id, class_id")
+            .in("class_id", classIds)
+            .is("deleted_at", null)
+        ),
+        fetchAllRows<{ class_id: string; student_id: string | null; amount: number }>(
+          () =>
+            supabase
+              .from("star_entries")
+              .select("class_id, student_id, amount")
+              .in("class_id", classIds)
+        ),
+      ])
+    : [[], [], []];
 
-      // Total class stars: sum of individual efforts (ignoring penalties <= 0) + the class pool (including all class-wide entries)
-      const totalStars = (entries ?? []).reduce((s, e) => {
-        if (e.student_id) {
-          // Individual student entry: only count gains (matches dashboard logic)
-          return s + (e.amount > 0 ? e.amount : 0);
-        } else {
-          // Class-wide entry: count all bonuses/penalties
-          return s + e.amount;
-        }
-      }, 0);
+  const countBy = (rows: Array<{ class_id: string }>) => {
+    const map = new Map<string, number>();
+    rows.forEach((r) => map.set(r.class_id, (map.get(r.class_id) ?? 0) + 1));
+    return map;
+  };
 
-      const { data: lessons } = await supabase
-        .from("lessons")
-        .select("id")
-        .eq("class_id", cls.id);
+  const studentCounts = countBy(allStudents);
+  const lessonCounts = countBy(allLessons);
 
-      return {
-        ...cls,
-        studentCount: students?.length ?? 0,
-        totalStars,
-        lessonCount: lessons?.length ?? 0,
-      };
-    })
-  );
+  const starTotals = new Map<string, number>();
+  allEntries.forEach((e) => {
+    // Індивідуальні записи рахуємо лише в плюс (як на дашборді),
+    // класові — цілком, разом зі штрафами.
+    const delta = e.student_id ? (e.amount > 0 ? e.amount : 0) : e.amount;
+    starTotals.set(e.class_id, (starTotals.get(e.class_id) ?? 0) + delta);
+  });
+
+  const cards: AdminClassCard[] = classList.map((cls) => ({
+    id: cls.id,
+    name: cls.name,
+    public_code: cls.public_code,
+    formatted_code: formatClassCode(cls.public_code),
+    school_id: cls.school_id,
+    parallel_id: cls.parallel_id,
+    is_demo: cls.is_demo ?? false,
+    archived: Boolean(cls.archived_at),
+    studentCount: studentCounts.get(cls.id) ?? 0,
+    lessonCount: lessonCounts.get(cls.id) ?? 0,
+    totalStars: starTotals.get(cls.id) ?? 0,
+    onboardingDone: progressByClass.get(cls.id)?.doneCount ?? 5,
+    onboardingTotal: progressByClass.get(cls.id)?.totalSteps ?? 5,
+    onboardingComplete: progressByClass.get(cls.id)?.complete ?? true,
+  }));
+
+  const tree = buildFolderTree(schools, parallels, cards);
+  const hasDemo = cards.some((c) => c.is_demo);
 
   return (
-    <div className="page-container" style={{ maxWidth: "800px", paddingBottom: "80px" }}>
+    <div className="page-container" style={{ maxWidth: "860px", paddingBottom: "80px" }}>
+      {!termsAccepted && <TermsGate />}
+
       <div style={{ textAlign: "center", marginBottom: "32px" }}>
         <h1 style={{ margin: 0, fontSize: "2.2rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "-1px" }}>
           Адмін-панель
         </h1>
-        <div style={{ marginTop: "8px", display: "flex", gap: "16px", justifyContent: "center", fontSize: "0.9rem", fontWeight: 700 }}>
+        <div style={{ marginTop: "8px", display: "flex", gap: "16px", justifyContent: "center", fontSize: "0.9rem", fontWeight: 700, flexWrap: "wrap" }}>
           <Link href="/admin/profile" style={{ color: "inherit" }}>
             <UserOutlined /> Профіль
+          </Link>
+          <Link href="/admin/folders" style={{ color: "inherit" }}>
+            <FolderOpenOutlined /> Школи та паралелі
           </Link>
           {isPlatformAdmin && (
             <Link href="/admin/platform" style={{ color: "inherit" }}>
@@ -79,18 +137,13 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      <Link 
+      <Link
         href="/admin/total"
         className="total-dashboard-card"
-        style={{ 
-          display: "block", 
-          textDecoration: "none", 
-          marginBottom: "16px",
-          transition: "transform 0.2s"
-        }}
+        style={{ display: "block", textDecoration: "none", marginBottom: "16px", transition: "transform 0.2s" }}
       >
-        <div className="star-card" style={{ 
-          background: "linear-gradient(135deg, #000000 0%, #2c2c2c 100%)", 
+        <div className="star-card" style={{
+          background: "linear-gradient(135deg, #000000 0%, #2c2c2c 100%)",
           color: "#ffffff",
           border: "none",
           padding: "24px",
@@ -106,18 +159,13 @@ export default async function AdminPage() {
         </div>
       </Link>
 
-      <Link 
+      <Link
         href="/dashboard"
         className="total-dashboard-card"
-        style={{ 
-          display: "block", 
-          textDecoration: "none", 
-          marginBottom: "32px",
-          transition: "transform 0.2s"
-        }}
+        style={{ display: "block", textDecoration: "none", marginBottom: "32px", transition: "transform 0.2s" }}
       >
-        <div className="star-card" style={{ 
-          background: "linear-gradient(135deg, #f59f00 0%, #f08c00 100%)", 
+        <div className="star-card" style={{
+          background: "linear-gradient(135deg, #f59f00 0%, #f08c00 100%)",
           color: "#000000",
           border: "3px solid #000",
           padding: "24px",
@@ -133,63 +181,13 @@ export default async function AdminPage() {
         </div>
       </Link>
 
-      <div style={{ marginBottom: "16px" }}>
-        <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 900, textTransform: "uppercase", opacity: 0.5 }}>
-          Класи
-        </h2>
-      </div>
-
-      <div className="admin-class-list" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        {classData.map((cls) => {
-          return (
-            <div key={cls.id} className="star-card" style={{ padding: "0" }}>
-              <div className="admin-card-row">
-                <div className="admin-card-info">
-                  <div className="admin-class-name">
-                    {cls.name}
-                  </div>
-                  
-                  <div className="admin-class-stats">
-                    <span>{cls.studentCount} учнів</span>
-                    <span>{cls.lessonCount} уроків</span>
-                    <span className="admin-stars-count">
-                      {cls.totalStars} <StarFilled style={{ fontSize: "0.9rem" }} />
-                    </span>
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: "6px",
-                      fontSize: "0.8rem",
-                      fontWeight: 800,
-                      letterSpacing: "1px",
-                      color: "var(--color-text-muted)",
-                    }}
-                  >
-                    Код для учнів: {formatClassCode(cls.public_code)}
-                  </div>
-                </div>
-
-                <div className="admin-btn-group">
-                  <Link
-                    href={`/admin/${cls.public_code}`}
-                    className="admin-action-btn admin-btn-black"
-                  >
-                    Журнал
-                  </Link>
-                  <Link
-                    href={`/class/${cls.public_code}`}
-                    target="_blank"
-                    className="admin-action-btn admin-btn-white"
-                  >
-                    Дашборд
-                  </Link>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <AdminClassList
+        tree={tree}
+        schools={schools}
+        parallels={parallels}
+        totalClasses={cards.length}
+        hasDemo={hasDemo}
+      />
 
       <div style={{ marginTop: "40px", textAlign: "center" }}>
         <AdminLogoutButton />

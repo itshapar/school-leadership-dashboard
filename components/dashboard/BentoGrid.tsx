@@ -39,7 +39,7 @@ export default function BentoGrid({ data, classId }: { data: any; classId: strin
         </div>
 
         <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
-          <ClassGoalsWidget classInfo={selectedClassInfo} leaderboard={data.leaderboard} kpi={data.kpi} />
+          <ClassGoalsWidget classInfo={selectedClassInfo} leaderboard={data.leaderboard} />
         </div>
       </div>
 

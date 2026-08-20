@@ -1,11 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Form, DatePicker, Button, Alert, Select, InputNumber, message } from "antd";
+import { useState, useEffect, useCallback } from "react";
+import { DatePicker, Button, Alert, Select, message, Spin } from "antd";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import dayjs from "dayjs";
+import { adminApiFetch } from "@/lib/admin/adminApiFetch";
+import {
+  entryTypeLabel,
+  loadEntryTypes,
+  primaryLessonType,
+  type EntryType,
+} from "@/lib/admin/classConfig";
+
+/**
+ * «Швидкий урок»: створити урок і одразу проставити бали всьому класу.
+ *
+ * Етап 6: замість зашитого `type: 'lesson'` беремо тип класу з
+ * `is_lesson_bound` (той самий, яким заповнюється журнал). Якщо вчитель завів
+ * кілька таких типів — можна обрати, яким саме нараховувати.
+ */
 
 interface Student {
   id: string;
@@ -15,6 +30,8 @@ interface Student {
 }
 
 const STAR_OPTIONS = [
+  { value: 0, label: "— не нараховувати" },
+  { value: -1, label: "Н — не був" },
   { value: 1, label: "⭐ 1 зірка" },
   { value: 2, label: "⭐⭐ 2 зірки" },
   { value: 3, label: "⭐⭐⭐ 3 зірки" },
@@ -22,109 +39,206 @@ const STAR_OPTIONS = [
 
 export default function AddLessonPage() {
   const params = useParams();
-  const classId = params.classId as string;
-  const [students, setStudents] = useState<Student[]>([]);
+  const classParam = params.classId as string;
+
+  const [classId, setClassId] = useState<string | null>(null);
   const [className, setClassName] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [lessonTypes, setLessonTypes] = useState<EntryType[]>([]);
+  const [typeId, setTypeId] = useState<string | null>(null);
   const [starValues, setStarValues] = useState<Record<string, number>>({});
   const [date, setDate] = useState<dayjs.Dayjs>(dayjs());
+  const [loading, setLoading] = useState(false);
+  const [initialising, setInitialising] = useState(true);
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      const supabase = getSupabaseClient();
-      const { data: cls } = await supabase.from("classes").select("name").eq("id", classId).single();
-      if (cls) setClassName(cls.name);
+  const supabase = getSupabaseClient();
 
-      const { data } = await supabase
-        .from("students")
-        .select("id, full_name, nickname, avatar_emoji")
-        .eq("class_id", classId)
-        .order("full_name");
-      if (data) {
-        setStudents(data);
-        // Default 2 stars for all students
-        const defaults: Record<string, number> = {};
-        data.forEach((s: Student) => (defaults[s.id] = 2));
-        setStarValues(defaults);
-      }
-    }
-    load();
-  }, [classId]);
+  const load = useCallback(async () => {
+    // URL-параметр може бути і кодом класу, і UUID — резолвимо через RLS-запит.
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const query = supabase.from("classes").select("id, name");
+    const { data: cls } = UUID_RE.test(classParam)
+      ? await query.eq("id", classParam).maybeSingle()
+      : await query.eq("public_code", classParam.toUpperCase()).maybeSingle();
 
-  async function submit() {
-    setLoading(true);
-    setSuccess(false);
-    const supabase = getSupabaseClient();
-
-    // Create lesson
-    const { data: lesson, error: lessonErr } = await supabase
-      .from("lessons")
-      .insert({ class_id: classId, date: date.format("YYYY-MM-DD") })
-      .select("id")
-      .single();
-
-    if (lessonErr || !lesson) {
-      message.error("Помилка при створенні уроку");
-      setLoading(false);
+    if (!cls) {
+      setInitialising(false);
       return;
     }
 
-    // Insert star entries for each student
-    const entries = Object.entries(starValues)
-      .filter(([, v]) => v > 0)
-      .map(([studentId, amount]) => ({
-        student_id: studentId,
-        class_id: classId,
-        lesson_id: lesson.id,
-        type: "lesson" as const,
-        amount,
-      }));
+    setClassId(cls.id);
+    setClassName(cls.name);
 
-    const { error: entriesErr } = await supabase.from("star_entries").insert(entries);
-    if (entriesErr) {
-      message.error("Помилка при збереженні зірок");
-    } else {
+    const [{ data: studentRows }, types] = await Promise.all([
+      supabase
+        .from("students")
+        .select("id, full_name, nickname, avatar_emoji")
+        .eq("class_id", cls.id)
+        .is("deleted_at", null)
+        .order("full_name"),
+      loadEntryTypes(supabase, cls.id),
+    ]);
+
+    const lessonBound = types.filter((t) => t.is_lesson_bound);
+    setLessonTypes(lessonBound);
+    setTypeId(primaryLessonType(types)?.id ?? null);
+
+    const list = (studentRows ?? []) as Student[];
+    setStudents(list);
+    const defaults: Record<string, number> = {};
+    list.forEach((s) => (defaults[s.id] = 2));
+    setStarValues(defaults);
+    setInitialising(false);
+  }, [classParam, supabase]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function submit() {
+    if (!classId || !typeId) return;
+    setLoading(true);
+    setSuccess(false);
+
+    try {
+      const dateStr = date.format("YYYY-MM-DD");
+
+      // Урок створюємо через API: там уже є перевірка власності класу
+      // і коректна обробка «урок на цю дату вже існує».
+      const res = await adminApiFetch(supabase, "/api/admin/lesson", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ class_id: classId, date: dateStr }),
+      });
+
+      let lessonId: string | null = null;
+
+      if (res.status === 409) {
+        // Урок уже є — дописуємо бали в нього, а не створюємо дубль.
+        const { data: existing } = await supabase
+          .from("lessons")
+          .select("id")
+          .eq("class_id", classId)
+          .eq("date", dateStr)
+          .maybeSingle();
+        lessonId = existing?.id ?? null;
+      } else {
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json.error ?? "Помилка створення уроку");
+        lessonId = json.lesson?.id ?? null;
+      }
+
+      if (!lessonId) throw new Error("Не вдалося визначити урок");
+
+      const entries = Object.entries(starValues)
+        .filter(([, v]) => v !== 0)
+        .map(([studentId, amount]) => ({
+          student_id: studentId,
+          class_id: classId,
+          lesson_id: lessonId,
+          entry_type_id: typeId,
+          amount,
+          scope: "student",
+        }));
+
+      if (entries.length === 0) {
+        message.warning("Жодному учню не проставлено бали");
+        setLoading(false);
+        return;
+      }
+
+      // upsert: повторне збереження того самого уроку оновлює оцінки,
+      // а не подвоює їх (опора — star_entries_lesson_slot_uq).
+      const { error } = await supabase
+        .from("star_entries")
+        .upsert(entries, { onConflict: "student_id,lesson_id,entry_type_id" });
+
+      if (error) throw new Error("Помилка при збереженні зірок");
+
       setSuccess(true);
       message.success(`Урок ${date.format("DD.MM.YYYY")} збережено!`);
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Помилка збереження");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  }
+
+  if (initialising) {
+    return (
+      <div className="page-container" style={{ textAlign: "center", padding: "80px" }}>
+        <Spin size="large" />
+      </div>
+    );
   }
 
   return (
     <div className="page-container" style={{ maxWidth: "600px" }}>
       <div style={{ marginBottom: "8px" }}>
-        <Link href="/admin" style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>← Адмін</Link>
+        <Link href={`/admin/${classParam}`} style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
+          ← Журнал
+        </Link>
       </div>
 
       <div className="page-header">
         <h1>📚 {className}</h1>
-        <p className="subtitle">Додати урок</p>
+        <p className="subtitle">Додати урок і бали одразу</p>
       </div>
 
       {success && (
         <Alert message="✅ Урок успішно збережено!" type="success" style={{ marginBottom: "16px" }} />
       )}
 
+      {!typeId && (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: "16px" }}
+          message="У класі немає типу нарахування, прив'язаного до уроку"
+          description={
+            <span>
+              Створіть його в{" "}
+              <Link href={`/admin/${classParam}/settings`} style={{ fontWeight: 700 }}>
+                налаштуваннях класу
+              </Link>
+              .
+            </span>
+          }
+        />
+      )}
+
       <div className="star-card" style={{ marginBottom: "16px" }}>
-        <div style={{ marginBottom: "16px" }}>
-          <label style={{ display: "block", marginBottom: "8px", color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
-            Дата уроку
-          </label>
-          <DatePicker
-            value={date}
-            onChange={(d) => d && setDate(d)}
-            format="DD.MM.YYYY"
-            style={{ width: "100%", background: "var(--bg-elevated)", border: "1px solid var(--color-border)" }}
-          />
-        </div>
+        <label style={{ display: "block", marginBottom: "8px", color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
+          Дата уроку
+        </label>
+        <DatePicker
+          value={date}
+          onChange={(d) => d && setDate(d)}
+          format="DD.MM.YYYY"
+          style={{ width: "100%" }}
+        />
+
+        {lessonTypes.length > 1 && (
+          <div style={{ marginTop: "16px" }}>
+            <label style={{ display: "block", marginBottom: "8px", color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
+              Тип нарахування
+            </label>
+            <Select
+              value={typeId}
+              onChange={setTypeId}
+              style={{ width: "100%" }}
+              options={lessonTypes.map((t) => ({ value: t.id, label: entryTypeLabel(t) }))}
+            />
+          </div>
+        )}
       </div>
 
       <div className="star-card">
         <div style={{ fontWeight: 700, marginBottom: "16px" }}>🌟 Зірки за урок</div>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {students.map((s) => {
-            const displayName = s.nickname || s.full_name.split(" ")[0];
+            const displayName = s.nickname || s.full_name;
             return (
               <div
                 key={s.id}
@@ -142,8 +256,8 @@ export default function AddLessonPage() {
                 <Select
                   value={starValues[s.id] ?? 2}
                   onChange={(v) => setStarValues((prev) => ({ ...prev, [s.id]: v }))}
-                  options={[{ value: 0, label: "— не при...(по)" }, ...STAR_OPTIONS]}
-                  style={{ width: "160px" }}
+                  options={STAR_OPTIONS}
+                  style={{ width: "180px" }}
                   size="small"
                 />
               </div>
@@ -155,11 +269,12 @@ export default function AddLessonPage() {
           type="primary"
           size="large"
           loading={loading}
+          disabled={!typeId || students.length === 0}
           onClick={submit}
           block
           style={{
             marginTop: "20px",
-            background: "linear-gradient(135deg, #7c3aed, #5b21b6)",
+            background: "#000",
             border: "none",
             fontWeight: 700,
           }}

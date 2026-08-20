@@ -14,12 +14,19 @@ interface Prize {
   sort_order: number;
 }
 
+/**
+ * Запис історії з публічного RPC.
+ *
+ * Етап 6: підпис запису — це назва й іконка ТИПУ нарахування (entry_types),
+ * а не enum lesson/bonus/penalty. Enum зникає в міграції 020; ці поля RPC
+ * віддає і до, і після неї, тому компонент однаковий в обох станах.
+ */
 interface HistoryEntry {
   amount: number;
-  type: string;
+  type_name: string | null;
+  type_icon: string | null;
   note: string | null;
   created_at: string;
-  lesson_id?: string | null;
 }
 
 interface Props {
@@ -84,12 +91,16 @@ export default function PersonalDashboardClient({
     return `#${r}`;
   }
 
-  function getEntryLabel(entry: HistoryEntry) {
-    if (entry.type === "lesson" && entry.amount === -1) return "Не було";
-    if (entry.type === "lesson") return "Урок";
-    if (entry.type === "bonus") return "БОНУС";
-    if (entry.type === "penalty") return "ШТРАФ";
-    return "Інше";
+  /**
+   * Підпис запису: іконка й назва типу, а якщо тип уже прибрали — нотатка,
+   * і лише в останню чергу нейтральне «Нарахування». Ніякого мапінгу за
+   * магічними рядками: назви типів задає вчитель.
+   */
+  function entryTitle(entry: HistoryEntry): string {
+    const label = [entry.type_icon, entry.type_name].filter(Boolean).join(" ").trim();
+    if (label && entry.note) return `${label}: ${entry.note}`;
+    if (label) return label;
+    return entry.note || "Нарахування";
   }
 
   return (
@@ -187,7 +198,7 @@ export default function PersonalDashboardClient({
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {history.map((entry, idx) => {
-              const isPenalty = entry.type === "penalty" || entry.amount < 0;
+              const isPenalty = entry.amount < 0;
               return (
                 <div
                   key={idx}
@@ -210,23 +221,19 @@ export default function PersonalDashboardClient({
                     </div>
                     
                     <div style={{ fontSize: "1rem", fontWeight: 700 }}>
-                      {entry.type === "lesson" 
-                        ? (entry.note || "Урок або домашнє")
-                        : (entry.type === "bonus" ? "🎁 БОНУС" : "⚠️ ШТРАФ")
-                      }
-                      {entry.type !== "lesson" && entry.note && `: ${entry.note}`}
+                      {entryTitle(entry)}
                     </div>
                   </div>
-                  <div style={{ 
-                    fontWeight: 950, 
-                    fontSize: "1.2rem", 
-                    color: (entry.type === "lesson" && entry.amount === -1) ? "#adb5bd" : (entry.amount < 0 ? "#E03131" : "var(--color-star)"), 
-                    display: "flex", 
-                    alignItems: "center", 
-                    gap: "4px" 
+                  <div style={{
+                    fontWeight: 950,
+                    fontSize: "1.2rem",
+                    color: entry.amount < 0 ? "#E03131" : "var(--color-star)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px"
                   }}>
-                    {(entry.type === "lesson" && entry.amount === -1) ? "Н" : (entry.amount > 0 ? "+" : "") + entry.amount} 
-                    {!(entry.type === "lesson" && entry.amount === -1) && <StarFilled style={{ fontSize: "0.9rem" }} />}
+                    {(entry.amount > 0 ? "+" : "") + entry.amount}
+                    <StarFilled style={{ fontSize: "0.9rem" }} />
                   </div>
                 </div>
               );
