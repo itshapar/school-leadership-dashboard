@@ -6,8 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
-  DATA_BASIS_ACCEPT_LABEL,
-  TERMS_ACCEPT_LABEL,
+  COMBINED_ACCEPT_SUBTEXT,
   TERMS_VERSION,
   recordTermsAcceptance,
 } from "@/lib/legal/terms";
@@ -30,11 +29,10 @@ export default function TermsGate() {
   const router = useRouter();
   const supabase = getSupabaseClient();
 
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [acceptedDataBasis, setAcceptedDataBasis] = useState(false);
+  const [accepted, setAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const canSubmit = acceptedTerms && acceptedDataBasis;
+  const canSubmit = accepted;
 
   async function submit() {
     if (!canSubmit) return;
@@ -87,31 +85,23 @@ export default function TermsGate() {
         showIcon
         style={{ marginBottom: 20 }}
         message={`Редакція ${TERMS_VERSION}`}
-        description="Перш ніж працювати з даними учнів, підтвердьте обидва пункти."
+        description="Перш ніж працювати з даними учнів, підтвердьте пункт нижче."
       />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <Checkbox
-          checked={acceptedTerms}
-          onChange={(e) => setAcceptedTerms(e.target.checked)}
-        >
-          {TERMS_ACCEPT_LABEL} (
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <Checkbox checked={accepted} onChange={(e) => setAccepted(e.target.checked)}>
+          Я приймаю{" "}
           <Link href="/terms" target="_blank" style={{ fontWeight: 700 }}>
-            Умови
-          </Link>
-          ,{" "}
+            умови використання
+          </Link>{" "}
+          та{" "}
           <Link href="/privacy" target="_blank" style={{ fontWeight: 700 }}>
-            Приватність
+            політику приватності
           </Link>
-          )
         </Checkbox>
-
-        <Checkbox
-          checked={acceptedDataBasis}
-          onChange={(e) => setAcceptedDataBasis(e.target.checked)}
-        >
-          {DATA_BASIS_ACCEPT_LABEL}
-        </Checkbox>
+        <div style={{ fontSize: "0.78rem", color: "var(--color-text-muted)", paddingLeft: "24px" }}>
+          {COMBINED_ACCEPT_SUBTEXT}
+        </div>
       </div>
     </Modal>
   );

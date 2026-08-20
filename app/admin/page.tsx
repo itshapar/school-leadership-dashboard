@@ -1,9 +1,9 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
-import { UserOutlined, ReadOutlined, StarFilled, FolderOpenOutlined } from "@ant-design/icons";
+import { UserOutlined, ReadOutlined, StarFilled } from "@ant-design/icons";
 import { formatClassCode } from "@/lib/classCodes";
-import { buildFolderTree, loadParallels, loadSchools } from "@/lib/admin/folders";
+import { loadParallels } from "@/lib/admin/parallels";
 import { getOnboardingProgressBatch } from "@/lib/admin/onboarding";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
 import AdminClassList, {
@@ -28,13 +28,12 @@ export default async function AdminPage() {
   // реєструвалися до появи чекбоксів (Етап 5, п. 9).
   const termsAccepted = await hasAcceptedCurrentTerms(supabase);
 
-  const [{ data: classes }, schools, parallels] = await Promise.all([
+  const [{ data: classes }, parallels] = await Promise.all([
     supabase
       .from("classes")
-      .select("id, name, public_code, school_id, parallel_id, is_demo, archived_at")
+      .select("id, name, public_code, parallel_id, is_demo, archived_at")
       .is("deleted_at", null)
       .order("name"),
-    loadSchools(supabase),
     loadParallels(supabase),
   ]);
 
@@ -99,7 +98,6 @@ export default async function AdminPage() {
     name: cls.name,
     public_code: cls.public_code,
     formatted_code: formatClassCode(cls.public_code),
-    school_id: cls.school_id,
     parallel_id: cls.parallel_id,
     is_demo: cls.is_demo ?? false,
     archived: Boolean(cls.archived_at),
@@ -109,10 +107,10 @@ export default async function AdminPage() {
     onboardingDone: progressByClass.get(cls.id)?.doneCount ?? 5,
     onboardingTotal: progressByClass.get(cls.id)?.totalSteps ?? 5,
     onboardingComplete: progressByClass.get(cls.id)?.complete ?? true,
+    nextStep: progressByClass.get(cls.id)?.nextStep ?? "class",
   }));
 
-  const tree = buildFolderTree(schools, parallels, cards);
-  const hasDemo = cards.some((c) => c.is_demo);
+  const isEmpty = cards.length === 0;
 
   return (
     <div className="page-container" style={{ maxWidth: "860px", paddingBottom: "80px" }}>
@@ -126,9 +124,6 @@ export default async function AdminPage() {
           <Link href="/admin/profile" style={{ color: "inherit" }}>
             <UserOutlined /> Профіль
           </Link>
-          <Link href="/admin/folders" style={{ color: "inherit" }}>
-            <FolderOpenOutlined /> Школи та паралелі
-          </Link>
           {isPlatformAdmin && (
             <Link href="/admin/platform" style={{ color: "inherit" }}>
               <ReadOutlined /> Платформа
@@ -137,57 +132,55 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      <Link
-        href="/admin/total"
-        className="total-dashboard-card"
-        style={{ display: "block", textDecoration: "none", marginBottom: "16px", transition: "transform 0.2s" }}
-      >
-        <div className="star-card" style={{
-          background: "linear-gradient(135deg, #000000 0%, #2c2c2c 100%)",
-          color: "#ffffff",
-          border: "none",
-          padding: "24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
-          <div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Рейтинг усіх учнів</div>
-            <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>Всі учні, класична таблиця рейтингу</div>
-          </div>
-          <StarFilled style={{ fontSize: "2.5rem", color: "var(--color-star)" }} />
-        </div>
-      </Link>
+      {!isEmpty && (
+        <>
+          <Link
+            href="/admin/total"
+            className="total-dashboard-card"
+            style={{ display: "block", textDecoration: "none", marginBottom: "16px", transition: "transform 0.2s" }}
+          >
+            <div className="star-card" style={{
+              background: "linear-gradient(135deg, #000000 0%, #2c2c2c 100%)",
+              color: "#ffffff",
+              border: "none",
+              padding: "24px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
+              <div>
+                <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Рейтинг усіх учнів</div>
+                <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>За паралеллю, класична таблиця рейтингу</div>
+              </div>
+              <StarFilled style={{ fontSize: "2.5rem", color: "var(--color-star)" }} />
+            </div>
+          </Link>
 
-      <Link
-        href="/dashboard"
-        className="total-dashboard-card"
-        style={{ display: "block", textDecoration: "none", marginBottom: "32px", transition: "transform 0.2s" }}
-      >
-        <div className="star-card" style={{
-          background: "linear-gradient(135deg, #f59f00 0%, #f08c00 100%)",
-          color: "#000000",
-          border: "3px solid #000",
-          padding: "24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
-          <div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Загальний дашборд</div>
-            <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>Розширена статистика, цілі та графіки</div>
-          </div>
-          <ReadOutlined style={{ fontSize: "2.5rem", color: "#000" }} />
-        </div>
-      </Link>
+          <Link
+            href="/dashboard"
+            className="total-dashboard-card"
+            style={{ display: "block", textDecoration: "none", marginBottom: "32px", transition: "transform 0.2s" }}
+          >
+            <div className="star-card" style={{
+              background: "linear-gradient(135deg, #f59f00 0%, #f08c00 100%)",
+              color: "#000000",
+              border: "3px solid #000",
+              padding: "24px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
+              <div>
+                <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Загальний дашборд</div>
+                <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>За паралеллю, розширена статистика, цілі та графіки</div>
+              </div>
+              <ReadOutlined style={{ fontSize: "2.5rem", color: "#000" }} />
+            </div>
+          </Link>
+        </>
+      )}
 
-      <AdminClassList
-        tree={tree}
-        schools={schools}
-        parallels={parallels}
-        totalClasses={cards.length}
-        hasDemo={hasDemo}
-      />
+      <AdminClassList classes={cards} parallels={parallels} />
 
       <div style={{ marginTop: "40px", textAlign: "center" }}>
         <AdminLogoutButton />

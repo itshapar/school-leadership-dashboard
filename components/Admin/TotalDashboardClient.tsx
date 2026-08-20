@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Table, Input, Space, Button, Tag } from "antd";
+import { useMemo, useState } from "react";
+import { Table, Input, Select, Tag } from "antd";
 import { StarFilled, SearchOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import Link from "next/link";
+import type { Parallel } from "@/lib/admin/parallels";
 
 interface StudentData {
   id: string;
@@ -11,19 +12,42 @@ interface StudentData {
   avatar_emoji: string;
   className: string;
   classCode: string;
+  parallelId: string | null;
   totalStars: number;
 }
 
-export default function TotalDashboardClient({ initialData }: { initialData: StudentData[] }) {
-  const [searchText, setSearchText] = useState("");
+const ALL = "__all__";
 
-  // Pre-calculate ranks based on all data (Global Rank)
+export default function TotalDashboardClient({
+  initialData,
+  parallels,
+}: {
+  initialData: StudentData[];
+  parallels: Parallel[];
+}) {
+  const [searchText, setSearchText] = useState("");
+  // За замовчуванням — перша паралель, якщо вона є: рейтинг усіх класів
+  // разом рідко має сенс (див. фідбек продукту), паралель ближче до
+  // реального питання «як мій 7 клас проти інших 7-х».
+  const [parallelFilter, setParallelFilter] = useState<string>(
+    parallels[0]?.id ?? ALL
+  );
+
+  const scoped = useMemo(
+    () =>
+      parallelFilter === ALL
+        ? initialData
+        : initialData.filter((s) => s.parallelId === parallelFilter),
+    [initialData, parallelFilter]
+  );
+
+  // Pre-calculate ranks based on scoped data (паралель або все, якщо паралелей нема)
   // Dense ranking: 1, 2, 2, 3... (no numbers skipped)
-  const sortedUniqueStars = Array.from(new Set(initialData.map((s) => s.totalStars))).sort(
+  const sortedUniqueStars = Array.from(new Set(scoped.map((s) => s.totalStars))).sort(
     (a, b) => b - a
   );
 
-  const rankedData = initialData
+  const rankedData = scoped
     .map((st) => ({
       ...st,
       rank: sortedUniqueStars.indexOf(st.totalStars) + 1,
@@ -129,15 +153,28 @@ export default function TotalDashboardClient({ initialData }: { initialData: Stu
         </h1>
       </div>
 
-      <div style={{ marginBottom: "24px" }}>
+      <div style={{ marginBottom: "24px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+        {parallels.length > 0 && (
+          <Select
+            value={parallelFilter}
+            onChange={setParallelFilter}
+            style={{ height: "50px", minWidth: "160px" }}
+            options={[
+              { value: ALL, label: "Усі паралелі" },
+              ...parallels.map((p) => ({ value: p.id, label: p.name })),
+            ]}
+          />
+        )}
         <Input
           prefix={<SearchOutlined style={{ color: "#adb5bd" }} />}
           placeholder="Пошук учня або класу..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          style={{ 
-            height: "50px", 
-            borderRadius: "12px", 
+          style={{
+            flex: 1,
+            minWidth: "200px",
+            height: "50px",
+            borderRadius: "12px",
             border: "2px solid #eee",
             fontSize: "1rem",
             fontWeight: 600

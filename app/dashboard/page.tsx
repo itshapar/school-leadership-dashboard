@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getDashboardData } from "@/lib/analytics";
+import { loadParallels } from "@/lib/admin/parallels";
 import BentoGrid from "@/components/dashboard/BentoGrid";
 import Link from "next/link";
 import { ArrowLeftOutlined, StarFilled } from "@ant-design/icons";
@@ -8,8 +9,13 @@ import "./dashboard.css";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage({ searchParams }: { searchParams: { classId?: string } }) {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { classId?: string; parallelId?: string };
+}) {
   const classId = searchParams.classId || null;
+  const parallelId = searchParams.parallelId || null;
   const supabase = await createSupabaseServerClient();
 
   // Другий бар'єр поряд із middleware: middleware можна обійти конфігом
@@ -19,7 +25,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
   } = await supabase.auth.getUser();
   if (!user) redirect("/admin/login");
 
-  const data = await getDashboardData(supabase, classId);
+  const parallels = await loadParallels(supabase);
+
+  // Паралель без явно обраного класу — фільтр за всіма класами цієї паралелі,
+  // не за одним. Один клас лишається пріоритетним, якщо обидва в URL.
+  let classFilter: string | string[] | null = classId;
+  if (!classId && parallelId) {
+    const { data: classesInParallel } = await supabase
+      .from("classes")
+      .select("id")
+      .eq("parallel_id", parallelId)
+      .is("deleted_at", null);
+    classFilter = (classesInParallel ?? []).map((c) => c.id);
+  }
+
+  const data = await getDashboardData(supabase, classFilter);
 
   // Common styles for the KPI cards
   const kpiCardStyle = {
@@ -75,19 +95,40 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
           </h1>
         </div>
 
-        <div className="class-filter">
-          <Link href="/dashboard" className={`filter-btn ${!classId ? 'active' : ''}`}>
-            Всі класи
-          </Link>
-          {data.classes.map(c => (
-            <Link 
-              key={c.id} 
-              href={`/dashboard?classId=${c.id}`}
-              className={`filter-btn ${classId === c.id ? 'active' : ''}`}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "flex-end" }}>
+          {parallels.length > 0 && (
+            <div className="class-filter">
+              <Link href="/dashboard" className={`filter-btn ${!parallelId && !classId ? 'active' : ''}`}>
+                Усі паралелі
+              </Link>
+              {parallels.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/dashboard?parallelId=${p.id}`}
+                  className={`filter-btn ${!classId && parallelId === p.id ? 'active' : ''}`}
+                >
+                  {p.name}
+                </Link>
+              ))}
+            </div>
+          )}
+          <div className="class-filter">
+            <Link
+              href={parallelId ? `/dashboard?parallelId=${parallelId}` : "/dashboard"}
+              className={`filter-btn ${!classId ? 'active' : ''}`}
             >
-              {c.name}
+              Всі класи
             </Link>
-          ))}
+            {(parallelId ? data.classes.filter((c) => c.parallel_id === parallelId) : data.classes).map(c => (
+              <Link
+                key={c.id}
+                href={`/dashboard?classId=${c.id}`}
+                className={`filter-btn ${classId === c.id ? 'active' : ''}`}
+              >
+                {c.name}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
 

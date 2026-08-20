@@ -1,0 +1,53 @@
+<!--
+  Брендований шаблон листа підтвердження реєстрації (StarBoard).
+
+  ЦЕЙ ФАЙЛ НЕ ЗАСТОСОВУЄТЬСЯ АВТОМАТИЧНО — Supabase не читає шаблони з
+  репозиторію (немає supabase/config.toml із [auth.email] у цьому проєкті).
+  Щоб увімкнути: Supabase Dashboard → Authentication → Email Templates →
+  Confirm signup → вставити вміст цього файлу в поле "Message body" і
+  зберегти. Змінні {{ .ConfirmationURL }} тощо — стандартний синтаксис
+  Supabase, підставляються самим Supabase при відправці.
+-->
+<div style="background:#f8f9fa;padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table role="presentation" width="100%" style="max-width:480px;margin:0 auto;background:#ffffff;border:3px solid #000000;border-radius:16px;overflow:hidden;">
+    <tr>
+      <td style="padding:32px 32px 24px;text-align:center;">
+        <div style="font-size:40px;line-height:1;">⭐</div>
+        <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#f5a623,#ffd700);-webkit-background-clip:text;background-clip:text;color:#f5a623;margin-top:4px;">
+          StarBoard
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:0 32px 8px;">
+        <h1 style="margin:0;font-size:22px;font-weight:900;text-transform:uppercase;color:#111;">
+          Підтвердьте email
+        </h1>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:8px 32px 28px;color:#495057;font-size:15px;line-height:1.6;">
+        Ви реєструєтесь як вчитель у StarBoard. Щоб активувати акаунт і почати
+        працювати з класами, підтвердьте свою email-адресу.
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:0 32px 32px;text-align:center;">
+        <a
+          href="{{ .ConfirmationURL }}"
+          style="display:inline-block;background:#000000;color:#ffffff;font-weight:800;font-size:15px;text-decoration:none;padding:14px 32px;border-radius:12px;box-shadow:4px 4px 0px #f5a623;"
+        >
+          Підтвердити email
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:0 32px 32px;color:#868e96;font-size:12.5px;line-height:1.6;">
+        Якщо кнопка не працює, скопіюйте це посилання в браузер:<br />
+        <span style="word-break:break-all;">{{ .ConfirmationURL }}</span>
+        <br /><br />
+        Не реєструвались у StarBoard? Просто проігноруйте цей лист.
+      </td>
+    </tr>
+  </table>
+</div>

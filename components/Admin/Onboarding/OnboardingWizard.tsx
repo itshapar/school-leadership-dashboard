@@ -12,47 +12,51 @@ import {
   Spin,
   Steps,
   Tabs,
-  Tag,
   message,
 } from "antd";
 import { ArrowLeftOutlined, CheckCircleFilled } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
   loadClassPrizes,
-  loadEntryTypes,
   loadIndividualPrizes,
   type ClassPrize,
-  type EntryType,
   type IndividualPrize,
 } from "@/lib/admin/classConfig";
-import { loadParallels, loadSchools, type Parallel, type School } from "@/lib/admin/folders";
+import { loadParallels, upsertParallelByName, type Parallel } from "@/lib/admin/parallels";
 import {
-  ONBOARDING_STEPS,
   getOnboardingProgress,
   type OnboardingProgress,
   type OnboardingStepKey,
 } from "@/lib/admin/onboarding";
 import { formatClassCode } from "@/lib/classCodes";
-import EntryTypesPanel from "@/components/Admin/ClassSettings/EntryTypesPanel";
 import PrizesPanel from "@/components/Admin/ClassSettings/PrizesPanel";
 import StudentImport from "@/components/Admin/StudentImport";
 import StudentLinesInput from "@/components/Admin/Onboarding/StudentLinesInput";
-import { ResetClassPinsButton } from "@/components/Admin/PinManager";
 
 /**
- * Майстер онбордингу (PRD §5.2): клас → учні → бали → призи → коди.
+ * Майстер онбордингу: клас → учні → призи.
  *
- * Два рішення, які визначають усю поведінку:
+ * До Етапу 9 тут було ще два кроки — «Бали» (ручний вибір/редагування типів
+ * нарахувань) і «Коди» (показ коду й генерація PIN-ів). Обидва прибрані:
+ * система балів тепер єдиний стандарт для всіх, накочується автоматично
+ * одразу при створенні класу (apply_class_template у createClass нижче);
+ * код і PIN-и класу переїхали в /admin/[code]/settings — їх варто показувати
+ * вже ПІСЛЯ створення класу, а не як обов'язковий крок майстра.
  *
- * 1. КЛАС СТВОРЮЄТЬСЯ ОДРАЗУ на першому кроці. Далі всі кроки працюють із
- *    реальним class_id, тому кожен крок — це звичайна робота з кабінетом,
- *    а не «чернетка», яку треба десь тримати і потім атомарно застосувати.
+ * lib/admin/onboarding.ts і далі рахує прогрес по ВСІХ п'яти сутностях
+ * (клас/учні/бали/призи/коди) — це реальний стан БД і основа бейджа
+ * «Налаштувати X/5» у списку класів; майстер лише не показує кроки для
+ * «бали» (завжди true одразу) і «коди» (тепер у налаштуваннях).
  *
- * 2. ПРОГРЕС ВИВОДИТЬСЯ З БД, а не зберігається (див. lib/admin/onboarding).
- *    Наслідок: майстер можна закрити на будь-якому кроці, повернутися з
- *    іншого пристрою — і побачити рівно те, що вже зроблено. Пропустити
- *    можна будь-який крок: «Далі» ніколи не заблоковане.
+ * КЛАС СТВОРЮЄТЬСЯ ОДРАЗУ на першому кроці — далі кожен крок працює з
+ * реальним class_id, а не з чернеткою.
  */
+
+const WIZARD_STEPS: Array<{ key: OnboardingStepKey; title: string }> = [
+  { key: "class", title: "Клас" },
+  { key: "students", title: "Учні" },
+  { key: "prizes", title: "Призи" },
+];
 
 interface ClassRow {
   id: string;
@@ -65,8 +69,6 @@ interface StudentLite {
   full_name: string;
   nickname: string | null;
 }
-
-const NO_FOLDER = "__none__";
 
 export default function OnboardingWizard() {
   const router = useRouter();
@@ -81,31 +83,26 @@ export default function OnboardingWizard() {
   const [current, setCurrent] = useState(0);
   const [loading, setLoading] = useState(Boolean(classIdParam));
 
-  const [schools, setSchools] = useState<School[]>([]);
   const [parallels, setParallels] = useState<Parallel[]>([]);
-  const [entryTypes, setEntryTypes] = useState<EntryType[]>([]);
+  const [parallelId, setParallelId] = useState<string | null>(null);
+  const [newParallelName, setNewParallelName] = useState("");
   const [individualPrizes, setIndividualPrizes] = useState<IndividualPrize[]>([]);
   const [classPrizes, setClassPrizes] = useState<ClassPrize[]>([]);
   const [students, setStudents] = useState<StudentLite[]>([]);
 
   const [creating, setCreating] = useState(false);
-  const [applyingTemplate, setApplyingTemplate] = useState(false);
-  const [classForm] = Form.useForm<{
-    name: string;
-    school_id: string;
-    parallel_id: string;
-  }>();
+  const [classForm] = Form.useForm<{ name: string }>();
 
-  const stepIndex = useCallback(
-    (key: OnboardingStepKey) => ONBOARDING_STEPS.findIndex((s) => s.key === key),
-    []
-  );
+  const stepIndex = useCallback((key: OnboardingStepKey) => {
+    const i = WIZARD_STEPS.findIndex((s) => s.key === key);
+    // "Бали" й "Коди" більше не кроки майстра — найближчий видимий крок: призи.
+    return i === -1 ? WIZARD_STEPS.length - 1 : i;
+  }, []);
 
   /** Перезавантажує все, що показує майстер, з БД. */
   const refresh = useCallback(
     async (classId: string) => {
-      const [types, indiv, clsPrizes, prog, studentsRes] = await Promise.all([
-        loadEntryTypes(supabase, classId),
+      const [indiv, clsPrizes, prog, studentsRes] = await Promise.all([
         loadIndividualPrizes(supabase, classId),
         loadClassPrizes(supabase, classId),
         getOnboardingProgress(supabase, classId),
@@ -117,7 +114,6 @@ export default function OnboardingWizard() {
           .order("full_name"),
       ]);
 
-      setEntryTypes(types);
       setIndividualPrizes(indiv);
       setClassPrizes(clsPrizes);
       setProgress(prog);
@@ -126,14 +122,13 @@ export default function OnboardingWizard() {
     [supabase]
   );
 
-  // Початкове завантаження: папки для кроку 1 + клас, якщо повернулися в майстер.
+  // Початкове завантаження: паралелі для кроку 1 + клас, якщо повернулися в майстер.
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      const [s, p] = await Promise.all([loadSchools(supabase), loadParallels(supabase)]);
+      const p = await loadParallels(supabase);
       if (cancelled) return;
-      setSchools(s);
       setParallels(p);
 
       if (!classIdParam) {
@@ -175,16 +170,8 @@ export default function OnboardingWizard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress?.classId]);
 
-  async function createClass(values: {
-    name: string;
-    school_id?: string;
-    parallel_id?: string;
-  }) {
+  async function createClass(values: { name: string }) {
     setCreating(true);
-    const parallelId =
-      values.parallel_id && values.parallel_id !== NO_FOLDER ? values.parallel_id : null;
-    const schoolId =
-      values.school_id && values.school_id !== NO_FOLDER ? values.school_id : null;
 
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) {
@@ -193,23 +180,32 @@ export default function OnboardingWizard() {
       return;
     }
 
-    // Якщо задана паралель — школу проставить тригер class_folder_consistency
-    // (міграція 014). Надсилати обидві означало б ризикнути помилкою
-    // «Паралель належить іншій школі».
+    let resolvedParallelId = parallelId;
+    if (!resolvedParallelId && newParallelName.trim()) {
+      const { id, error: parallelError } = await upsertParallelByName(
+        supabase,
+        newParallelName
+      );
+      if (parallelError) {
+        setCreating(false);
+        message.error("Не вдалося створити паралель");
+        return;
+      }
+      resolvedParallelId = id;
+    }
+
     const { data, error } = await supabase
       .from("classes")
       .insert({
         name: values.name.trim(),
         teacher_id: user.user.id,
-        parallel_id: parallelId,
-        school_id: parallelId ? null : schoolId,
+        parallel_id: resolvedParallelId,
       })
       .select("id, name, public_code")
       .single();
 
-    setCreating(false);
-
     if (error || !data) {
+      setCreating(false);
       const limit = error?.message?.includes("Досягнуто ліміт");
       const duplicate = error?.code === "23505";
       message.error(
@@ -222,26 +218,16 @@ export default function OnboardingWizard() {
       return;
     }
 
+    // Стандартна система балів — одразу і без питань: вона однакова для всіх.
+    await supabase.rpc("apply_class_template", {
+      p_class_id: data.id,
+      p_template_id: null,
+    });
+
+    setCreating(false);
     message.success("Клас створено");
     // Кладемо classId в URL: майстер стає відновлюваним по посиланню.
     router.replace(`/admin/onboarding?classId=${data.id}&step=students`);
-  }
-
-  async function applyTemplate() {
-    if (!cls) return;
-    setApplyingTemplate(true);
-    const { error } = await supabase.rpc("apply_class_template", {
-      p_class_id: cls.id,
-      p_template_id: null,
-    });
-    setApplyingTemplate(false);
-
-    if (error) {
-      message.error("Не вдалося застосувати шаблон");
-      return;
-    }
-    message.success("Стандартну систему балів застосовано");
-    await refresh(cls.id);
   }
 
   const goTo = (index: number) => setCurrent(index);
@@ -290,7 +276,7 @@ export default function OnboardingWizard() {
         onChange={cls ? goTo : undefined}
         size="small"
         style={{ marginBottom: 28 }}
-        items={ONBOARDING_STEPS.map((s) => ({
+        items={WIZARD_STEPS.map((s) => ({
           title: s.title,
           disabled: !cls && s.key !== "class",
           icon: doneMap?.[s.key] ? (
@@ -313,7 +299,7 @@ export default function OnboardingWizard() {
           <div>
             <StepHeader
               title="Створіть клас"
-              hint="Назва — єдине обов'язкове поле. Школу та паралель можна не вказувати: це лише папки для зручності."
+              hint="Назва — єдине обов'язкове поле. Паралель можна не вказувати."
             />
 
             {cls ? (
@@ -323,17 +309,13 @@ export default function OnboardingWizard() {
                 message={`Клас «${cls.name}» створено`}
                 description={
                   <span>
-                    Код для учнів: <b>{formatClassCode(cls.public_code)}</b>
+                    Код для учнів: <b>{formatClassCode(cls.public_code)}</b> (повний код і
+                    PIN-и учнів — у налаштуваннях класу)
                   </span>
                 }
               />
             ) : (
-              <Form
-                form={classForm}
-                layout="vertical"
-                onFinish={createClass}
-                initialValues={{ school_id: NO_FOLDER, parallel_id: NO_FOLDER }}
-              >
+              <Form form={classForm} layout="vertical" onFinish={createClass}>
                 <Form.Item
                   name="name"
                   label={<span style={{ fontWeight: 700 }}>Назва класу</span>}
@@ -345,38 +327,23 @@ export default function OnboardingWizard() {
                   <Input size="large" placeholder="7-А" autoFocus />
                 </Form.Item>
 
-                <Form.Item
-                  name="school_id"
-                  label={<span style={{ fontWeight: 700 }}>Школа (необов&apos;язково)</span>}
-                >
+                <Form.Item label={<span style={{ fontWeight: 700 }}>Паралель (необов&apos;язково)</span>}>
                   <Select
                     size="large"
-                    options={[
-                      { value: NO_FOLDER, label: "— без школи" },
-                      ...schools.map((s) => ({ value: s.id, label: s.name })),
-                    ]}
+                    allowClear
+                    placeholder="Обрати наявну"
+                    value={parallelId ?? undefined}
+                    onChange={(v) => setParallelId(v ?? null)}
+                    options={parallels.map((p) => ({ value: p.id, label: p.name }))}
+                    style={{ marginBottom: 8 }}
                   />
-                </Form.Item>
-
-                <Form.Item
-                  name="parallel_id"
-                  label={<span style={{ fontWeight: 700 }}>Паралель (необов&apos;язково)</span>}
-                  extra={
-                    <span style={{ color: "#868e96", fontSize: "0.8rem" }}>
-                      Якщо обрати паралель, школа візьметься з неї.{" "}
-                      <Link href="/admin/folders" style={{ fontWeight: 700 }}>
-                        Керувати папками
-                      </Link>
-                    </span>
-                  }
-                >
-                  <Select
-                    size="large"
-                    options={[
-                      { value: NO_FOLDER, label: "— без паралелі" },
-                      ...parallels.map((p) => ({ value: p.id, label: p.name })),
-                    ]}
-                  />
+                  {!parallelId && (
+                    <Input
+                      placeholder="Або впишіть нову, напр. 7-А"
+                      value={newParallelName}
+                      onChange={(e) => setNewParallelName(e.target.value)}
+                    />
+                  )}
                 </Form.Item>
 
                 <Button
@@ -437,44 +404,8 @@ export default function OnboardingWizard() {
           </div>
         )}
 
-        {/* ───────────────── Крок 3: бали ───────────────── */}
+        {/* ───────────────── Крок 3: призи ───────────────── */}
         {current === 2 && cls && (
-          <div>
-            <StepHeader
-              title="Система балів"
-              hint="Типи нарахувань визначають, за що учні отримують зірки. Можна взяти стандартний набір і змінити пізніше."
-            />
-
-            {entryTypes.length === 0 ? (
-              <div style={{ marginBottom: 20 }}>
-                <Alert
-                  type="info"
-                  showIcon
-                  style={{ marginBottom: 12 }}
-                  message="Почніть зі стандартного шаблону"
-                  description="Урок ⭐, Бонус 🎁, Штраф ⚡ плюс типовий набір призів. Усе редагується."
-                />
-                <Button
-                  type="primary"
-                  loading={applyingTemplate}
-                  onClick={applyTemplate}
-                  style={{ background: "#000", fontWeight: 800, borderRadius: 10 }}
-                >
-                  Застосувати стандартний шаблон
-                </Button>
-              </div>
-            ) : null}
-
-            <EntryTypesPanel
-              classId={cls.id}
-              types={entryTypes}
-              onChanged={() => void refresh(cls.id)}
-            />
-          </div>
-        )}
-
-        {/* ───────────────── Крок 4: призи ───────────────── */}
-        {current === 3 && cls && (
           <div>
             <StepHeader
               title="Призи та пороги"
@@ -511,64 +442,6 @@ export default function OnboardingWizard() {
             />
           </div>
         )}
-
-        {/* ───────────────── Крок 5: коди ───────────────── */}
-        {current === 4 && cls && (
-          <div>
-            <StepHeader
-              title="Код класу та PIN-и"
-              hint="Учні заходять на сторінку /student за кодом класу і власним PIN-ом. PIN-и показуються ОДИН раз — одразу скопіюйте або роздрукуйте пам'ятку."
-            />
-
-            <div
-              style={{
-                background: "#f8f9fa",
-                border: "2px solid #dee2e6",
-                borderRadius: 12,
-                padding: "18px 20px",
-                marginBottom: 20,
-              }}
-            >
-              <div style={{ fontSize: "0.8rem", fontWeight: 800, color: "#868e96", textTransform: "uppercase" }}>
-                Код класу
-              </div>
-              <div
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: "1.8rem",
-                  fontWeight: 900,
-                  letterSpacing: "0.1em",
-                  marginTop: 4,
-                }}
-              >
-                {formatClassCode(cls.public_code)}
-              </div>
-            </div>
-
-            {students.length === 0 ? (
-              <Alert
-                type="warning"
-                showIcon
-                message="Спершу додайте учнів"
-                description="PIN-и генеруються для наявних учнів класу."
-              />
-            ) : (
-              <>
-                {progress?.done.codes && (
-                  <Tag color="green" style={{ fontWeight: 700, marginBottom: 12 }}>
-                    PIN-и вже роздано
-                  </Tag>
-                )}
-                <ResetClassPinsButton
-                  classId={cls.id}
-                  publicCode={cls.public_code}
-                  className={cls.name}
-                  students={students}
-                />
-              </>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Навігація. «Далі» ніколи не заблоковане: пропустити можна будь-що. */}
@@ -591,7 +464,7 @@ export default function OnboardingWizard() {
           </Button>
 
           <div style={{ display: "flex", gap: 12 }}>
-            {current < ONBOARDING_STEPS.length - 1 ? (
+            {current < WIZARD_STEPS.length - 1 ? (
               <>
                 <Button
                   type="text"
@@ -629,8 +502,7 @@ export default function OnboardingWizard() {
 
       {cls && progress && !progress.complete && (
         <div style={{ marginTop: 16, textAlign: "center", color: "#868e96", fontSize: "0.82rem", fontWeight: 600 }}>
-          Виконано {progress.doneCount} з {progress.totalSteps}. Можна вийти й
-          повернутися пізніше — прогрес не загубиться.
+          Не забудьте роздати PIN-и учням у налаштуваннях класу.
         </div>
       )}
     </div>

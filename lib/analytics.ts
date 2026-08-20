@@ -31,7 +31,11 @@ export interface ClassPrizeLite {
 
 export type TimeFrame = "all_time" | "last_30_days" | "last_7_days";
 
-export async function getDashboardData(supabase: SupabaseClient, classIdFilter?: string | null) {
+/** Один клас (classId), кілька класів однієї паралелі (string[]), або все (null/undefined). */
+export async function getDashboardData(
+  supabase: SupabaseClient,
+  classIdFilter?: string | string[] | null
+) {
   // 1. Fetch Classes
   //
   // Явний перелік стовпців, а не select("*"): усе, що звідси повертається,
@@ -40,7 +44,7 @@ export async function getDashboardData(supabase: SupabaseClient, classIdFilter?:
   // робити нічого.
   const { data: classes } = await supabase
     .from("classes")
-    .select("id, name, public_code, archived_at, is_demo")
+    .select("id, name, public_code, archived_at, is_demo, parallel_id")
     .is("deleted_at", null)
     .order("name");
   const classMap = new Map((classes ?? []).map((c) => [c.id, c]));
@@ -100,7 +104,8 @@ export async function getDashboardData(supabase: SupabaseClient, classIdFilter?:
       .from("students")
       .select("id, class_id, full_name, nickname, avatar_emoji, group_id")
       .is("deleted_at", null);
-    return classIdFilter ? q.eq("class_id", classIdFilter) : q;
+    if (!classIdFilter) return q;
+    return Array.isArray(classIdFilter) ? q.in("class_id", classIdFilter) : q.eq("class_id", classIdFilter);
   });
   const studentMap = new Map(students.map((s) => [s.id, s]));
 
@@ -114,7 +119,8 @@ export async function getDashboardData(supabase: SupabaseClient, classIdFilter?:
     const q = supabase
       .from("star_entries")
       .select("student_id, amount, created_at, entry_type_id");
-    return classIdFilter ? q.eq("class_id", classIdFilter) : q;
+    if (!classIdFilter) return q;
+    return Array.isArray(classIdFilter) ? q.in("class_id", classIdFilter) : q.eq("class_id", classIdFilter);
   });
 
   // 4. Calculate Basic Stats

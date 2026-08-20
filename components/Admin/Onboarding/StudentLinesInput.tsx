@@ -172,6 +172,11 @@ export default function StudentLinesInput({
       >
         Додати {rawLines.length > 0 ? `${rawLines.length} учнів` : "учнів"}
       </Button>
+      {invalid.length > 0 && (
+        <div style={{ marginTop: 8, fontSize: "0.78rem", color: "#e03131", fontWeight: 600 }}>
+          Спершу виправте рядки без прізвища та імені — кнопка неактивна, поки вони є.
+        </div>
+      )}
     </div>
   );
 }

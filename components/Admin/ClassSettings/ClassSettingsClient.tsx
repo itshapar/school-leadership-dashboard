@@ -7,35 +7,37 @@ import {
   ArrowLeftOutlined,
   GiftOutlined,
   TeamOutlined,
-  ThunderboltOutlined,
   TrophyOutlined,
 } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
   loadClassGroups,
   loadClassPrizes,
-  loadEntryTypes,
   loadIndividualPrizes,
   type ClassGroup,
   type ClassPrize,
-  type EntryType,
   type IndividualPrize,
 } from "@/lib/admin/classConfig";
-import EntryTypesPanel from "@/components/Admin/ClassSettings/EntryTypesPanel";
 import PrizesPanel from "@/components/Admin/ClassSettings/PrizesPanel";
 import GroupsPanel from "@/components/Admin/ClassSettings/GroupsPanel";
+import { ResetClassPinsButton } from "@/components/Admin/PinManager";
+import { formatClassCode } from "@/lib/classCodes";
 
 /**
  * Налаштування класу — одне місце замість модалки «Нагороди».
  *
- * Уся конфігурація тепер табличні дані (entry_types, prizes_individual,
- * class_prizes, class_groups), тому перезавантаження після кожної зміни —
- * один спільний refresh, а не ручна синхронізація чотирьох станів.
+ * Система балів (типи нарахувань) тут більше НЕ редагується — Етап 9 зробив
+ * її фіксованим стандартом для всіх класів (накочується автоматично при
+ * створенні, див. OnboardingWizard.createClass). Замість вкладки "Типи
+ * нарахувань" тут тепер код класу і PIN-и — раніше вони жили в кроці
+ * майстра "Коди", який прибрали: показувати їх варто вже ПІСЛЯ створення
+ * класу, а не як обов'язковий крок.
  */
 
 export interface StudentRow {
   id: string;
   full_name: string;
+  nickname: string | null;
   avatar_emoji: string;
   group_id: string | null;
 }
@@ -56,7 +58,6 @@ export default function ClassSettingsClient({
   const supabase = getSupabaseClient();
 
   const [loading, setLoading] = useState(true);
-  const [entryTypes, setEntryTypes] = useState<EntryType[]>([]);
   const [individualPrizes, setIndividualPrizes] = useState<IndividualPrize[]>([]);
   const [classPrizes, setClassPrizes] = useState<ClassPrize[]>([]);
   const [groups, setGroups] = useState<ClassGroup[]>([]);
@@ -64,19 +65,17 @@ export default function ClassSettingsClient({
 
   const refresh = useCallback(async () => {
     try {
-      const [types, indiv, cls, grps, studentsRes] = await Promise.all([
-        loadEntryTypes(supabase, classId),
+      const [indiv, cls, grps, studentsRes] = await Promise.all([
         loadIndividualPrizes(supabase, classId),
         loadClassPrizes(supabase, classId),
         loadClassGroups(supabase, classId),
         supabase
           .from("students")
-          .select("id, full_name, avatar_emoji, group_id")
+          .select("id, full_name, nickname, avatar_emoji, group_id")
           .eq("class_id", classId)
           .is("deleted_at", null)
           .order("full_name"),
       ]);
-      setEntryTypes(types);
       setIndividualPrizes(indiv);
       setClassPrizes(cls);
       setGroups(grps);
@@ -139,6 +138,46 @@ export default function ClassSettingsClient({
 
       <div
         style={{
+          background: "#f8f9fa",
+          border: "2px solid #dee2e6",
+          borderRadius: 12,
+          padding: "16px 20px",
+          marginBottom: 20,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <div style={{ fontSize: "0.8rem", fontWeight: 800, color: "#868e96", textTransform: "uppercase" }}>
+            Код класу
+          </div>
+          <div
+            style={{
+              fontFamily: "monospace",
+              fontSize: "1.5rem",
+              fontWeight: 900,
+              letterSpacing: "0.1em",
+              marginTop: 2,
+            }}
+          >
+            {formatClassCode(classCode)}
+          </div>
+        </div>
+        {!loading && students.length > 0 && (
+          <ResetClassPinsButton
+            classId={classId}
+            publicCode={classCode}
+            className={className}
+            students={students}
+          />
+        )}
+      </div>
+
+      <div
+        style={{
           background: "#fff",
           border: "3px solid #000",
           borderRadius: 16,
@@ -152,23 +191,8 @@ export default function ClassSettingsClient({
           </div>
         ) : (
           <Tabs
-            defaultActiveKey="types"
+            defaultActiveKey="individual"
             items={[
-              {
-                key: "types",
-                label: (
-                  <span style={{ fontWeight: 800 }}>
-                    <ThunderboltOutlined /> Типи нарахувань
-                  </span>
-                ),
-                children: (
-                  <EntryTypesPanel
-                    classId={classId}
-                    types={entryTypes}
-                    onChanged={refresh}
-                  />
-                ),
-              },
               {
                 key: "individual",
                 label: (

@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { loadParallels } from "@/lib/admin/parallels";
 import TotalDashboardClient from "@/components/Admin/TotalDashboardClient";
 
 export const dynamic = "force-dynamic";
@@ -6,10 +7,11 @@ export const dynamic = "force-dynamic";
 export default async function TotalDashboardPage() {
   const supabase = await createSupabaseServerClient();
 
-  // Fetch students and classes in parallel
+  // Fetch students, classes and parallels in parallel
   const [
     { data: students, error: stError },
-    { data: classes, error: clError }
+    { data: classes, error: clError },
+    parallels,
   ] = await Promise.all([
     // Фільтри deleted_at додала міграція 018 — цей рейтинг тоді не оновили,
     // тож видалені учні й видалені класи лишалися у видачі.
@@ -19,8 +21,9 @@ export default async function TotalDashboardPage() {
       .is("deleted_at", null),
     supabase
       .from("classes")
-      .select("id, name, public_code")
-      .is("deleted_at", null)
+      .select("id, name, public_code, parallel_id")
+      .is("deleted_at", null),
+    loadParallels(supabase),
   ]);
 
   if (stError || clError) {
@@ -67,6 +70,11 @@ export default async function TotalDashboardPage() {
     codeMap[c.id] = c.public_code;
   });
 
+  const parallelIdByClass: Record<string, string | null> = {};
+  (classes ?? []).forEach((c) => {
+    parallelIdByClass[c.id] = c.parallel_id;
+  });
+
   // Aggregate star totals
   const starTotals: Record<string, number> = {};
   allEntries.forEach((entry) => {
@@ -82,9 +90,10 @@ export default async function TotalDashboardPage() {
     avatar_emoji: st.avatar_emoji,
     className: classMap[st.class_id] ?? "Невідомо",
     classCode: codeMap[st.class_id] ?? st.class_id,
+    parallelId: parallelIdByClass[st.class_id] ?? null,
     totalStars: starTotals[st.id] ?? 0,
   }));
 
-  return <TotalDashboardClient initialData={formattedData} />;
+  return <TotalDashboardClient initialData={formattedData} parallels={parallels} />;
 }
 

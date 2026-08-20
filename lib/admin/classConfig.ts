@@ -66,7 +66,6 @@ export const CLASS_LIMITS = {
 
 export const TEACHER_LIMITS = {
   classes: 20,
-  schools: 20,
   parallels: 30,
 } as const;
 

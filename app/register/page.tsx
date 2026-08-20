@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Form, Input, Button, Alert, Divider, Checkbox } from "antd";
+import { Form, Input, Button, Alert, Divider, Checkbox, Progress } from "antd";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
-import {
-  DATA_BASIS_ACCEPT_LABEL,
-  TERMS_ACCEPT_LABEL,
-  signUpTermsMetadata,
-} from "@/lib/legal/terms";
+import { COMBINED_ACCEPT_SUBTEXT, signUpTermsMetadata } from "@/lib/legal/terms";
+import { scorePassword } from "@/lib/password";
 
 /**
  * Реєстрація вчителя: email + пароль з підтвердженням пошти, або Google.
@@ -19,12 +16,6 @@ import {
  * зареєстрованого — «перевірте пошту». Supabase у другому випадку сам
  * не створює дубль і не розкриває існування акаунта.
  *
- * Етап 5, п. 9: ДВА ОКРЕМІ чекбокси — акцепт Умов і окреме запевнення про
- * правові підстави внесення даних учнів. Один об'єднаний чекбокс не годиться:
- * юридично це різні заяви, і «я прочитав Умови» не дорівнює «я маю підстави».
- * Обидва обов'язкові — без них неактивні і кнопка реєстрації, і вхід через
- * Google.
- *
  * Акцепт email-реєстрації їде метаданими signUp: тригер handle_new_user
  * (міграція 025) записує його в terms_acceptances при створенні користувача.
  * У Google OAuth такого каналу немає — там акцепт фіксує TermsGate у кабінеті.
@@ -33,17 +24,18 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [acceptedDataBasis, setAcceptedDataBasis] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+  const [password, setPassword] = useState("");
 
-  const consentGiven = acceptedTerms && acceptedDataBasis;
+  const strength = scorePassword(password);
 
   async function onFinish(values: {
-    display_name: string;
+    last_name: string;
+    first_name: string;
     email: string;
     password: string;
   }) {
-    if (!consentGiven) return;
+    if (!accepted) return;
 
     setLoading(true);
     setError(null);
@@ -54,7 +46,7 @@ export default function RegisterPage() {
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback?next=/admin`,
         data: {
-          display_name: values.display_name,
+          display_name: `${values.last_name.trim()} ${values.first_name.trim()}`,
           ...signUpTermsMetadata(),
         },
       },
@@ -84,24 +76,33 @@ export default function RegisterPage() {
       }}
     >
       <div style={{ width: "100%", maxWidth: "440px" }}>
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ fontSize: "3rem" }}>⭐</div>
+        <div style={{ textAlign: "center", marginBottom: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: 0.7 }}>
+            <span style={{ fontSize: "1.3rem" }}>⭐</span>
+            <span
+              style={{
+                fontSize: "1rem",
+                fontWeight: 800,
+                background: "linear-gradient(135deg, #f5a623, #ffd700)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              StarBoard
+            </span>
+          </div>
           <h1
             style={{
-              fontSize: "1.8rem",
-              fontWeight: 800,
-              background: "linear-gradient(135deg, #f5a623, #ffd700)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              margin: "8px 0 4px",
+              fontSize: "2rem",
+              fontWeight: 900,
+              margin: "10px 0 0",
+              textTransform: "uppercase",
+              letterSpacing: "-0.5px",
             }}
           >
-            StarBoard
-          </h1>
-          <p style={{ color: "var(--color-text-muted)", margin: 0 }}>
             Реєстрація вчителя
-          </p>
+          </h1>
         </div>
 
         <div className="star-card">
@@ -118,16 +119,30 @@ export default function RegisterPage() {
                 <Alert message={error} type="error" showIcon style={{ marginBottom: "16px" }} />
               )}
               <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
-                <Form.Item
-                  name="display_name"
-                  label={<span style={{ color: "var(--color-text-muted)" }}>Ваше ім&apos;я</span>}
-                  rules={[
-                    { required: true, message: "Введіть ім'я" },
-                    { max: 100, message: "Занадто довге ім'я" },
-                  ]}
-                >
-                  <Input size="large" placeholder="Оксана Петрівна" autoComplete="name" />
-                </Form.Item>
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <Form.Item
+                    name="last_name"
+                    label={<span style={{ color: "var(--color-text-muted)" }}>Прізвище</span>}
+                    style={{ flex: 1 }}
+                    rules={[
+                      { required: true, message: "Введіть прізвище" },
+                      { max: 60, message: "Занадто довге" },
+                    ]}
+                  >
+                    <Input size="large" placeholder="Петренко" autoComplete="family-name" />
+                  </Form.Item>
+                  <Form.Item
+                    name="first_name"
+                    label={<span style={{ color: "var(--color-text-muted)" }}>Ім&apos;я</span>}
+                    style={{ flex: 1 }}
+                    rules={[
+                      { required: true, message: "Введіть ім'я" },
+                      { max: 60, message: "Занадто довге" },
+                    ]}
+                  >
+                    <Input size="large" placeholder="Оксана" autoComplete="given-name" />
+                  </Form.Item>
+                </div>
                 <Form.Item
                   name="email"
                   label={<span style={{ color: "var(--color-text-muted)" }}>Email</span>}
@@ -141,16 +156,39 @@ export default function RegisterPage() {
                   rules={[
                     { required: true, message: "Введіть пароль" },
                     { min: 8, message: "Мінімум 8 символів" },
+                    {
+                      validator: (_, value: string) =>
+                        !value || (/[a-zа-яіїєґ]/i.test(value) && /[0-9]/.test(value))
+                          ? Promise.resolve()
+                          : Promise.reject(new Error("Додайте і літери, і цифри")),
+                    },
                   ]}
                 >
-                  <Input.Password size="large" autoComplete="new-password" />
+                  <Input.Password
+                    size="large"
+                    autoComplete="new-password"
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
                 </Form.Item>
+                {password.length > 0 && (
+                  <div style={{ marginTop: "-12px", marginBottom: "20px" }}>
+                    <Progress
+                      percent={(strength.score / 4) * 100}
+                      showInfo={false}
+                      strokeColor={strength.color}
+                      size="small"
+                    />
+                    <div style={{ fontSize: "0.78rem", fontWeight: 700, color: strength.color, marginTop: 2 }}>
+                      {strength.label}
+                    </div>
+                  </div>
+                )}
 
                 <div
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "12px",
+                    gap: "6px",
                     padding: "14px",
                     background: "#f8f9fa",
                     border: "2px solid #dee2e6",
@@ -158,29 +196,21 @@ export default function RegisterPage() {
                     marginBottom: "20px",
                   }}
                 >
-                  <Checkbox
-                    checked={acceptedTerms}
-                    onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  >
+                  <Checkbox checked={accepted} onChange={(e) => setAccepted(e.target.checked)}>
                     <span style={{ fontSize: "0.88rem" }}>
-                      {TERMS_ACCEPT_LABEL} (
+                      Я приймаю{" "}
                       <Link href="/terms" target="_blank" style={{ fontWeight: 700 }}>
-                        Умови
-                      </Link>
-                      ,{" "}
+                        умови використання
+                      </Link>{" "}
+                      та{" "}
                       <Link href="/privacy" target="_blank" style={{ fontWeight: 700 }}>
-                        Приватність
+                        політику приватності
                       </Link>
-                      )
                     </span>
                   </Checkbox>
-
-                  <Checkbox
-                    checked={acceptedDataBasis}
-                    onChange={(e) => setAcceptedDataBasis(e.target.checked)}
-                  >
-                    <span style={{ fontSize: "0.88rem" }}>{DATA_BASIS_ACCEPT_LABEL}</span>
-                  </Checkbox>
+                  <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", paddingLeft: "24px" }}>
+                    {COMBINED_ACCEPT_SUBTEXT}
+                  </div>
                 </div>
 
                 <Button
@@ -188,10 +218,10 @@ export default function RegisterPage() {
                   htmlType="submit"
                   size="large"
                   loading={loading}
-                  disabled={!consentGiven}
+                  disabled={!accepted}
                   block
                   style={{
-                    background: consentGiven
+                    background: accepted
                       ? "linear-gradient(135deg, #f5a623, #e8940f)"
                       : undefined,
                     border: "none",
@@ -204,14 +234,14 @@ export default function RegisterPage() {
               <Divider plain style={{ margin: "16px 0" }}>
                 або
               </Divider>
-              {/* Google-реєстрація так само вимагає обох підтверджень.
-                  Сам акцепт зафіксує TermsGate у кабінеті: OAuth-потік не
-                  передає метаданих форми. */}
+              {/* Google-реєстрація так само вимагає акцепту. Сам акцепт
+                  зафіксує TermsGate у кабінеті: OAuth-потік не передає
+                  метаданих форми. */}
               <GoogleSignInButton
                 label="Зареєструватися через Google"
-                disabled={!consentGiven}
+                disabled={!accepted}
               />
-              {!consentGiven && (
+              {!accepted && (
                 <div
                   style={{
                     textAlign: "center",
@@ -221,14 +251,17 @@ export default function RegisterPage() {
                     fontWeight: 600,
                   }}
                 >
-                  Позначте обидва пункти, щоб продовжити.
+                  Позначте пункт вище, щоб продовжити.
                 </div>
               )}
             </>
           )}
 
-          <div style={{ textAlign: "center", marginTop: "16px" }}>
+          <div style={{ textAlign: "center", marginTop: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
             <Link href="/admin/login">Уже є акаунт? Увійти</Link>
+            <Link href="/demo" style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
+              Спробувати демо без реєстрації →
+            </Link>
           </div>
         </div>
       </div>

@@ -349,6 +349,11 @@ export default function StudentImport({
               Підтверджую — імпортувати
             </Button>
           </div>
+          {invalidCount > 0 && (
+            <div style={{ marginTop: 8, textAlign: "right", fontSize: "0.78rem", color: "#e8590c", fontWeight: 600 }}>
+              {invalidCount} рядків без прізвища та імені імпорт пропустить — решту додасть.
+            </div>
+          )}
 
           <div style={{ marginTop: 12, color: "#868e96", fontSize: "0.78rem" }}>
             Приклад результату:{" "}

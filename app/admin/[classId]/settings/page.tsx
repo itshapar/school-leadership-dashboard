@@ -20,7 +20,7 @@ export default async function ClassSettingsPage({ params }: Props) {
 
   const { data: students } = await supabase
     .from("students")
-    .select("id, full_name, avatar_emoji, group_id")
+    .select("id, full_name, nickname, avatar_emoji, group_id")
     .eq("class_id", cls.id)
     .is("deleted_at", null)
     .order("full_name");

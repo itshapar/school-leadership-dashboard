@@ -115,6 +115,11 @@ export default function AdminLoginPage() {
             <Link href="/register">Зареєструватися</Link>
             <Link href="/forgot-password">Забули пароль?</Link>
           </div>
+          <div style={{ textAlign: "center", marginTop: "12px" }}>
+            <Link href="/demo" style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
+              Спробувати демо без реєстрації →
+            </Link>
+          </div>
         </div>
       </div>
     </div>

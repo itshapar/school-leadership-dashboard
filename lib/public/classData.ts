@@ -41,6 +41,8 @@ export interface PublicClassOverview {
   /** true, якщо користувач прийшов за старим 4-значним кодом */
   requested_legacy: boolean;
   archived: boolean;
+  /** Постійний публічний демо-клас (Етап 9) — показуємо банер реєстрації. */
+  is_public_demo: boolean;
   /**
    * Джерело правди для порогів класу (міграція 016). Старі ключі
    * game_day_threshold / pizza_day_threshold свідомо НЕ описані тут:
