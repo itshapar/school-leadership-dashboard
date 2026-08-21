@@ -55,7 +55,7 @@ import StudentLinesInput from "@/components/Admin/Onboarding/StudentLinesInput";
 const WIZARD_STEPS: Array<{ key: OnboardingStepKey; title: string }> = [
   { key: "class", title: "Клас" },
   { key: "students", title: "Учні" },
-  { key: "prizes", title: "Призи" },
+  { key: "prizes", title: "Нагороди" },
 ];
 
 // Паралель — номер класу (1–12), фіксований список: учитель обирає
@@ -267,7 +267,7 @@ export default function OnboardingWizard() {
             Новий клас
           </h1>
           <div style={{ color: "#868e96", fontWeight: 700, fontSize: "0.9rem" }}>
-            {cls ? cls.name : "Крок за кроком — будь-який можна пропустити"}
+            {cls ? cls.name : "Крок за кроком, будь-який можна пропустити"}
           </div>
         </div>
       </div>
@@ -300,7 +300,7 @@ export default function OnboardingWizard() {
           <div>
             <StepHeader
               title="Створіть клас"
-              hint="Паралель — це номер (1–12), необов'язково. Назва — як ви самі називаєте клас: «А», «Б», «11-PM2» тощо."
+              hint="Паралель (номер 1–12) необов'язкова. Назва класу, наприклад «7-А» або «ПМ2»."
             />
 
             {cls ? (
@@ -311,7 +311,7 @@ export default function OnboardingWizard() {
                 description={
                   <span>
                     Код для учнів: <b>{formatClassCode(cls.public_code)}</b> (повний код і
-                    PIN-и учнів — у налаштуваннях класу)
+                    PIN-и учнів у налаштуваннях класу)
                   </span>
                 }
               />
@@ -337,7 +337,7 @@ export default function OnboardingWizard() {
                     { max: 60, message: "Занадто довга назва" },
                   ]}
                 >
-                  <Input size="large" placeholder="А, Б, 11-PM2…" autoFocus />
+                  <Input size="large" placeholder="7-А, ПМ2…" autoFocus />
                 </Form.Item>
 
                 <Button
@@ -402,8 +402,8 @@ export default function OnboardingWizard() {
         {current === 2 && cls && (
           <div>
             <StepHeader
-              title="Призи та пороги"
-              hint="Індивідуальні призи учень відкриває власними зірками; класові — коли клас разом набирає поріг."
+              title="Нагороди"
+              hint="Індивідуальні учень відкриває власними зірками, а класові присуджуються, коли клас разом набирає поріг."
             />
 
             <Tabs
@@ -487,16 +487,10 @@ export default function OnboardingWizard() {
                 onClick={() => router.push(`/admin/${cls.public_code}`)}
                 style={{ background: "#000", fontWeight: 800, borderRadius: 10 }}
               >
-                Готово — до журналу
+                Готово, до журналу
               </Button>
             )}
           </div>
-        </div>
-      )}
-
-      {cls && progress && !progress.complete && (
-        <div style={{ marginTop: 16, textAlign: "center", color: "#868e96", fontSize: "0.82rem", fontWeight: 600 }}>
-          Не забудьте роздати PIN-и учням у налаштуваннях класу.
         </div>
       )}
     </div>

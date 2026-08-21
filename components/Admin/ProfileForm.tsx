@@ -1,80 +1,74 @@
 "use client";
 
 import { useState } from "react";
-import { Form, Input, Button, message } from "antd";
+import { Button, Input, Modal, message } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
+import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 
-interface Profile {
-  id: string;
-  display_name: string;
-  school_display_name: string | null;
-}
-
-/** Редагування профілю вчителя (teacher_profiles, RLS: лише свій рядок). */
-export default function ProfileForm({ profile }: { profile: Profile }) {
-  const [loading, setLoading] = useState(false);
+/**
+ * Налаштування акаунту (Етап 9.2, live-фідбек): свідомо лише видалення.
+ * Ім'я й назву школи прибрали з реєстрації та профілю зовсім, щоб не
+ * зв'язувати особу вчителя з конкретною школою в наших даних без потреби.
+ */
+export default function ProfileForm() {
+  const router = useRouter();
   const supabase = getSupabaseClient();
+  const [open, setOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
-  async function onFinish(values: {
-    display_name: string;
-    school_display_name?: string;
-  }) {
-    setLoading(true);
-    const { error } = await supabase
-      .from("teacher_profiles")
-      .update({
-        display_name: values.display_name.trim(),
-        school_display_name: values.school_display_name?.trim() || null,
-      })
-      .eq("id", profile.id);
-    if (error) {
-      message.error("Не вдалося зберегти профіль");
-    } else {
-      message.success("Профіль збережено");
+  async function deleteAccount() {
+    setDeleting(true);
+    try {
+      const res = await adminApiFetch(supabase, "/api/admin/account", { method: "DELETE" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error ?? "Не вдалося видалити акаунт");
+      await supabase.auth.signOut();
+      window.location.href = "/admin/login";
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Не вдалося видалити акаунт");
+      setDeleting(false);
     }
-    setLoading(false);
   }
 
   return (
-    <Form
-      layout="vertical"
-      onFinish={onFinish}
-      requiredMark={false}
-      initialValues={{
-        display_name: profile.display_name,
-        school_display_name: profile.school_display_name ?? "",
-      }}
-    >
-      <Form.Item
-        name="display_name"
-        label="Ім'я для відображення"
-        rules={[
-          { required: true, message: "Введіть ім'я" },
-          { max: 100, message: "Занадто довге ім'я" },
-        ]}
-      >
-        <Input size="large" placeholder="Оксана Петрівна" />
-      </Form.Item>
-      <Form.Item
-        name="school_display_name"
-        label="Назва школи (необов'язково)"
-        rules={[{ max: 200, message: "Занадто довга назва" }]}
-      >
-        <Input size="large" placeholder="Гімназія №1 м. Київ" />
-      </Form.Item>
-      <Button
-        type="primary"
-        htmlType="submit"
-        size="large"
-        loading={loading}
+    <>
+      <div
         style={{
-          background: "linear-gradient(135deg, #f5a623, #e8940f)",
-          border: "none",
-          fontWeight: 700,
+          border: "2px solid #ffc9c9",
+          borderRadius: 12,
+          padding: "16px 20px",
         }}
       >
-        Зберегти
-      </Button>
-    </Form>
+        <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Небезпечна зона</div>
+        <div style={{ color: "#868e96", fontSize: "0.85rem", marginTop: 4, marginBottom: 12 }}>
+          Видалить акаунт, усі класи, учнів, бали й нагороди безповоротно.
+        </div>
+        <Button danger icon={<DeleteOutlined />} onClick={() => setOpen(true)}>
+          Видалити акаунт
+        </Button>
+      </div>
+
+      <Modal
+        title="Видалити акаунт назавжди?"
+        open={open}
+        onCancel={() => setOpen(false)}
+        okText="Видалити назавжди"
+        okButtonProps={{ danger: true, loading: deleting, disabled: confirmText !== "ВИДАЛИТИ" }}
+        cancelText="Скасувати"
+        onOk={deleteAccount}
+      >
+        <p>
+          Усі ваші класи, учні, бали й нагороди буде видалено безповоротно.
+          Це неможливо скасувати.
+        </p>
+        <p>
+          Введіть <b>ВИДАЛИТИ</b>, щоб підтвердити:
+        </p>
+        <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} autoFocus />
+      </Modal>
+    </>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Popconfirm, Spin, Tabs, message } from "antd";
+import { Button, Popconfirm, Spin, Switch, Tabs, message } from "antd";
 import Link from "next/link";
 import {
   ArrowLeftOutlined,
@@ -50,6 +50,7 @@ interface Props {
   classCode: string;
   className: string;
   initialArchived: boolean;
+  initialShowClassmateStars: boolean;
   initialStudents: StudentRow[];
 }
 
@@ -58,6 +59,7 @@ export default function ClassSettingsClient({
   classCode,
   className,
   initialArchived,
+  initialShowClassmateStars,
   initialStudents,
 }: Props) {
   const supabase = getSupabaseClient();
@@ -65,6 +67,8 @@ export default function ClassSettingsClient({
 
   const [loading, setLoading] = useState(true);
   const [archived, setArchived] = useState(initialArchived);
+  const [showClassmateStars, setShowClassmateStars] = useState(initialShowClassmateStars);
+  const [savingVisibility, setSavingVisibility] = useState(false);
   const [busy, setBusy] = useState(false);
   const [individualPrizes, setIndividualPrizes] = useState<IndividualPrize[]>([]);
   const [classPrizes, setClassPrizes] = useState<ClassPrize[]>([]);
@@ -113,6 +117,20 @@ export default function ClassSettingsClient({
     setArchived((v) => !v);
     message.success(archived ? "Клас повернуто з архіву" : "Клас заархівовано");
     router.refresh();
+  }
+
+  async function toggleClassmateStars(checked: boolean) {
+    setSavingVisibility(true);
+    const { error } = await supabase
+      .from("classes")
+      .update({ show_classmate_stars: checked })
+      .eq("id", classId);
+    setSavingVisibility(false);
+    if (error) {
+      message.error("Не вдалося змінити налаштування");
+      return;
+    }
+    setShowClassmateStars(checked);
   }
 
   async function deleteClassForever() {
@@ -214,6 +232,32 @@ export default function ClassSettingsClient({
 
       <div
         style={{
+          background: "#f8f9fa",
+          border: "2px solid #dee2e6",
+          borderRadius: 12,
+          padding: "16px 20px",
+          marginBottom: 20,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Бали однокласників</div>
+          <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2, maxWidth: 480 }}>
+            На публічному дашборді класу (без PIN-коду) учні бачать список класу.
+            Тут можна дозволити показувати й кількість зірок кожного. Історію
+            "за що", свою чи чужу, це не відкриває, її бачить лише сам учень
+            через власний PIN.
+          </div>
+        </div>
+        <Switch checked={showClassmateStars} loading={savingVisibility} onChange={toggleClassmateStars} />
+      </div>
+
+      <div
+        style={{
           background: "#fff",
           border: "3px solid #000",
           borderRadius: 16,
@@ -233,7 +277,7 @@ export default function ClassSettingsClient({
                 key: "individual",
                 label: (
                   <span style={{ fontWeight: 800 }}>
-                    <GiftOutlined /> Індивідуальні призи
+                    <GiftOutlined /> Індивідуальні нагороди
                   </span>
                 ),
                 children: (
@@ -249,7 +293,7 @@ export default function ClassSettingsClient({
                 key: "class",
                 label: (
                   <span style={{ fontWeight: 800 }}>
-                    <TrophyOutlined /> Призи класу
+                    <TrophyOutlined /> Нагороди класу
                   </span>
                 ),
                 children: (
@@ -298,7 +342,7 @@ export default function ClassSettingsClient({
         <div>
           <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Небезпечна зона</div>
           <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2 }}>
-            Архів ховає клас зі списку, не видаляючи дані. Видалення — назавжди.
+            Архів ховає клас зі списку, не видаляючи дані. Видалення остаточне.
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -307,7 +351,7 @@ export default function ClassSettingsClient({
           </Button>
           <Popconfirm
             title="Видалити клас назавжди?"
-            description="Усі учні, уроки, бали й призи цього класу буде видалено безповоротно."
+            description="Усі учні, уроки, бали й нагороди цього класу буде видалено безповоротно."
             onConfirm={deleteClassForever}
             okText="Видалити"
             okButtonProps={{ danger: true }}

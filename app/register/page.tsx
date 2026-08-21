@@ -29,26 +29,20 @@ export default function RegisterPage() {
 
   const strength = scorePassword(password);
 
-  async function onFinish(values: {
-    last_name: string;
-    first_name: string;
-    email: string;
-    password: string;
-  }) {
+  async function onFinish(values: { email: string; password: string }) {
     if (!accepted) return;
 
     setLoading(true);
     setError(null);
     const supabase = getSupabaseClient();
+    // Ім'я й школу свідомо не питаємо (Етап 9.2, live-фідбек): менше PII —
+    // менший ризик, якщо ці дані колись витечуть разом із даними учнів.
     const { error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback?next=/admin`,
-        data: {
-          display_name: `${values.last_name.trim()} ${values.first_name.trim()}`,
-          ...signUpTermsMetadata(),
-        },
+        data: signUpTermsMetadata(),
       },
     });
     if (error) {
@@ -119,30 +113,6 @@ export default function RegisterPage() {
                 <Alert message={error} type="error" showIcon style={{ marginBottom: "16px" }} />
               )}
               <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
-                <div style={{ display: "flex", gap: "12px" }}>
-                  <Form.Item
-                    name="last_name"
-                    label={<span style={{ color: "var(--color-text-muted)" }}>Прізвище</span>}
-                    style={{ flex: 1 }}
-                    rules={[
-                      { required: true, message: "Введіть прізвище" },
-                      { max: 60, message: "Занадто довге" },
-                    ]}
-                  >
-                    <Input size="large" placeholder="Петренко" autoComplete="family-name" />
-                  </Form.Item>
-                  <Form.Item
-                    name="first_name"
-                    label={<span style={{ color: "var(--color-text-muted)" }}>Ім&apos;я</span>}
-                    style={{ flex: 1 }}
-                    rules={[
-                      { required: true, message: "Введіть ім'я" },
-                      { max: 60, message: "Занадто довге" },
-                    ]}
-                  >
-                    <Input size="large" placeholder="Оксана" autoComplete="given-name" />
-                  </Form.Item>
-                </div>
                 <Form.Item
                   name="email"
                   label={<span style={{ color: "var(--color-text-muted)" }}>Email</span>}

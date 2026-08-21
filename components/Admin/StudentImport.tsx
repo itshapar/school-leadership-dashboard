@@ -189,7 +189,7 @@ export default function StudentImport({
         if (!row.valid) {
           return (
             <Tag color="red" style={{ margin: 0 }}>
-              {row.error} — рядок пропустимо
+              {row.error}, рядок пропустимо
             </Tag>
           );
         }
@@ -293,14 +293,14 @@ export default function StudentImport({
                 {lessonColumns > 0 && (
                   <>
                     <br />
-                    У файлі знайдено стовпців-дат: <b>{lessonColumns}</b> — з них
+                    У файлі знайдено стовпців-дат: <b>{lessonColumns}</b>, з них
                     створимо уроки.
                   </>
                 )}
                 {invalidCount > 0 && (
                   <>
                     <br />
-                    Рядків без двох слів: <b>{invalidCount}</b> — їх буде пропущено.
+                    Рядків без двох слів: <b>{invalidCount}</b>, їх буде пропущено.
                   </>
                 )}
                 <br />ⓘ {MINIMIZATION_HINT}
@@ -346,12 +346,12 @@ export default function StudentImport({
               onClick={commit}
               style={{ background: "#000", fontWeight: 800, borderRadius: 10 }}
             >
-              Підтверджую — імпортувати
+              Підтверджую, імпортувати
             </Button>
           </div>
           {invalidCount > 0 && (
             <div style={{ marginTop: 8, textAlign: "right", fontSize: "0.78rem", color: "#e8590c", fontWeight: 600 }}>
-              {invalidCount} рядків без прізвища та імені імпорт пропустить — решту додасть.
+              {invalidCount} рядків без прізвища та імені імпорт пропустить, решту додасть.
             </div>
           )}
 
@@ -369,12 +369,8 @@ export default function StudentImport({
       )}
 
       <div style={{ marginTop: "16px", color: "var(--color-text-muted)", fontSize: "0.78rem", lineHeight: 1.6 }}>
-        <strong style={{ color: "var(--color-text)" }}>Формат файлу:</strong>
-        <br />
-        стовпець 1 — «Прізвище Ім&apos;я» · 3 — емодзі · 4 — нікнейм · 5 — початковий
-        бонус (число)
-        <br />
-        далі — стовпці призів, потім стовпці-дати зі ⭐, ⭐⭐, ⭐⭐⭐
+        <strong style={{ color: "var(--color-text)" }}>Формат файлу:</strong> один стовпець,
+        «Прізвище Ім&apos;я», просто списком.
       </div>
     </div>
   );

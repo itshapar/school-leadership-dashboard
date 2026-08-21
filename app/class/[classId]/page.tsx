@@ -65,7 +65,7 @@ export default async function ClassPage({ params }: Props) {
             }}
           >
             <span style={{ fontWeight: 800, fontSize: "0.95rem" }}>
-              🎓 Це демонстраційний клас StarBoard — дані вигадані
+              🎓 Це демонстраційний клас StarBoard, дані вигадані
             </span>
             <span style={{ fontWeight: 900, textDecoration: "underline", whiteSpace: "nowrap" }}>
               Зареєструватися безкоштовно →
@@ -259,7 +259,7 @@ export default async function ClassPage({ params }: Props) {
                 Мій дашборд
               </div>
               <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#000000", opacity: 0.75 }}>
-                Увійди зі своїм PIN — один раз
+                Увійди зі своїм PIN, один раз
               </div>
             </div>
             <div style={{ fontSize: "2rem" }}>🔑</div>
@@ -283,6 +283,11 @@ export default async function ClassPage({ params }: Props) {
                 {student.display_name}
               </div>
             </div>
+            {typeof student.stars === "number" && (
+              <div style={{ fontWeight: 900, color: "var(--color-star)", display: "flex", alignItems: "center", gap: "4px" }}>
+                {student.stars} <StarFilled style={{ fontSize: "0.9rem" }} />
+              </div>
+            )}
           </div>
         ))}
       </div>

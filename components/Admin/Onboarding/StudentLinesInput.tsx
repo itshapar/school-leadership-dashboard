@@ -142,7 +142,7 @@ export default function StudentLinesInput({
           showIcon
           style={{ marginBottom: 12 }}
           message={`Схоже, у ${suspicious.length} рядках спершу йде ім'я`}
-          description="Публічна сторінка показує друге слово як ім'я учня — інший порядок покаже стороннім прізвища."
+          description="Публічна сторінка показує друге слово як ім'я учня, інший порядок покаже стороннім прізвища."
           action={
             <Button size="small" icon={<SwapOutlined />} onClick={swapSuspicious}>
               Поміняти місцями
@@ -163,19 +163,23 @@ export default function StudentLinesInput({
         </div>
       )}
 
-      <Button
-        type="primary"
-        loading={busy}
-        disabled={rawLines.length === 0 || invalid.length > 0}
-        onClick={submit}
-        style={{ background: "#000", fontWeight: 800, borderRadius: 10 }}
-      >
-        Додати {rawLines.length > 0 ? `${rawLines.length} учнів` : "учнів"}
-      </Button>
-      {invalid.length > 0 && (
-        <div style={{ marginTop: 8, fontSize: "0.78rem", color: "#e03131", fontWeight: 600 }}>
-          Спершу виправте рядки без прізвища та імені — кнопка неактивна, поки вони є.
-        </div>
+      {rawLines.length > 0 && (
+        <>
+          <Button
+            type="primary"
+            loading={busy}
+            disabled={invalid.length > 0}
+            onClick={submit}
+            style={{ background: "#000", fontWeight: 800, borderRadius: 10 }}
+          >
+            Додати {rawLines.length} {rawLines.length === 1 ? "учня" : "учнів"}
+          </Button>
+          {invalid.length > 0 && (
+            <div style={{ marginTop: 8, fontSize: "0.78rem", color: "#e03131", fontWeight: 600 }}>
+              Спершу виправте рядки без прізвища та імені, кнопка неактивна, поки вони є.
+            </div>
+          )}
+        </>
       )}
     </div>
   );

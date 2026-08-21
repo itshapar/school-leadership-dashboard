@@ -18,12 +18,19 @@ export default async function ClassSettingsPage({ params }: Props) {
   const cls = await resolveOwnedClass(supabase, classParam);
   if (!cls) return notFound();
 
-  const { data: students } = await supabase
-    .from("students")
-    .select("id, full_name, nickname, avatar_emoji, group_id")
-    .eq("class_id", cls.id)
-    .is("deleted_at", null)
-    .order("full_name");
+  const [{ data: students }, { data: visibility }] = await Promise.all([
+    supabase
+      .from("students")
+      .select("id, full_name, nickname, avatar_emoji, group_id")
+      .eq("class_id", cls.id)
+      .is("deleted_at", null)
+      .order("full_name"),
+    supabase
+      .from("classes")
+      .select("show_classmate_stars")
+      .eq("id", cls.id)
+      .single(),
+  ]);
 
   return (
     <div style={{ background: "#f8f9fa", minHeight: "100vh" }}>
@@ -32,6 +39,7 @@ export default async function ClassSettingsPage({ params }: Props) {
         classCode={cls.public_code}
         className={cls.name}
         initialArchived={Boolean(cls.archived_at)}
+        initialShowClassmateStars={Boolean(visibility?.show_classmate_stars)}
         initialStudents={(students ?? []) as StudentRow[]}
       />
     </div>

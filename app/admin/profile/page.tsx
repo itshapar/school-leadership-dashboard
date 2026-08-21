@@ -6,19 +6,17 @@ import ProfileForm from "@/components/Admin/ProfileForm";
 
 export const dynamic = "force-dynamic";
 
-/** Профіль вчителя (PRD §5.1): ім'я + назва школи для відображення. */
+/**
+ * Профіль вчителя (Етап 9.2): свідомо мінімальний — email і видалення
+ * акаунту. Ім'я й назву школи прибрали з реєстрації та звідси зовсім, щоб
+ * не зв'язувати особу вчителя з конкретною школою без потреби.
+ */
 export default async function ProfilePage() {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/admin/login");
-
-  const { data: profile } = await supabase
-    .from("teacher_profiles")
-    .select("id, display_name, school_display_name")
-    .eq("id", user.id)
-    .maybeSingle();
 
   return (
     <div className="page-container" style={{ maxWidth: "560px" }}>
@@ -33,13 +31,7 @@ export default async function ProfilePage() {
       <p style={{ color: "var(--color-text-muted)", marginBottom: "24px" }}>
         Email: {user.email}
       </p>
-      <div className="star-card">
-        <ProfileForm
-          profile={
-            profile ?? { id: user.id, display_name: "", school_display_name: null }
-          }
-        />
-      </div>
+      <ProfileForm />
     </div>
   );
 }

@@ -15,7 +15,8 @@ export interface PublicStudentSummary {
   id: string;
   display_name: string;
   avatar_emoji: string;
-  stars: number;
+  /** Присутнє лише коли вчитель увімкнув show_classmate_stars для класу. */
+  stars?: number;
 }
 
 export interface PublicClassEntry {
@@ -43,6 +44,8 @@ export interface PublicClassOverview {
   archived: boolean;
   /** Постійний публічний демо-клас (Етап 9) — показуємо банер реєстрації. */
   is_public_demo: boolean;
+  /** Чи вчитель дозволив показувати бали однокласників у списку (Етап 9.2). */
+  show_classmate_stars: boolean;
   /**
    * Джерело правди для порогів класу (міграція 016). Старі ключі
    * game_day_threshold / pizza_day_threshold свідомо НЕ описані тут:

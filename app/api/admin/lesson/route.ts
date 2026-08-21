@@ -4,10 +4,16 @@ import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
 import { assertClassOwnership } from "@/lib/admin/classOwnership";
 
-const PostLessonSchema = z.object({
-  class_id: z.string().uuid(),
-  date: z.string().date(),
-});
+const PostLessonSchema = z
+  .object({
+    class_id: z.string().uuid(),
+    date: z.string().date().optional(),
+    // Серія уроків (Етап 9.2): за розкладом днів тижня, а не по одному вручну.
+    dates: z.array(z.string().date()).min(1).max(200).optional(),
+  })
+  .refine((v) => v.date || (v.dates && v.dates.length > 0), {
+    message: "date or dates required",
+  });
 
 const DeleteLessonSchema = z.object({
   id: z.string(),
@@ -26,7 +32,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
   }
 
-  const { class_id, date } = body;
+  const { class_id } = body;
+  const dates = body.dates ?? [body.date!];
 
   // Клас має належати цьому вчителю (без винятку для teacher_id IS NULL)
   const claim = await assertClassOwnership(supabaseForRls, class_id, user.id);
@@ -34,29 +41,36 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: claim.error || "Permission denied" }, { status: 403 });
   }
 
-  const { data: existing } = await supabaseForRls
+  const { data: existingRows } = await supabaseForRls
     .from("lessons")
-    .select("id")
+    .select("date")
     .eq("class_id", class_id)
-    .eq("date", date)
-    .maybeSingle();
+    .in("date", dates);
 
-  if (existing) {
+  const existingDates = new Set((existingRows ?? []).map((r) => r.date as string));
+  const toInsert = dates.filter((d) => !existingDates.has(d));
+
+  // Один-урок-шлях (сумісність): якщо все вже існує, той самий 409, що й раніше.
+  if (toInsert.length === 0) {
     return NextResponse.json({ error: "lesson_exists" }, { status: 409 });
   }
 
-  const { data: newLesson, error } = await supabaseForRls
+  const { data: newLessons, error } = await supabaseForRls
     .from("lessons")
-    .insert({ class_id, date })
-    .select("id, date")
-    .single();
+    .insert(toInsert.map((date) => ({ class_id, date })))
+    .select("id, date");
 
   if (error) {
     console.error("Supabase error (lesson insert):", error);
     return NextResponse.json({ error: "Failed to create lesson" }, { status: 400 });
   }
 
-  return NextResponse.json({ lesson: newLesson });
+  return NextResponse.json({
+    lesson: newLessons?.[0] ?? null,
+    lessons: newLessons ?? [],
+    inserted: newLessons?.length ?? 0,
+    skipped: existingDates.size,
+  });
 }
 
 export async function DELETE(request: Request) {

@@ -1,29 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Popover, Select, Tag, message } from "antd";
-import { PlusOutlined, StarFilled, TagOutlined } from "@ant-design/icons";
-import { getSupabaseClient } from "@/lib/supabase/client";
-import { setClassParallel, upsertParallelByName, type Parallel } from "@/lib/admin/parallels";
+import { Button, Tag } from "antd";
+import { PlusOutlined, StarFilled } from "@ant-design/icons";
 import { TEACHER_LIMITS } from "@/lib/admin/classConfig";
 import type { OnboardingStepKey } from "@/lib/admin/onboarding";
+import type { Parallel } from "@/lib/admin/parallels";
 
 /**
  * Плаский список класів кабінету.
  *
- * До Етапу 9 тут було дерево "школа → паралель" з окремим екраном
- * керування папками. Школа прибрана з класу зовсім (є вільним текстом у
- * профілі вчителя); паралель лишилась як необов'язковий тег, який можна
- * змінити прямо тут — без переходу нікуди.
+ * Картка класу навмисно мінімальна (Етап 9.2, live-фідбек): назва, кількість
+ * учнів/уроків/зірок, Журнал і Дашборд. Паралель, код класу й прогрес
+ * налаштування — це керування, а не щоденний перегляд, тож живуть глибше
+ * в налаштуваннях класу, а не на кожній картці списку.
  */
 
-// Той самий фіксований список 1–12, що й у майстрі створення класу.
-const GRADE_OPTIONS = Array.from({ length: 12 }, (_, i) => {
-  const n = String(i + 1);
-  return { value: n, label: `${n} клас` };
-});
+const ALL = "__all__";
 
 export interface AdminClassCard {
   id: string;
@@ -52,8 +47,36 @@ export default function AdminClassList({
   const router = useRouter();
   const atClassLimit = classes.length >= TEACHER_LIMITS.classes;
 
+  const sortedParallels = useMemo(
+    () => [...parallels].sort((a, b) => Number(a.name) - Number(b.name)),
+    [parallels]
+  );
+  const [parallelFilter, setParallelFilter] = useState<string>(ALL);
+  const visibleClasses =
+    parallelFilter === ALL
+      ? classes
+      : classes.filter((c) => c.parallel_id === parallelFilter);
+
   return (
     <>
+      {sortedParallels.length > 0 && (
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
+          <button type="button" onClick={() => setParallelFilter(ALL)} style={chipStyle(parallelFilter === ALL)}>
+            Усі паралелі
+          </button>
+          {sortedParallels.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setParallelFilter(p.id)}
+              style={chipStyle(parallelFilter === p.id)}
+            >
+              {p.name} клас
+            </button>
+          ))}
+        </div>
+      )}
+
       <div
         style={{
           display: "flex",
@@ -88,8 +111,8 @@ export default function AdminClassList({
         <EmptyState />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {classes.map((cls) => (
-            <ClassCard key={cls.id} cls={cls} parallels={parallels} />
+          {visibleClasses.map((cls) => (
+            <ClassCard key={cls.id} cls={cls} />
           ))}
         </div>
       )}
@@ -97,40 +120,21 @@ export default function AdminClassList({
   );
 }
 
-function ClassCard({ cls, parallels }: { cls: AdminClassCard; parallels: Parallel[] }) {
-  const router = useRouter();
-  const supabase = getSupabaseClient();
-  const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const currentParallel = parallels.find((p) => p.id === cls.parallel_id) ?? null;
+function chipStyle(active: boolean): React.CSSProperties {
+  return {
+    padding: "8px 16px",
+    borderRadius: "20px",
+    background: active ? "#000" : "#ffffff",
+    color: active ? "#fff" : "#495057",
+    fontWeight: 700,
+    fontSize: "0.9rem",
+    border: active ? "2px solid #000" : "2px solid #dee2e6",
+    boxShadow: active ? "2px 2px 0px var(--color-star, #f59f00)" : "none",
+    cursor: "pointer",
+  };
+}
 
-  async function applyParallel(value: string | null) {
-    setSaving(true);
-    const { error } = await setClassParallel(supabase, cls.id, value);
-    setSaving(false);
-    if (error) {
-      message.error("Не вдалося змінити паралель");
-      return;
-    }
-    setOpen(false);
-    router.refresh();
-  }
-
-  async function onGradeChange(grade: string | undefined) {
-    if (!grade) {
-      await applyParallel(null);
-      return;
-    }
-    setSaving(true);
-    const { id, error } = await upsertParallelByName(supabase, grade);
-    if (error || !id) {
-      setSaving(false);
-      message.error("Не вдалося змінити паралель");
-      return;
-    }
-    await applyParallel(id);
-  }
-
+function ClassCard({ cls }: { cls: AdminClassCard }) {
   return (
     <div className="star-card" style={{ padding: 0 }}>
       <div className="admin-card-row">
@@ -145,32 +149,6 @@ function ClassCard({ cls, parallels }: { cls: AdminClassCard; parallels: Paralle
             {cls.archived && (
               <Tag style={{ fontWeight: 800, margin: 0 }}>Архів</Tag>
             )}
-            <Popover
-              trigger="click"
-              open={open}
-              onOpenChange={setOpen}
-              content={
-                <div style={{ width: 180 }}>
-                  <Select
-                    style={{ width: "100%" }}
-                    placeholder="Клас (1–12)"
-                    allowClear
-                    loading={saving}
-                    disabled={saving}
-                    value={currentParallel?.name}
-                    onChange={onGradeChange}
-                    options={GRADE_OPTIONS}
-                  />
-                </div>
-              }
-            >
-              <Tag
-                icon={<TagOutlined />}
-                style={{ cursor: "pointer", fontWeight: 700, margin: 0 }}
-              >
-                {currentParallel?.name ?? "паралель"}
-              </Tag>
-            </Popover>
           </div>
 
           <div className="admin-class-stats">
@@ -180,41 +158,6 @@ function ClassCard({ cls, parallels }: { cls: AdminClassCard; parallels: Paralle
               {cls.totalStars} <StarFilled style={{ fontSize: "0.9rem" }} />
             </span>
           </div>
-
-          <div
-            style={{
-              marginTop: "6px",
-              fontSize: "0.8rem",
-              fontWeight: 800,
-              letterSpacing: "1px",
-              color: "var(--color-text-muted)",
-            }}
-          >
-            Код для учнів: {cls.formatted_code}
-          </div>
-
-          {!cls.onboardingComplete && (
-            <Link
-              href={
-                cls.nextStep === "codes"
-                  ? `/admin/${cls.public_code}/settings`
-                  : `/admin/onboarding?classId=${cls.id}`
-              }
-              style={{
-                display: "inline-block",
-                marginTop: 8,
-                fontSize: "0.78rem",
-                fontWeight: 800,
-                color: "#f08c00",
-                textDecoration: "none",
-                border: "2px solid #f08c00",
-                borderRadius: 8,
-                padding: "2px 8px",
-              }}
-            >
-              Налаштувати · {cls.onboardingDone}/{cls.onboardingTotal}
-            </Link>
-          )}
         </div>
 
         <div className="admin-btn-group">
@@ -250,7 +193,7 @@ function EmptyState() {
         Створіть перший клас
       </h3>
       <p style={{ color: "#868e96", fontWeight: 600, maxWidth: 420, margin: "0 auto 24px" }}>
-        Майстер проведе за три кроки: клас → учні → призи. Будь-який крок можна
+        Майстер проведе за три кроки: клас, учні, нагороди. Будь-який крок можна
         пропустити й повернутись пізніше.
       </p>
       <Link href="/admin/onboarding">

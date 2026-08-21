@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button, Modal, Form, Select, InputNumber, message, Tooltip, Radio } from "antd";
-import { ThunderboltOutlined } from "@ant-design/icons";
+import { StarFilled } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import EntryNoteField from "@/components/Admin/EntryNoteField";
@@ -152,11 +152,11 @@ export default function QuickEntry({
         <Button
           onClick={openModal}
           size="middle"
-          icon={<ThunderboltOutlined />}
+          icon={<StarFilled />}
           style={{
-            background: "#ebfbee",
-            color: "#2f9e44",
-            border: "2px solid #2f9e44",
+            background: "#fff9db",
+            color: "var(--color-star, #f59f00)",
+            border: "2px solid var(--color-star, #f59f00)",
             fontWeight: 800,
             borderRadius: "12px",
             height: "42px",
@@ -258,7 +258,7 @@ export default function QuickEntry({
                     rules={[{ required: true, message: "Оберіть групу" }]}
                     extra={
                       <span style={{ color: "#868e96", fontSize: "0.8rem" }}>
-                        Кожен учасник отримає окреме нарахування — операцію можна
+                        Кожен учасник отримає окреме нарахування, операцію можна
                         скасувати цілком в історії.
                       </span>
                     }
