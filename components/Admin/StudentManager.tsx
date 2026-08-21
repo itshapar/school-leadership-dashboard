@@ -60,6 +60,7 @@ export default function StudentManager({
 }) {
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [groups, setGroups] = useState<ClassGroup[]>([]);
+  const [pins, setPins] = useState<Record<string, string>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(false);
@@ -76,10 +77,20 @@ export default function StudentManager({
     loadClassGroups(supabase, classId).then((g) => {
       if (!cancelled) setGroups(g);
     });
+    supabase
+      .rpc("get_class_pins", { p_class_id: classId })
+      .then(({ data }: { data: Array<{ student_id: string; pin: string }> | null }) => {
+        if (cancelled || !data) return;
+        setPins(Object.fromEntries(data.map((r) => [r.student_id, r.pin])));
+      });
     return () => {
       cancelled = true;
     };
   }, [classId, supabase]);
+
+  function mergePins(next: Record<string, string>) {
+    setPins((prev) => ({ ...prev, ...next }));
+  }
 
   const handleAdd = () => {
     setEditingStudent(null);
@@ -222,9 +233,26 @@ export default function StudentManager({
     {
       title: "PIN",
       key: "pin",
-      width: 70,
+      width: 130,
       align: "center" as const,
-      render: (_value: unknown, record: Student) => <ResetPinButton student={record} />,
+      render: (_value: unknown, record: Student) => (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+          <span
+            style={{
+              fontFamily: "monospace",
+              fontWeight: 800,
+              letterSpacing: "0.08em",
+              color: pins[record.id] ? "var(--color-text)" : "#adb5bd",
+            }}
+          >
+            {pins[record.id] ?? "—"}
+          </span>
+          <ResetPinButton
+            student={record}
+            onReset={(pin) => mergePins({ [record.id]: pin })}
+          />
+        </div>
+      ),
     },
     {
       title: "Дії",
@@ -283,6 +311,7 @@ export default function StudentManager({
             publicCode={publicCode}
             className={className}
             students={students}
+            onReset={mergePins}
           />
           <Button
             type="primary"

@@ -4,15 +4,18 @@ import { useState } from "react";
 import { Button, Modal, Popconfirm, message, Alert } from "antd";
 import { KeyOutlined, CopyOutlined, PrinterOutlined } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { formatClassCode } from "@/lib/classCodes";
 
 /**
- * Керування PIN-ами учнів (Етап 4).
+ * Керування PIN-ами учнів (Етап 4, переглянуто в 9.3).
  *
- * PIN-и зберігаються лише bcrypt-хешами, тому показати наявний PIN
- * неможливо — тільки згенерувати новий. Обидві RPC — SECURITY INVOKER:
- * RLS гарантує, що вчитель скидає PIN-и лише своїм учням.
- * Скидання інвалідовує всі активні сесії учня (pin_generation++).
+ * PIN-и шифруються оборотно (pgcrypto, міграція 033) — на прохання вчителя
+ * PIN мусить бути видимий у списку учнів завжди, не лише одразу після
+ * генерації. get_class_pins() читає їх у будь-який момент; ключ шифрування
+ * живе лише в тілі SQL-функцій, не в клієнтському коді.
+ *
+ * "Код класу" студенту вводити не треба: вчитель ділиться прямим
+ * посиланням на дашборд (код у ньому вже закодований), учень бачить лише
+ * поле PIN.
  */
 
 interface StudentLite {
@@ -28,13 +31,24 @@ const pinStyle: React.CSSProperties = {
   letterSpacing: "0.15em",
 };
 
-/** Кнопка «Скинути PIN» для одного учня. Новий PIN показується один раз. */
-export function ResetPinButton({ student }: { student: StudentLite }) {
+/** Посилання, яке вчитель ділиться з учнем: код класу вже в ньому, вводити нічого не треба. */
+export function studentDashboardLink(publicCode: string): string {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  return `${origin}/class/${publicCode}/me`;
+}
+
+/** Кнопка «Скинути PIN» для одного учня. Новий PIN одразу лишається видимим у списку. */
+export function ResetPinButton({
+  student,
+  onReset,
+}: {
+  student: StudentLite;
+  onReset?: (pin: string) => void;
+}) {
   const [loading, setLoading] = useState(false);
-  const [pin, setPin] = useState<string | null>(null);
   const supabase = getSupabaseClient();
 
-  async function onReset() {
+  async function handleReset() {
     setLoading(true);
     const { data, error } = await supabase.rpc("reset_student_pin", {
       p_student_id: student.id,
@@ -44,56 +58,39 @@ export function ResetPinButton({ student }: { student: StudentLite }) {
       message.error("Не вдалося скинути PIN");
       return;
     }
-    setPin(data as string);
+    onReset?.(data as string);
+    message.success("PIN оновлено");
   }
 
   return (
-    <>
-      <Popconfirm
-        title="Скинути PIN?"
-        description="Старий PIN і всі активні сесії учня перестануть діяти."
-        onConfirm={onReset}
-        okText="Скинути"
-        cancelText="Ні"
-      >
-        <Button icon={<KeyOutlined />} loading={loading} style={{ borderRadius: "8px" }} />
-      </Popconfirm>
-      <Modal
-        title={<div style={{ fontWeight: 900 }}>Новий PIN</div>}
-        open={pin !== null}
-        onOk={() => setPin(null)}
-        onCancel={() => setPin(null)}
-        cancelButtonProps={{ style: { display: "none" } }}
-        okText="Готово"
-      >
-        <p style={{ marginBottom: 8 }}>{student.full_name}:</p>
-        <div style={{ ...pinStyle, fontSize: "2rem", textAlign: "center", margin: "12px 0" }}>
-          {pin}
-        </div>
-        <Alert
-          type="warning"
-          showIcon
-          message="PIN показується лише один раз — запишіть або передайте учню зараз."
-        />
-      </Modal>
-    </>
+    <Popconfirm
+      title="Скинути PIN?"
+      description="Старий PIN і всі активні сесії учня перестануть діяти."
+      onConfirm={handleReset}
+      okText="Скинути"
+      cancelText="Ні"
+    >
+      <Button icon={<KeyOutlined />} loading={loading} size="small" style={{ borderRadius: "8px" }} />
+    </Popconfirm>
   );
 }
 
 /**
- * Масова генерація PIN-ів усього класу + пам'ятка «код класу + PIN-и»
- * для роздачі учням (копіювання/друк). PIN-и видно лише один раз.
+ * Масова генерація PIN-ів усього класу + друковна пам'ятка "ім'я + PIN"
+ * для роздачі учням (вирізати й видати кожному листочок).
  */
 export function ResetClassPinsButton({
   classId,
   publicCode,
   className,
   students,
+  onReset,
 }: {
   classId: string;
   publicCode: string;
   className: string;
   students: StudentLite[];
+  onReset?: (pins: Record<string, string>) => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [pins, setPins] = useState<Array<{ student_id: string; pin: string }> | null>(null);
@@ -101,7 +98,7 @@ export function ResetClassPinsButton({
 
   const nameById = new Map(students.map((s) => [s.id, s.full_name] as const));
 
-  async function onReset() {
+  async function handleReset() {
     setLoading(true);
     const { data, error } = await supabase.rpc("reset_class_pins", {
       p_class_id: classId,
@@ -111,16 +108,19 @@ export function ResetClassPinsButton({
       message.error("Не вдалося згенерувати PIN-и");
       return;
     }
-    setPins(data as Array<{ student_id: string; pin: string }>);
+    const rows = data as Array<{ student_id: string; pin: string }>;
+    setPins(rows);
+    onReset?.(Object.fromEntries(rows.map((r) => [r.student_id, r.pin])));
   }
 
   function memoText(): string {
+    const link = studentDashboardLink(publicCode);
     const lines = [
-      `Клас ${className} — вхід на свій дашборд`,
-      `Сторінка: /student · Код класу: ${formatClassCode(publicCode)}`,
+      `Клас ${className}, вхід на дашборд`,
+      `Посилання: ${link}`,
       "",
       ...(pins ?? []).map(
-        (p) => `${nameById.get(p.student_id) ?? p.student_id} — PIN ${p.pin}`
+        (p) => `${nameById.get(p.student_id) ?? p.student_id}: PIN ${p.pin}`
       ),
     ];
     return lines.join("\n");
@@ -135,13 +135,30 @@ export function ResetClassPinsButton({
     }
   }
 
+  async function onCopyLink() {
+    try {
+      await navigator.clipboard.writeText(studentDashboardLink(publicCode));
+      message.success("Посилання скопійовано");
+    } catch {
+      message.error("Не вдалося скопіювати");
+    }
+  }
+
   function onPrint() {
     const w = window.open("", "_blank");
     if (!w) return;
+    const rows = (pins ?? [])
+      .map(
+        (p) =>
+          `<tr><td>${nameById.get(p.student_id) ?? p.student_id}</td><td style="font-family:monospace;font-size:20px;font-weight:800;letter-spacing:0.15em">${p.pin}</td></tr>`
+      )
+      .join("");
     w.document.write(
-      `<pre style="font-family:monospace;font-size:14px;line-height:1.7">${memoText()
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")}</pre>`
+      `<html><head><title>PIN-и: ${className}</title></head><body style="font-family:sans-serif">` +
+        `<h2>${className}</h2>` +
+        `<p>Посилання: ${studentDashboardLink(publicCode)}</p>` +
+        `<table style="border-collapse:collapse;width:100%" border="1" cellpadding="8">${rows}</table>` +
+        `</body></html>`
     );
     w.document.close();
     w.print();
@@ -150,9 +167,9 @@ export function ResetClassPinsButton({
   return (
     <>
       <Popconfirm
-        title="Згенерувати PIN-и всьому класу?"
+        title="Згенерувати нові PIN-и всьому класу?"
         description="Старі PIN-и та всі активні сесії учнів перестануть діяти."
-        onConfirm={onReset}
+        onConfirm={handleReset}
         okText="Згенерувати"
         cancelText="Ні"
       >
@@ -166,17 +183,20 @@ export function ResetClassPinsButton({
             fontSize: "0.85rem",
           }}
         >
-          PIN-И КЛАСУ
+          РОЗДРУКУВАТИ PIN-И КЛАСУ
         </Button>
       </Popconfirm>
       <Modal
-        title={<div style={{ fontWeight: 900 }}>Пам&apos;ятка: код класу + PIN-и</div>}
+        title={<div style={{ fontWeight: 900 }}>PIN-и класу</div>}
         open={pins !== null}
         onCancel={() => setPins(null)}
         width={520}
         footer={[
+          <Button key="link" icon={<CopyOutlined />} onClick={onCopyLink}>
+            Копіювати посилання
+          </Button>,
           <Button key="copy" icon={<CopyOutlined />} onClick={onCopy}>
-            Копіювати
+            Копіювати список
           </Button>,
           <Button key="print" icon={<PrinterOutlined />} onClick={onPrint}>
             Друк
@@ -187,13 +207,13 @@ export function ResetClassPinsButton({
         ]}
       >
         <Alert
-          type="warning"
+          type="info"
           showIcon
           style={{ marginBottom: 12 }}
-          message="PIN-и показуються лише один раз. Скопіюйте або роздрукуйте пам'ятку зараз."
+          message="PIN-и й далі видно в списку учнів будь-коли — цей екран лише для друку."
         />
-        <p style={{ marginBottom: 4 }}>
-          Вхід: сторінка <b>/student</b> · Код класу: <b>{formatClassCode(publicCode)}</b>
+        <p style={{ marginBottom: 4, wordBreak: "break-all" }}>
+          Посилання: <b>{studentDashboardLink(publicCode)}</b>
         </p>
         <div style={{ maxHeight: 320, overflowY: "auto", marginTop: 8 }}>
           {(pins ?? []).map((p) => (

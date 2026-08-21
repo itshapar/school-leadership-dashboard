@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Popconfirm, Spin, Switch, Tabs, message } from "antd";
+import { Button, Popconfirm, Select, Spin, Switch, Tabs, message } from "antd";
 import Link from "next/link";
 import {
   ArrowLeftOutlined,
@@ -25,6 +25,13 @@ import PrizesPanel from "@/components/Admin/ClassSettings/PrizesPanel";
 import GroupsPanel from "@/components/Admin/ClassSettings/GroupsPanel";
 import { ResetClassPinsButton } from "@/components/Admin/PinManager";
 import { formatClassCode } from "@/lib/classCodes";
+import { setClassParallel, upsertParallelByName, type Parallel } from "@/lib/admin/parallels";
+
+// Той самий фіксований список 1–12, що й у майстрі створення класу.
+const GRADE_OPTIONS = Array.from({ length: 12 }, (_, i) => {
+  const n = String(i + 1);
+  return { value: n, label: `${n} клас` };
+});
 
 /**
  * Налаштування класу — одне місце замість модалки «Нагороди».
@@ -51,6 +58,8 @@ interface Props {
   className: string;
   initialArchived: boolean;
   initialShowClassmateStars: boolean;
+  initialParallelId: string | null;
+  parallels: Parallel[];
   initialStudents: StudentRow[];
 }
 
@@ -60,6 +69,8 @@ export default function ClassSettingsClient({
   className,
   initialArchived,
   initialShowClassmateStars,
+  initialParallelId,
+  parallels,
   initialStudents,
 }: Props) {
   const supabase = getSupabaseClient();
@@ -69,6 +80,8 @@ export default function ClassSettingsClient({
   const [archived, setArchived] = useState(initialArchived);
   const [showClassmateStars, setShowClassmateStars] = useState(initialShowClassmateStars);
   const [savingVisibility, setSavingVisibility] = useState(false);
+  const [parallelId, setParallelId] = useState(initialParallelId);
+  const [savingParallel, setSavingParallel] = useState(false);
   const [busy, setBusy] = useState(false);
   const [individualPrizes, setIndividualPrizes] = useState<IndividualPrize[]>([]);
   const [classPrizes, setClassPrizes] = useState<ClassPrize[]>([]);
@@ -116,6 +129,28 @@ export default function ClassSettingsClient({
     }
     setArchived((v) => !v);
     message.success(archived ? "Клас повернуто з архіву" : "Клас заархівовано");
+    router.refresh();
+  }
+
+  async function onGradeChange(grade: string | undefined) {
+    setSavingParallel(true);
+    let nextId: string | null = null;
+    if (grade) {
+      const { id, error } = await upsertParallelByName(supabase, grade);
+      if (error || !id) {
+        setSavingParallel(false);
+        message.error("Не вдалося змінити паралель");
+        return;
+      }
+      nextId = id;
+    }
+    const { error } = await setClassParallel(supabase, classId, nextId);
+    setSavingParallel(false);
+    if (error) {
+      message.error("Не вдалося змінити паралель");
+      return;
+    }
+    setParallelId(nextId);
     router.refresh();
   }
 
@@ -188,6 +223,38 @@ export default function ClassSettingsClient({
             {className}
           </div>
         </div>
+      </div>
+
+      <div
+        style={{
+          background: "#f8f9fa",
+          border: "2px solid #dee2e6",
+          borderRadius: 12,
+          padding: "16px 20px",
+          marginBottom: 20,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Паралель</div>
+          <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2 }}>
+            Для фільтра в списку класів і в рейтингу.
+          </div>
+        </div>
+        <Select
+          style={{ width: 160 }}
+          allowClear
+          loading={savingParallel}
+          disabled={savingParallel}
+          placeholder="Клас (1–12)"
+          value={parallels.find((p) => p.id === parallelId)?.name}
+          onChange={onGradeChange}
+          options={GRADE_OPTIONS}
+        />
       </div>
 
       <div
