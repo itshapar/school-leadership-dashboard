@@ -13,9 +13,14 @@ import { App } from "antd";
  * message беремо через App.useApp() (9.13), не статичним імпортом — той
  * не завжди надійно консюмить контекст у antd v5+.
  *
- * Текст лівим краєм (9.16-9.17, живий фідбек) — перенесення на другий
+ * Текст лівим краєм (9.16-9.18, живий фідбек) — перенесення на другий
  * рядок це ОК, whiteSpace:nowrap із попередньої версії якраз і обрізав
  * попап замість переносу. Прибрано.
+ *
+ * text-align на <span> нічого не важив (9.18) — span інлайновий, не
+ * створює власного блочного контексту, тож і далі підпорядковувався
+ * text-align:center із antd-обгортки .ant-message-notice-content. <div>
+ * створює свій блочний контекст — тепер лівий край дійсно застосовується.
  */
 const TOAST_STYLE: React.CSSProperties = { textAlign: "left" };
 
@@ -23,7 +28,7 @@ export default function PersonalDashboardIntroToast({ blocked }: { blocked: bool
   const { message } = App.useApp();
 
   useEffect(() => {
-    const content = <span style={TOAST_STYLE}>Ви можете переглядати лише власний профіль.</span>;
+    const content = <div style={TOAST_STYLE}>Ви можете переглядати лише власний профіль.</div>;
     if (blocked) {
       // key (9.17, живий фідбек): той самий ключ ОНОВЛЮЄ наявний попап
       // замість того, щоб штабелювати новий на кожен клік — інакше

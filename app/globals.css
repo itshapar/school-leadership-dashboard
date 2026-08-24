@@ -41,6 +41,20 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+/*
+ * antd message-попапи (9.18, живий фідбек): text-align на власному
+ * <div>-контенті не діяв, бо .ant-message-custom-content — сам flex-
+ * контейнер (перевірено живим DOM-дампом справжнього тоста:
+ * display:flex, text-align:center), а .ant-message-notice-content над ним
+ * — inline-block з text-align:center. Обидва рівні треба перебити явно,
+ * інакше вирівнювання контенту всередині тоста лишається по центру
+ * незалежно від стилю на самому переданому content.
+ */
+.ant-message-notice-content,
+.ant-message-custom-content {
+  text-align: left !important;
+}
+
 /* Page container */
 .page-container {
   max-width: 700px;
