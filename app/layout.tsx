@@ -5,7 +5,7 @@ import LegalFooter from "@/components/Legal/LegalFooter";
 import ThemeProvider from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "StarBoard — Дошка зірок",
+  title: "StarBoard · Дошка зірок",
   description: "Gamification dashboard для учнів 7-х класів",
 };
 

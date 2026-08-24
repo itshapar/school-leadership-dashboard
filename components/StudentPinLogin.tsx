@@ -37,7 +37,7 @@ export default function StudentPinLogin({
       setError(
         body.reason === "rate_limited"
           ? "Забагато спроб. Зачекай трохи і спробуй ще раз."
-          : "Невірний PIN. Якщо забув — попроси вчителя скинути."
+          : "Невірний PIN. Якщо забув, попроси вчителя скинути."
       );
     } catch {
       setError("Щось пішло не так. Спробуй ще раз.");
@@ -62,7 +62,7 @@ export default function StudentPinLogin({
             Вхід учня
           </h1>
           <p style={{ color: "var(--color-text-muted)", margin: 0 }}>
-            {className} · введи свій PIN один раз — далі вхід буде автоматичним
+            {className} · введи свій PIN один раз, далі вхід буде автоматичним
           </p>
         </div>
 
@@ -76,7 +76,7 @@ export default function StudentPinLogin({
               label={<span style={{ color: "var(--color-text-muted)" }}>PIN (6 цифр)</span>}
               rules={[
                 { required: true, message: "Введи PIN" },
-                { pattern: /^\d{6}$/, message: "PIN — це 6 цифр" },
+                { pattern: /^\d{6}$/, message: "PIN складається з 6 цифр" },
               ]}
             >
               <Input

@@ -30,8 +30,8 @@ interface Student {
 }
 
 const STAR_OPTIONS = [
-  { value: 0, label: "— не нараховувати" },
-  { value: -1, label: "Н — не був" },
+  { value: 0, label: "Не нараховувати" },
+  { value: -1, label: "Н (не був)" },
   { value: 1, label: "⭐ 1 зірка" },
   { value: 2, label: "⭐⭐ 2 зірки" },
   { value: 3, label: "⭐⭐⭐ 3 зірки" },

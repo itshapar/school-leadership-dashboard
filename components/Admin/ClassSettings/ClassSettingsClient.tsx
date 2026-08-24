@@ -266,7 +266,7 @@ export default function ClassSettingsClient({
         <div>
           <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>PIN-и учнів</div>
           <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2 }}>
-            PIN-и завжди видно у списку учнів. Тут — лише друк і перегенерація.
+            PIN-и завжди видно у списку учнів. Тут лише друк і перегенерація.
           </div>
         </div>
         {!loading && students.length > 0 && (

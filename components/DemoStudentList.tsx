@@ -42,7 +42,7 @@ export default function DemoStudentList({ students }: { students: DemoStudent[] 
                 >
                   <span>
                     {h.type_icon ?? ""} {h.type_name ?? "Запис"}
-                    {h.note && <span style={{ color: "#868e96", fontWeight: 500 }}> — {h.note}</span>}
+                    {h.note && <span style={{ color: "#868e96", fontWeight: 500 }}> · {h.note}</span>}
                     {h.lesson_date && (
                       <Tag style={{ marginLeft: 8, fontWeight: 700 }}>{h.lesson_date}</Tag>
                     )}

@@ -140,19 +140,18 @@ export default async function ClassPage({ params }: Props) {
         </Link>
       )}
 
-      <div
-        className="page-header"
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}
-      >
-        <div>
-          <h1 style={{ fontSize: "2.8rem", fontWeight: 900, margin: 0 }}>{overview.name}</h1>
-          {isTeacherPreview && (
-            <div style={{ color: "var(--color-text-muted)", fontWeight: 700, fontSize: "0.85rem" }}>
-              Попередній перегляд — так це бачать учні після входу за PIN
-            </div>
-          )}
-        </div>
-        {!overview.is_public_demo && !isTeacherPreview && <StudentLogoutButton />}
+      <div className="page-header" style={{ position: "relative", textAlign: "center" }}>
+        <h1 style={{ fontSize: "2.8rem", fontWeight: 900, margin: 0 }}>{overview.name}</h1>
+        {isTeacherPreview && (
+          <div style={{ color: "var(--color-text-muted)", fontWeight: 700, fontSize: "0.85rem" }}>
+            Попередній перегляд: так це бачать учні після входу за PIN
+          </div>
+        )}
+        {!overview.is_public_demo && !isTeacherPreview && (
+          <div style={{ position: "absolute", top: 0, right: 0 }}>
+            <StudentLogoutButton />
+          </div>
+        )}
       </div>
 
       {/* Total Class Stars Counter (Prominent) */}

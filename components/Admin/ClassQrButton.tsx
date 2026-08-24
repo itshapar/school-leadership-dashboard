@@ -84,7 +84,7 @@ export default function ClassQrButton({
             {link}
           </p>
           <p style={{ color: "var(--color-text-muted)", fontSize: "0.8rem" }}>
-            Учень сканує камерою телефону й переходить на дашборд класу — там
+            Учень сканує камерою телефону й переходить на дашборд класу, там
             попросить власний PIN, як завжди.
           </p>
         </div>

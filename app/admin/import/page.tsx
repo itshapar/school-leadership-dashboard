@@ -50,7 +50,7 @@ export default function ImportPage() {
 
       <div className="page-header">
         <h1>📥 Імпорт учнів</h1>
-        <p className="subtitle">CSV або XLSX — з перевіркою порядку «Прізвище Ім&apos;я»</p>
+        <p className="subtitle">CSV або XLSX, з перевіркою порядку «Прізвище Ім&apos;я»</p>
       </div>
 
       <div className="star-card">

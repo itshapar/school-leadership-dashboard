@@ -188,7 +188,7 @@ export default function GroupsPanel({ classId, groups, students, onChanged }: Pr
           loading={assigning === s.id}
           onChange={(v) => assign(s.id, v)}
           options={[
-            { value: NO_GROUP, label: "— без групи" },
+            { value: NO_GROUP, label: "Без групи" },
             ...groups.map((g) => ({ value: g.id, label: g.name })),
           ]}
         />

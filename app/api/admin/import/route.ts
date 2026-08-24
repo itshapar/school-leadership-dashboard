@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
   const entryTypes = await resolveEntryTypes(supabase, classId);
   if (!entryTypes) {
     return NextResponse.json(
-      { error: "У класі немає типів нарахувань — налаштуйте систему балів" },
+      { error: "У класі немає типів нарахувань, налаштуйте систему балів" },
       { status: 400 }
     );
   }

@@ -366,7 +366,7 @@ export default function StudentManager({
             help={
               orderWarning.suspicious ? (
                 <span style={{ color: "#f08c00", fontWeight: 700 }}>
-                  {orderWarning.reason}. Публічна сторінка показує друге слово —
+                  {orderWarning.reason}. Публічна сторінка показує друге слово,
                   перевірте порядок.
                 </span>
               ) : undefined
@@ -380,7 +380,7 @@ export default function StudentManager({
             name="nickname"
             extra={
               <span style={{ color: "#868e96", fontSize: "0.8rem" }}>
-                Якщо заданий — саме він показується публічно замість імені.
+                Якщо заданий, саме він показується публічно замість імені.
               </span>
             }
           >

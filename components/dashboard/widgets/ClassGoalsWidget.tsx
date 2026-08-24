@@ -176,7 +176,7 @@ export default function ClassGoalsWidget({
             </div>
             {hiddenCount > 0 && (
               <div style={{ fontSize: "0.75rem", color: "#868e96", fontWeight: 700 }}>
-                та ще {hiddenCount} — на сторінці класу
+                та ще {hiddenCount} на сторінці класу
               </div>
             )}
           </>

@@ -99,7 +99,7 @@ function printPins(
 ) {
   const w = openPrintWindow();
   if (!w) {
-    message.error("Браузер заблокував спливне вікно — дозвольте спливні вікна для цього сайту");
+    message.error("Браузер заблокував спливне вікно, дозвольте спливні вікна для цього сайту");
     return;
   }
   renderPinsInto(w, className, rows, nameById);
@@ -178,11 +178,11 @@ export function PrintClassPinsButton({
     const rows = (data ?? []) as Array<{ student_id: string; pin: string }>;
     if (rows.length === 0) {
       w?.close();
-      message.warning("У цього класу ще немає PIN-ів — спершу згенеруйте їх");
+      message.warning("У цього класу ще немає PIN-ів, спершу згенеруйте їх");
       return;
     }
     if (!w) {
-      message.error("Браузер заблокував спливне вікно — дозвольте спливні вікна для цього сайту");
+      message.error("Браузер заблокував спливне вікно, дозвольте спливні вікна для цього сайту");
       return;
     }
     renderPinsInto(w, className, rows, nameById);
@@ -286,7 +286,7 @@ export function RegenerateClassPinsButton({
           type="info"
           showIcon
           style={{ marginBottom: 12 }}
-          message="PIN-и й далі видно в списку учнів будь-коли — цей екран лише для друку."
+          message="PIN-и й далі видно в списку учнів будь-коли, цей екран лише для друку."
         />
         <p style={{ marginBottom: 4, wordBreak: "break-all" }}>
           Посилання: <b>{studentDashboardLink(publicCode)}</b>

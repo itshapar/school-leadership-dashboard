@@ -36,7 +36,7 @@ export default function LegacyCodeNotice() {
         </h1>
 
         <p style={{ margin: "0 0 20px", lineHeight: 1.6, color: "var(--color-text)" }}>
-          Ми перейшли на нові, довші коди класів — так безпечніше. Попроси в
+          Ми перейшли на нові, довші коди класів, так безпечніше. Попроси в
           учителя новий код класу і свій PIN.
         </p>
 
@@ -53,7 +53,7 @@ export default function LegacyCodeNotice() {
           }}
         >
           Новий код виглядає так: <b style={{ fontFamily: "monospace" }}>ABCDE-FGHJK</b>
-          <br />— 10 символів через дефіс, а не 4 цифри.
+          <br />10 символів через дефіс, а не 4 цифри.
         </div>
 
         <Link href="/student" style={{ textDecoration: "none" }}>

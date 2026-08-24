@@ -24,7 +24,7 @@
 
 /** Підказка мінімізації — показується поруч із полем усюди, де вводять учня. */
 export const MINIMIZATION_HINT =
-  "По батькові, дату народження та інші дані не вносьте — для роботи системи достатньо прізвища та імені.";
+  "По батькові, дату народження та інші дані не вносьте: для роботи системи достатньо прізвища та імені.";
 
 export const FULL_NAME_LABEL = "Прізвище та ім'я";
 export const FULL_NAME_PLACEHOLDER = "Прізвище Ім'я";
@@ -82,7 +82,7 @@ export function validateFullName(raw: string | null | undefined): FullNameValida
     return { ok: false, error: "Потрібні два слова: спершу прізвище, потім ім'я" };
   }
   if (normalized.length > 120) {
-    return { ok: false, error: "Занадто довго — вносьте лише прізвище та ім'я" };
+    return { ok: false, error: "Занадто довго, вносьте лише прізвище та ім'я" };
   }
   return { ok: true };
 }

@@ -92,7 +92,7 @@ export default function StudentLoginPage() {
               label={<span style={{ color: "var(--color-text-muted)" }}>PIN (6 цифр)</span>}
               rules={[
                 { required: true, message: "Введи PIN" },
-                { pattern: /^\d{6}$/, message: "PIN — це 6 цифр" },
+                { pattern: /^\d{6}$/, message: "PIN складається з 6 цифр" },
               ]}
             >
               <Input
@@ -135,7 +135,7 @@ export default function StudentLoginPage() {
             }}
           >
             Після входу на цьому пристрої збережеться cookie, щоб не вводити PIN
-            щоразу. Якщо це чужий пристрій — натисни «Вийти», коли закінчиш.
+            щоразу. Якщо це чужий пристрій, натисни «Вийти», коли закінчиш.
           </p>
         </div>
       </div>
