@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { App } from "antd";
 import { StarFilled } from "@ant-design/icons";
 import { splitFullName } from "@/lib/students/fullName";
 
@@ -13,6 +15,12 @@ import { splitFullName } from "@/lib/students/fullName";
  * прибрали, воно не було потрібне. Перемикач — ті самі "чипи", що й
  * фільтри паралелі/класу на дашборді вчителя, для єдиного стилю замість
  * дефолтного antd Segmented.
+ *
+ * Клік на рядок (9.15, живий фідбек): свій рядок → "Моя статистика", чужий
+ * → попап "лише власний профіль", БЕЗ навігації й без запиту чужих даних
+ * (даних для навігації туди й нема — сервер їх просто не віддає нікому,
+ * крім самого учня, див. lib/studentSession.ts). currentStudentId відсутній
+ * для демо-класу й попереднього перегляду вчителем — там рядки не клікаються.
  */
 
 interface RosterStudent {
@@ -37,9 +45,19 @@ const chipStyle = (active: boolean): React.CSSProperties => ({
   cursor: "pointer",
 });
 
-export default function ClassRosterList({ students }: { students: RosterStudent[] }) {
+export default function ClassRosterList({
+  students,
+  currentStudentId,
+  classCode,
+}: {
+  students: RosterStudent[];
+  currentStudentId?: string;
+  classCode: string;
+}) {
   const canSortByStars = students.some((s) => typeof s.stars === "number");
   const [sortBy, setSortBy] = useState<SortKey>(canSortByStars ? "stars" : "surname");
+  const router = useRouter();
+  const { message } = App.useApp();
 
   const sorted = useMemo(() => {
     if (sortBy === "stars") {
@@ -50,6 +68,15 @@ export default function ClassRosterList({ students }: { students: RosterStudent[
       collator.compare(splitFullName(a.full_name).surname, splitFullName(b.full_name).surname)
     );
   }, [students, sortBy]);
+
+  function onRowClick(student: RosterStudent) {
+    if (!currentStudentId) return;
+    if (student.id === currentStudentId) {
+      router.push(`/class/${classCode}/me`);
+      return;
+    }
+    message.info("Тут можна переглянути лише власний профіль.");
+  }
 
   return (
     <div className="star-card" style={{ padding: "24px 16px" }}>
@@ -73,11 +100,19 @@ export default function ClassRosterList({ students }: { students: RosterStudent[
         </div>
       )}
       {sorted.map((student) => (
-        <div key={student.id} className="leaderboard-row">
+        <div
+          key={student.id}
+          className="leaderboard-row"
+          onClick={() => onRowClick(student)}
+          style={currentStudentId ? { cursor: "pointer" } : undefined}
+        >
           <div style={{ fontSize: "1.8rem" }}>{student.avatar_emoji}</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 850, fontSize: "1.1rem", color: "#000000" }}>
               {student.display_name}
+              {student.id === currentStudentId && (
+                <span style={{ color: "var(--color-text-muted)", fontWeight: 700 }}> (ти)</span>
+              )}
             </div>
             {student.full_name && (
               <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", fontWeight: 700 }}>

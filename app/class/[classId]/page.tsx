@@ -60,6 +60,9 @@ export default async function ClassPage({ params }: Props) {
    */
   let rosterByStudentId: Record<string, string> = {};
   let isTeacherPreview = false;
+  /** Хто зараз дивиться (id учня з сесії) — щоб позначити "це ти" в списку
+      і показати попап, коли клікають на когось ІНШОГО (9.15, живий фідбек). */
+  let currentStudentId: string | undefined;
 
   if (!overview.is_public_demo) {
     const supabase = await createSupabaseServerClient();
@@ -101,6 +104,7 @@ export default async function ClassPage({ params }: Props) {
       rosterByStudentId = Object.fromEntries(
         (roster ?? []).map((r) => [r.id, r.full_name])
       );
+      currentStudentId = session.student.id;
     }
   }
 
@@ -346,14 +350,14 @@ export default async function ClassPage({ params }: Props) {
       )}
 
       {/*
-        Список класу. Раніше кожен рядок вів на /class/[code]/student/[id].
-        Після 024+026 персональна сторінка вимагає PIN-сесію, тож ці
-        посилання перетворились би на 19 однакових редіректів у форму PIN.
-        Замість цього — один зрозумілий вхід «Моя статистика» вище.
+        Список класу. Клік на СВІЙ рядок веде на "Моя статистика"; клік на
+        ЧУЖИЙ — попап "лише власний профіль", БЕЗ навігації й БЕЗ жодного
+        запиту за чужими даними (9.15, живий фідбек: раніше рядки взагалі
+        не клікались, тож спитати "а що як я тисну на іншого" було нема як).
         ПІБ (rosterByStudentId) видно лише після входу за власним PIN —
         у демо-класі мапа порожня, там і далі лише публічне ім'я. Сортування
-        (за зірками/прізвищем/іменем) живе в ClassRosterList — саме тут, на
-        боці учня, а не на агрегованому дашборді вчителя (9.11, живий фідбек).
+        (за зірками/прізвищем) живе в ClassRosterList — саме тут, на боці
+        учня, а не на агрегованому дашборді вчителя (9.11, живий фідбек).
       */}
       <ClassRosterList
         students={students.map((s) => ({
@@ -363,6 +367,8 @@ export default async function ClassPage({ params }: Props) {
           avatar_emoji: s.avatar_emoji,
           stars: s.stars,
         }))}
+        currentStudentId={currentStudentId}
+        classCode={overview.public_code}
       />
 
       {!overview.is_public_demo && !isTeacherPreview && (
