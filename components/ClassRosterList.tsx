@@ -75,7 +75,13 @@ export default function ClassRosterList({
       router.push(`/class/${classCode}/me`);
       return;
     }
-    message.info("Тут можна переглянути лише власний профіль.");
+    message.info({
+      content: (
+        <span style={{ textAlign: "left", whiteSpace: "nowrap" }}>
+          Ви можете переглядати лише власний профіль.
+        </span>
+      ),
+    });
   }
 
   return (
