@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Modal, Form, Select, InputNumber, message, Tooltip, Radio } from "antd";
 import { StarFilled } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
@@ -8,22 +8,20 @@ import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import EntryNoteField from "@/components/Admin/EntryNoteField";
 import {
   entryTypeLabel,
-  loadClassGroups,
   loadEntryTypes,
   signedAmount,
-  type ClassGroup,
   type EntryType,
 } from "@/lib/admin/classConfig";
 
 /**
- * Нарахування поза журналом: учню, групі або всьому класу.
+ * Нарахування поза журналом: учню або всьому класу.
  *
  * Замінює QuickBonusPenalty з двома зашитими кнопками «Бонус»/«Штраф».
  * Тепер список типів приходить із класу (entry_types), знак і значення за
- * замовчуванням підставляє сам тип, а «кому» включає ГРУПУ.
+ * замовчуванням підставляє сам тип.
  *
- * Fan-out по групі робить сервер (/api/admin/entry): склад групи не можна
- * брати з клієнта, інакше свій же учень з іншої групи проліз би тихо.
+ * Ціль "Групі" прибрано (9.8, живий фідбек) — групи поки не готова
+ * функція для інтерфейсу, повертати можна разом з рештою UI груп.
  */
 
 interface Student {
@@ -34,7 +32,7 @@ interface Student {
   group_id?: string | null;
 }
 
-type TargetKind = "student" | "group" | "class";
+type TargetKind = "student" | "class";
 
 export default function QuickEntry({
   classId,
@@ -49,23 +47,21 @@ export default function QuickEntry({
   const [loading, setLoading] = useState(false);
   const [configLoading, setConfigLoading] = useState(false);
   const [entryTypes, setEntryTypes] = useState<EntryType[]>([]);
-  const [groups, setGroups] = useState<ClassGroup[]>([]);
   const [form] = Form.useForm();
 
   const supabase = getSupabaseClient();
 
   // Конфігурацію тягнемо при відкритті, а не при монтуванні: тулбар живе на
-  // кожній сторінці класу, і два зайві запити на кожен рендер журналу
-  // нікому не потрібні.
+  // кожній сторінці класу, і зайвий запит на кожен рендер журналу нікому
+  // не потрібен.
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
     setConfigLoading(true);
-    Promise.all([loadEntryTypes(supabase, classId), loadClassGroups(supabase, classId)])
-      .then(([types, grps]) => {
+    loadEntryTypes(supabase, classId)
+      .then((types) => {
         if (cancelled) return;
         setEntryTypes(types);
-        setGroups(grps);
         const firstNonLesson = types.find((t) => !t.is_lesson_bound) ?? types[0];
         if (firstNonLesson) {
           form.setFieldsValue({
@@ -80,15 +76,6 @@ export default function QuickEntry({
       cancelled = true;
     };
   }, [isOpen, classId, supabase, form]);
-
-  const groupSizes = useMemo(() => {
-    const sizes = new Map<string, number>();
-    students.forEach((s) => {
-      if (!s.group_id) return;
-      sizes.set(s.group_id, (sizes.get(s.group_id) ?? 0) + 1);
-    });
-    return sizes;
-  }, [students]);
 
   const openModal = () => {
     form.resetFields();
@@ -105,11 +92,7 @@ export default function QuickEntry({
 
     const kind = values.target as TargetKind;
     const target =
-      kind === "student"
-        ? { kind, student_id: values.studentId as string }
-        : kind === "group"
-        ? { kind, group_id: values.groupId as string }
-        : { kind };
+      kind === "student" ? { kind, student_id: values.studentId as string } : { kind };
 
     setLoading(true);
     try {
@@ -217,7 +200,6 @@ export default function QuickEntry({
             <Radio.Group
               options={[
                 { value: "student", label: "Учню" },
-                { value: "group", label: "Групі", disabled: groups.length === 0 },
                 { value: "class", label: "Усьому класу" },
               ]}
               optionType="button"
@@ -244,32 +226,6 @@ export default function QuickEntry({
                       options={students.map((s) => ({
                         value: s.id,
                         label: `${s.avatar_emoji} ${s.full_name}${s.nickname ? ` (${s.nickname})` : ""}`,
-                      }))}
-                    />
-                  </Form.Item>
-                );
-              }
-
-              if (kind === "group") {
-                return (
-                  <Form.Item
-                    name="groupId"
-                    label={<span style={{ fontWeight: 700 }}>Група</span>}
-                    rules={[{ required: true, message: "Оберіть групу" }]}
-                    extra={
-                      <span style={{ color: "#868e96", fontSize: "0.8rem" }}>
-                        Кожен учасник отримає окреме нарахування, операцію можна
-                        скасувати цілком в історії.
-                      </span>
-                    }
-                  >
-                    <Select
-                      size="middle"
-                      placeholder="Оберіть групу"
-                      options={groups.map((g) => ({
-                        value: g.id,
-                        label: `${g.name} · ${groupSizes.get(g.id) ?? 0} учнів`,
-                        disabled: (groupSizes.get(g.id) ?? 0) === 0,
                       }))}
                     />
                   </Form.Item>

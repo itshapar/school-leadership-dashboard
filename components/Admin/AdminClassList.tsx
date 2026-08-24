@@ -47,10 +47,16 @@ export default function AdminClassList({
   const router = useRouter();
   const atClassLimit = classes.length >= TEACHER_LIMITS.classes;
 
-  const sortedParallels = useMemo(
-    () => [...parallels].sort((a, b) => Number(a.name) - Number(b.name)),
-    [parallels]
-  );
+  // Паралель — легкий тег без CRUD-екрана (lib/admin/parallels.ts): рядок
+  // лишається в таблиці, навіть коли жоден клас на неї вже не посилається
+  // (наприклад, клас перенесли в іншу паралель). Порожні паралелі ховаємо
+  // з навігації чипів, а не показуємо як мертві кнопки без жодного класу.
+  const sortedParallels = useMemo(() => {
+    const withClasses = new Set(classes.map((c) => c.parallel_id).filter(Boolean));
+    return [...parallels]
+      .filter((p) => withClasses.has(p.id))
+      .sort((a, b) => Number(a.name) - Number(b.name));
+  }, [parallels, classes]);
   const [parallelFilter, setParallelFilter] = useState<string>(ALL);
   const visibleClasses =
     parallelFilter === ALL

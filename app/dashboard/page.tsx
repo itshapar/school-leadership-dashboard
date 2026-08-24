@@ -25,12 +25,6 @@ export default async function DashboardPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/admin/login");
 
-  // Назва паралелі — "1".."12" (Етап 9), сортуємо числово, інакше "10" йде
-  // перед "2" за звичайним рядковим порядком з БД.
-  const parallels = (await loadParallels(supabase)).sort(
-    (a, b) => Number(a.name) - Number(b.name)
-  );
-
   // Паралель без явно обраного класу — фільтр за всіма класами цієї паралелі,
   // не за одним. Один клас лишається пріоритетним, якщо обидва в URL.
   let classFilter: string | string[] | null = classId;
@@ -45,6 +39,15 @@ export default async function DashboardPage({
   }
 
   const data = await getDashboardData(supabase, classFilter);
+
+  // Назва паралелі — "1".."12" (Етап 9), сортуємо числово, інакше "10" йде
+  // перед "2" за звичайним рядковим порядком з БД. Паралель — легкий тег
+  // без CRUD-екрана: рядок лишається в таблиці, навіть коли жоден клас на
+  // неї вже не посилається — такі порожні паралелі ховаємо з чипів.
+  const classesWithParallel = new Set(data.classes.map((c: any) => c.parallel_id).filter(Boolean));
+  const parallels = (await loadParallels(supabase))
+    .filter((p) => classesWithParallel.has(p.id))
+    .sort((a, b) => Number(a.name) - Number(b.name));
 
   // Common styles for the KPI cards
   const kpiCardStyle = {

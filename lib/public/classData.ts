@@ -101,6 +101,18 @@ export interface PublicStudentDashboard {
   history: PublicHistoryEntry[];
 }
 
+/**
+ * ПІБ однокласників — ЛИШЕ для учня, що вже увійшов за власним PIN
+ * (public_class_roster, міграція 034). На відміну від PublicStudentSummary
+ * вище, це НЕ доступно анонімно: функція перевіряє токен сесії всередині.
+ */
+export interface PublicClassRosterEntry {
+  id: string;
+  full_name: string;
+  display_name: string;
+  avatar_emoji: string;
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function getPublicClassOverview(

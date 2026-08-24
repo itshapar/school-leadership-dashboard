@@ -59,25 +59,32 @@ function openPrintWindow(): Window | null {
   return w;
 }
 
+/**
+ * Друковані картки для нарізання: ім'я і PIN навмисно ЩІЛЬНО одне до
+ * одного, з пунктирною рамкою — вирізав і роздав кожному учню. Посилання
+ * на друку немає (9.8, живий фідбек): його вчитель ділиться окремо, через
+ * Telegram-канал / Класрум / пошту, не через папірець із PIN-ом.
+ */
 function renderPinsInto(
   w: Window,
   className: string,
-  publicCode: string,
   rows: Array<{ student_id: string; pin: string }>,
   nameById: Map<string, string>
 ) {
-  const trs = rows
+  const cards = rows
     .map(
       (p) =>
-        `<tr><td>${nameById.get(p.student_id) ?? p.student_id}</td><td style="font-family:monospace;font-size:20px;font-weight:800;letter-spacing:0.15em">${p.pin}</td></tr>`
+        `<div style="border:1px dashed #999;padding:10px 8px;text-align:center;page-break-inside:avoid;">` +
+          `<div style="font-weight:700;font-size:13px;line-height:1.2;">${nameById.get(p.student_id) ?? p.student_id}</div>` +
+          `<div style="font-family:monospace;font-size:24px;font-weight:800;letter-spacing:0.2em;margin-top:2px;">${p.pin}</div>` +
+        `</div>`
     )
     .join("");
   w.document.open();
   w.document.write(
     `<html><head><title>PIN-и: ${className}</title></head><body style="font-family:sans-serif">` +
-      `<h2>${className}</h2>` +
-      `<p>Посилання: ${studentDashboardLink(publicCode)}</p>` +
-      `<table style="border-collapse:collapse;width:100%" border="1" cellpadding="8">${trs}</table>` +
+      `<h2 style="margin-bottom:12px;">${className}</h2>` +
+      `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;">${cards}</div>` +
       `</body></html>`
   );
   w.document.close();
@@ -87,7 +94,6 @@ function renderPinsInto(
 /** Синхронний друк — коли PIN-и вже завантажені (з готового стану). */
 function printPins(
   className: string,
-  publicCode: string,
   rows: Array<{ student_id: string; pin: string }>,
   nameById: Map<string, string>
 ) {
@@ -96,7 +102,7 @@ function printPins(
     message.error("Браузер заблокував спливне вікно — дозвольте спливні вікна для цього сайту");
     return;
   }
-  renderPinsInto(w, className, publicCode, rows, nameById);
+  renderPinsInto(w, className, rows, nameById);
 }
 
 /** Кнопка «Скинути PIN» для одного учня. Новий PIN одразу лишається видимим у списку. */
@@ -179,7 +185,7 @@ export function PrintClassPinsButton({
       message.error("Браузер заблокував спливне вікно — дозвольте спливні вікна для цього сайту");
       return;
     }
-    renderPinsInto(w, className, publicCode, rows, nameById);
+    renderPinsInto(w, className, rows, nameById);
   }
 
   return (
@@ -267,7 +273,7 @@ export function RegenerateClassPinsButton({
           <Button
             key="print"
             icon={<PrinterOutlined />}
-            onClick={() => pins && printPins(className, publicCode, pins, nameById)}
+            onClick={() => pins && printPins(className, pins, nameById)}
           >
             Друк
           </Button>,

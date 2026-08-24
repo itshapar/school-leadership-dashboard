@@ -5,6 +5,9 @@ import { StarFilled } from "@ant-design/icons";
 import { getPublicClassOverview } from "@/lib/public/classData";
 import { isLegacyClassCode } from "@/lib/classCodes";
 import LegacyCodeNotice from "@/components/LegacyCodeNotice";
+import StudentPinLogin from "@/components/StudentPinLogin";
+import StudentLogoutButton from "@/components/StudentLogoutButton";
+import { getClassRosterFromSession, getStudentDashboardFromSession } from "@/lib/studentSession";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +38,31 @@ export default async function ClassPage({ params }: Props) {
   // Прийшли за старим кодом — тихо переводимо на новий.
   if (overview.requested_legacy) {
     redirect(`/class/${overview.public_code}`);
+  }
+
+  /**
+   * PIN-гейт (Етап 9.7, живий фідбек): дашборд класу більше НЕ відкритий
+   * анонімно — учень мусить один раз ввести власний PIN, як і для «Мого
+   * дашборду». Демо-клас — виняток: це маркетингова вітрина для вчителів,
+   * що ще не зареєструвались, там PIN концептуально нема кого вводити.
+   *
+   * ПІБ однокласників (public_class_roster) віддається ЛИШЕ тут, за чинною
+   * сесією — анонімний public_class_overview і далі full_name не повертає.
+   */
+  let rosterByStudentId: Record<string, string> = {};
+  if (!overview.is_public_demo) {
+    const session = await getStudentDashboardFromSession();
+    if (!session || session.public_code !== overview.public_code) {
+      return (
+        <div className="page-container">
+          <StudentPinLogin code={overview.public_code} className={overview.name} />
+        </div>
+      );
+    }
+    const roster = await getClassRosterFromSession();
+    rosterByStudentId = Object.fromEntries(
+      (roster ?? []).map((r) => [r.id, r.full_name])
+    );
   }
 
   const students = overview.students ?? [];
@@ -74,8 +102,12 @@ export default async function ClassPage({ params }: Props) {
         </Link>
       )}
 
-      <div className="page-header">
-        <h1 style={{ fontSize: "2.8rem", fontWeight: 900 }}>{overview.name}</h1>
+      <div
+        className="page-header"
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}
+      >
+        <h1 style={{ fontSize: "2.8rem", fontWeight: 900, margin: 0 }}>{overview.name}</h1>
+        {!overview.is_public_demo && <StudentLogoutButton />}
       </div>
 
       {/* Total Class Stars Counter (Prominent) */}
@@ -268,11 +300,12 @@ export default async function ClassPage({ params }: Props) {
       )}
 
       {/*
-        Список класу — за публічним іменем, без ПІБ і БЕЗ посилань.
-        Раніше кожен рядок вів на /class/[code]/student/[id]. Після 024+026
-        персональна сторінка вимагає PIN-сесію, тож ці посилання перетворились
-        би на 19 однакових редіректів у форму PIN. Замість цього — один
-        зрозумілий вхід «Мій дашборд» вище.
+        Список класу. Раніше кожен рядок вів на /class/[code]/student/[id].
+        Після 024+026 персональна сторінка вимагає PIN-сесію, тож ці
+        посилання перетворились би на 19 однакових редіректів у форму PIN.
+        Замість цього — один зрозумілий вхід «Мій дашборд» вище.
+        ПІБ (rosterByStudentId) видно лише після входу за власним PIN —
+        у демо-класі мапа порожня, там і далі лише публічне ім'я.
       */}
       <div className="star-card" style={{ padding: "24px 16px" }}>
         {students.map((student) => (
@@ -282,6 +315,11 @@ export default async function ClassPage({ params }: Props) {
               <div style={{ fontWeight: 850, fontSize: "1.1rem", color: "#000000" }}>
                 {student.display_name}
               </div>
+              {rosterByStudentId[student.id] && (
+                <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", fontWeight: 700 }}>
+                  {rosterByStudentId[student.id]}
+                </div>
+              )}
             </div>
             {typeof student.stars === "number" && (
               <div style={{ fontWeight: 900, color: "var(--color-star)", display: "flex", alignItems: "center", gap: "4px" }}>

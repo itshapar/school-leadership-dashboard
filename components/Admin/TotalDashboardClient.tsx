@@ -41,11 +41,14 @@ export default function TotalDashboardClient({
 }) {
   const [searchText, setSearchText] = useState("");
   // Паралель — назва "1".."12" (Етап 9), сортуємо числово: інакше "10" йде
-  // перед "2" за звичайним рядковим порядком з БД.
-  const sortedParallels = useMemo(
-    () => [...parallels].sort((a, b) => Number(a.name) - Number(b.name)),
-    [parallels]
-  );
+  // перед "2" за звичайним рядковим порядком з БД. Порожні паралелі (жоден
+  // учень/клас на них уже не посилається) ховаємо з чипів.
+  const sortedParallels = useMemo(() => {
+    const withData = new Set(initialData.map((s) => s.parallelId).filter(Boolean));
+    return [...parallels]
+      .filter((p) => withData.has(p.id))
+      .sort((a, b) => Number(a.name) - Number(b.name));
+  }, [parallels, initialData]);
   // За замовчуванням — перша паралель, якщо вона є: рейтинг усіх класів
   // разом рідко має сенс (див. фідбек продукту), паралель ближче до
   // реального питання «як мій 7 клас проти інших 7-х».

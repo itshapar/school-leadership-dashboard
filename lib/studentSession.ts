@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
-import type { PublicStudentDashboard } from "@/lib/public/classData";
+import type { PublicClassRosterEntry, PublicStudentDashboard } from "@/lib/public/classData";
 
 /**
  * Учнівська сесія «код класу + PIN» (Етап 4).
@@ -50,4 +50,21 @@ export async function getStudentDashboardFromSession(): Promise<PublicStudentDas
   });
   if (error || !data) return null;
   return data as PublicStudentDashboard;
+}
+
+/**
+ * ПІБ усього класу — лише коли в учня чинна сесія (public_class_roster,
+ * міграція 034). null = сесії немає / прострочена — сторінка класу тоді
+ * показує форму PIN замість списку.
+ */
+export async function getClassRosterFromSession(): Promise<PublicClassRosterEntry[] | null> {
+  const token = await readStudentSessionToken();
+  if (!token) return null;
+
+  const supabase = bareAnonClient();
+  const { data, error } = await supabase.rpc("public_class_roster", {
+    p_token: token,
+  });
+  if (error || !data) return null;
+  return data as PublicClassRosterEntry[];
 }

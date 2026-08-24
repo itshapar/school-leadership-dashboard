@@ -59,7 +59,7 @@ export default function StudentPinLogin({
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <div style={{ fontSize: "3rem" }}>🔑</div>
           <h1 style={{ fontSize: "1.6rem", fontWeight: 800, margin: "8px 0 4px" }}>
-            Мій дашборд
+            Вхід учня
           </h1>
           <p style={{ color: "var(--color-text-muted)", margin: 0 }}>
             {className} · введи свій PIN один раз — далі вхід буде автоматичним
