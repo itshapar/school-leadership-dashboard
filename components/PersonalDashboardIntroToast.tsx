@@ -13,27 +13,28 @@ import { App } from "antd";
  * message беремо через App.useApp() (9.13), не статичним імпортом — той
  * не завжди надійно консюмить контекст у antd v5+.
  *
- * Текст лівим краєм, в один рядок (9.16, живий фідбек) — дефолтний
- * antd-текст у message був по центру й переносився на два рядки, виглядало
- * не дуже. TOAST_STYLE примусово вирівнює вміст.
+ * Текст лівим краєм (9.16-9.17, живий фідбек) — перенесення на другий
+ * рядок це ОК, whiteSpace:nowrap із попередньої версії якраз і обрізав
+ * попап замість переносу. Прибрано.
  */
-const TOAST_STYLE: React.CSSProperties = { textAlign: "left", whiteSpace: "nowrap" };
+const TOAST_STYLE: React.CSSProperties = { textAlign: "left" };
 
 export default function PersonalDashboardIntroToast({ blocked }: { blocked: boolean }) {
   const { message } = App.useApp();
 
   useEffect(() => {
-    // Один короткий текст в обох випадках (9.16, живий фідбек) — щоб
-    // повідомлення завжди лишалось в один рядок.
     const content = <span style={TOAST_STYLE}>Ви можете переглядати лише власний профіль.</span>;
     if (blocked) {
-      message.info({ content, duration: 5 });
+      // key (9.17, живий фідбек): той самий ключ ОНОВЛЮЄ наявний попап
+      // замість того, щоб штабелювати новий на кожен клік — інакше
+      // повторні спроби завалювали б увесь екран сповіщеннями.
+      message.info({ key: "own-profile-only", content, duration: 5 });
       return;
     }
     const key = "sld_seen_own_profile_notice";
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, "1");
-    message.info({ content, duration: 4 });
+    message.info({ key: "own-profile-only", content, duration: 4 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blocked]);
 

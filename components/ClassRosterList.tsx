@@ -76,8 +76,12 @@ export default function ClassRosterList({
       return;
     }
     message.info({
+      // key (9.17, живий фідбек): повторні кліки на чужі рядки оновлюють
+      // ТОЙ САМИЙ попап замість того, щоб штабелювати новий щоразу —
+      // інакше швидкі повторні кліки завалювали б увесь екран.
+      key: "own-profile-only",
       content: (
-        <span style={{ textAlign: "left", whiteSpace: "nowrap" }}>
+        <span style={{ textAlign: "left" }}>
           Ви можете переглядати лише власний профіль.
         </span>
       ),

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Progress } from "antd";
 import { format } from "date-fns";
 import { uk } from "date-fns/locale";
-import { StarFilled, CheckCircleFilled, HistoryOutlined, TrophyOutlined } from "@ant-design/icons";
+import { StarFilled, CheckCircleFilled, HistoryOutlined, LockOutlined, TrophyOutlined } from "@ant-design/icons";
 
 interface Prize {
   id: string;
@@ -147,6 +147,28 @@ export default function PersonalDashboardClient({
               #{rank}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/*
+        Пояснення приватності (9.17, живий фідбек) — окрема картка під
+        аватаром/зірками/рангом, а не лише спливне повідомлення: попап
+        зникає, а це лишається видимим, поки учень на сторінці.
+      */}
+      <div
+        className="star-card"
+        style={{
+          marginBottom: "24px",
+          padding: "16px 20px",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          background: "#f8f9fa",
+        }}
+      >
+        <LockOutlined style={{ fontSize: "1.3rem", flexShrink: 0 }} />
+        <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--color-text-muted)" }}>
+          Цю сторінку бачите лише ви та вчитель. Однокласники доступу до неї не мають.
         </div>
       </div>
 
