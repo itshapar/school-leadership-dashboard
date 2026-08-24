@@ -115,17 +115,14 @@ export default function ClassRosterList({
       {sorted.map((student) => (
         <div
           key={student.id}
-          className="leaderboard-row"
+          className={`leaderboard-row${student.id === currentStudentId ? " current-student" : ""}`}
           onClick={() => onRowClick(student)}
           style={currentStudentId ? { cursor: "pointer" } : undefined}
         >
           <div style={{ fontSize: "1.8rem" }}>{student.avatar_emoji}</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 850, fontSize: "1.1rem", color: "#000000" }}>
+            <div style={{ fontWeight: 850, fontSize: "0.95rem", color: "#000000" }}>
               {student.display_name}
-              {student.id === currentStudentId && (
-                <span style={{ color: "var(--color-star)", fontWeight: 700 }}> (ти)</span>
-              )}
             </div>
             {student.full_name && (
               <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", fontWeight: 700 }}>
@@ -134,7 +131,7 @@ export default function ClassRosterList({
             )}
           </div>
           {typeof student.stars === "number" && (
-            <div style={{ fontWeight: 900, color: "var(--color-star)", display: "flex", alignItems: "center", gap: "4px" }}>
+            <div style={{ fontWeight: 900, fontSize: "1.3rem", color: "var(--color-star)", display: "flex", alignItems: "center", gap: "4px" }}>
               {student.stars} <StarFilled style={{ fontSize: "0.9rem" }} />
             </div>
           )}

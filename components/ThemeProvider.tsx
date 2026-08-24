@@ -19,6 +19,14 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
       theme={{
         token: {
           fontFamily: "var(--font-montserrat), 'Montserrat', sans-serif",
+          // Синій — не наш колір ніде в інтерфейсі (живий фідбек): antd
+          // за замовчуванням фарбує ним ховер/фокус кнопок, посилань,
+          // активні Tabs/Steps. Чорний тут прибирає це в одному місці
+          // замість точкових !important-патчів по кожному компоненту.
+          colorPrimary: "#000000",
+          colorLink: "#000000",
+          colorLinkHover: "#2c2c2c",
+          colorLinkActive: "#000000",
         },
       }}
     >

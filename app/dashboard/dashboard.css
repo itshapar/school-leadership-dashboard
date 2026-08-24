@@ -54,6 +54,9 @@
   color: #adb5bd;
   min-width: 62px;
   flex-shrink: 0;
+  /* Чіпи мають вертикальний padding (8px) навколо свого тексту — мітка
+     без цього відступу сідає вище першого рядка тексту в чіпі. */
+  padding-top: 8px;
 }
 
 .class-filter {
@@ -63,11 +66,14 @@
   /* Фіксована висота (не auto!) — інакше кількість чипів (класів у
      паралелі) міняє висоту рядка, і все під фільтрами стрибає вгору-вниз
      при кожному перемиканні паралелі (9.11, живий фідбек). Замість цього —
-     стала висота на ~2 рядки чипів, решта скролиться всередині. */
-  max-height: 84px;
+     стала висота на ~2 рядки чипів, решта скролиться всередині. +4px
+     знизу — інакше тінь активного чіпа (box-shadow) обрізається межею
+     скролу, коли чіп сидить у нижньому ряду.
+     */
+  max-height: 88px;
   overflow-y: auto;
   align-content: flex-start;
-  padding-right: 4px;
+  padding: 0 4px 4px 0;
 }
 
 .class-filter::-webkit-scrollbar {
@@ -93,6 +99,7 @@
 .filter-btn:hover {
   background: #f8f9fa;
   border-color: #ced4da;
+  color: #495057;
 }
 
 .filter-btn.active {
@@ -100,6 +107,12 @@
   color: #fff;
   border-color: #000;
   box-shadow: 2px 2px 0px var(--color-star, #f59f00);
+}
+
+.filter-btn.active:hover {
+  background: #000;
+  color: #fff;
+  border-color: #000;
 }
 
 .bento-grid {

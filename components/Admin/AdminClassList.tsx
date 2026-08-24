@@ -101,7 +101,7 @@ export default function AdminClassList({
           type="primary"
           disabled={atClassLimit}
           onClick={() => router.push("/admin/onboarding")}
-          style={{ background: "#000", borderColor: "#000", fontWeight: 800, borderRadius: 10 }}
+          className="btn-primary"
         >
           <PlusOutlined /> Новий клас
         </Button>
@@ -203,11 +203,7 @@ function EmptyState() {
         пропустити й повернутись пізніше.
       </p>
       <Link href="/admin/onboarding">
-        <Button
-          type="primary"
-          size="large"
-          style={{ background: "#000", borderColor: "#000", fontWeight: 900, borderRadius: 12 }}
-        >
+        <Button type="primary" size="large" className="btn-primary">
           ПОЧАТИ
         </Button>
       </Link>

@@ -101,6 +101,7 @@ export default function OnboardingWizard() {
   const [loading, setLoading] = useState(Boolean(classIdParam));
 
   const [parallelId, setParallelId] = useState<string | null>(null);
+  const [parallelTouched, setParallelTouched] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState<string | undefined>(undefined);
   const [resolvingGrade, setResolvingGrade] = useState(false);
   const [individualPrizes, setIndividualPrizes] = useState<IndividualPrize[]>([]);
@@ -202,6 +203,11 @@ export default function OnboardingWizard() {
   }
 
   async function createClass(values: { name: string }) {
+    if (!parallelId) {
+      setParallelTouched(true);
+      message.error("Оберіть паралель");
+      return;
+    }
     setCreating(true);
 
     const { data: user } = await supabase.auth.getUser();
@@ -319,7 +325,7 @@ export default function OnboardingWizard() {
           <div>
             <StepHeader
               title="Створіть клас"
-              hint="Паралель (номер 1–12) необов'язкова. Назва класу, наприклад «7-А» або «ПМ2»."
+              hint="Паралель (номер 1–12) і назва класу обов'язкові, наприклад «7-А» або «ПМ2»."
             />
 
             {cls ? (
@@ -336,14 +342,19 @@ export default function OnboardingWizard() {
               />
             ) : (
               <Form form={classForm} layout="vertical" onFinish={createClass}>
-                <Form.Item label={<span style={{ fontWeight: 700 }}>Паралель (необов&apos;язково)</span>}>
+                <Form.Item
+                  label={<span style={{ fontWeight: 700 }}>Паралель</span>}
+                  required
+                  validateStatus={parallelTouched && !parallelId ? "error" : undefined}
+                  help={parallelTouched && !parallelId ? "Оберіть паралель" : undefined}
+                >
                   <Select
                     size="large"
-                    allowClear
                     loading={resolvingGrade}
                     placeholder="Клас (1–12)"
                     value={selectedGrade}
                     onChange={onGradeChange}
+                    onBlur={() => setParallelTouched(true)}
                     options={GRADE_OPTIONS}
                   />
                 </Form.Item>
@@ -364,7 +375,7 @@ export default function OnboardingWizard() {
                   size="large"
                   htmlType="submit"
                   loading={creating}
-                  style={{ background: "#000", fontWeight: 800, borderRadius: 10 }}
+                  className="btn-primary"
                 >
                   Створити і продовжити
                 </Button>
@@ -490,7 +501,7 @@ export default function OnboardingWizard() {
           <Button
             disabled={current === 0}
             onClick={() => goTo(current - 1)}
-            style={{ fontWeight: 700, borderRadius: 10 }}
+            className="btn-secondary"
           >
             Назад
           </Button>
@@ -504,7 +515,7 @@ export default function OnboardingWizard() {
                     void refresh(cls.id);
                     goTo(current + 1);
                   }}
-                  style={{ fontWeight: 700 }}
+                  className="btn-ghost"
                 >
                   Пропустити
                 </Button>
@@ -514,7 +525,7 @@ export default function OnboardingWizard() {
                     void refresh(cls.id);
                     goTo(current + 1);
                   }}
-                  style={{ background: "#000", fontWeight: 800, borderRadius: 10 }}
+                  className="btn-primary"
                 >
                   Далі
                 </Button>
@@ -523,7 +534,7 @@ export default function OnboardingWizard() {
               <Button
                 type="primary"
                 onClick={() => router.push(`/admin/${cls.public_code}`)}
-                style={{ background: "#000", fontWeight: 800, borderRadius: 10 }}
+                className="btn-primary"
               >
                 Готово, до журналу
               </Button>
