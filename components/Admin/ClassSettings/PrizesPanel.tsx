@@ -168,7 +168,7 @@ export default function PrizesPanel({
       align: "center" as const,
       render: (_v: unknown, row: Row) => (
         <span style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-          <Button icon={<EditOutlined />} onClick={() => openEdit(row)} style={{ borderRadius: 8 }} />
+          <Button icon={<EditOutlined />} onClick={() => openEdit(row)} style={{ borderRadius: 8, border: "2px solid #000" }} />
           <Popconfirm
             title="Видалити нагороду?"
             description="Якщо нагороду вже видавали, її буде сховано, а історія збережеться."
@@ -176,7 +176,7 @@ export default function PrizesPanel({
             okText="Так"
             cancelText="Ні"
           >
-            <Button danger icon={<DeleteOutlined />} style={{ borderRadius: 8 }} />
+            <Button danger icon={<DeleteOutlined />} className="btn-danger-outline" style={{ padding: "4px 12px" }} />
           </Popconfirm>
         </span>
       ),
@@ -206,7 +206,6 @@ export default function PrizesPanel({
         </span>
         <Button
           type="primary"
-          icon={<PlusOutlined />}
           onClick={openCreate}
           disabled={atLimit}
           className="btn-primary"
@@ -237,7 +236,8 @@ export default function PrizesPanel({
         confirmLoading={saving}
         okText="Зберегти"
         cancelText="Скасувати"
-        okButtonProps={{ style: { background: "#000", fontWeight: 700 } }}
+        okButtonProps={{ className: "btn-primary" }}
+        cancelButtonProps={{ className: "btn-secondary" }}
       >
         <Form form={form} layout="vertical" onFinish={onFinish} style={{ marginTop: 20 }}>
           <Form.Item

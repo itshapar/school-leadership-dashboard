@@ -148,7 +148,7 @@ export default function QuickEntry({
             alignItems: "center",
             justifyContent: "center",
             fontSize: "1.2rem",
-            boxShadow: "3px 3px 0px #2f9e44",
+            boxShadow: "3px 3px 0px #52C51A",
           }}
         />
       </Tooltip>

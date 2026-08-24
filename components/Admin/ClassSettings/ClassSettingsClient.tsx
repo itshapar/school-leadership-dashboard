@@ -4,13 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Popconfirm, Select, Spin, Switch, Tabs, message } from "antd";
 import Link from "next/link";
-import {
-  ArrowLeftOutlined,
-  DeleteOutlined,
-  GiftOutlined,
-  InboxOutlined,
-  TrophyOutlined,
-} from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
   loadClassPrizes,
@@ -169,7 +163,11 @@ export default function ClassSettingsClient({
       return;
     }
     message.success("Клас видалено");
-    router.push("/admin");
+    // Повне перезавантаження, не router.push (живий фідбек) — клієнтський
+    // Router Cache інакше й далі показує видалений клас у списку /admin,
+    // доки хтось не оновить сторінку вручну. Той самий ризик, що й у
+    // AdminLogoutButton/StudentLogoutButton.
+    window.location.href = "/admin";
   }
 
   return (
@@ -334,11 +332,7 @@ export default function ClassSettingsClient({
             items={[
               {
                 key: "individual",
-                label: (
-                  <span style={{ fontWeight: 800 }}>
-                    <GiftOutlined /> Індивідуальні нагороди
-                  </span>
-                ),
+                label: <span style={{ fontWeight: 800 }}>Індивідуальні нагороди</span>,
                 children: (
                   <PrizesPanel
                     classId={classId}
@@ -350,11 +344,7 @@ export default function ClassSettingsClient({
               },
               {
                 key: "class",
-                label: (
-                  <span style={{ fontWeight: 800 }}>
-                    <TrophyOutlined /> Нагороди класу
-                  </span>
-                ),
+                label: <span style={{ fontWeight: 800 }}>Нагороди класу</span>,
                 children: (
                   <PrizesPanel
                     classId={classId}
@@ -391,7 +381,7 @@ export default function ClassSettingsClient({
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Button icon={<InboxOutlined />} loading={busy} onClick={toggleArchive} className="btn-secondary">
+          <Button loading={busy} onClick={toggleArchive} className="btn-secondary">
             {archived ? "Повернути з архіву" : "Архівувати"}
           </Button>
           <Popconfirm
@@ -399,15 +389,11 @@ export default function ClassSettingsClient({
             description="Усі учні, уроки, бали й нагороди цього класу буде видалено безповоротно."
             onConfirm={deleteClassForever}
             okText="Видалити"
-            okButtonProps={{ danger: true }}
+            okButtonProps={{ danger: true, className: "btn-danger-outline" }}
+            cancelButtonProps={{ className: "btn-secondary" }}
             cancelText="Скасувати"
           >
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              loading={busy}
-              style={{ fontWeight: 800, textTransform: "uppercase", borderRadius: 10 }}
-            >
+            <Button danger loading={busy} className="btn-danger-outline">
               Видалити назавжди
             </Button>
           </Popconfirm>

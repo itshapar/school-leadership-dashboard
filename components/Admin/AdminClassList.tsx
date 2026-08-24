@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Tag } from "antd";
-import { PlusOutlined, StarFilled } from "@ant-design/icons";
+import { StarFilled } from "@ant-design/icons";
 import { TEACHER_LIMITS } from "@/lib/admin/classConfig";
 import type { OnboardingStepKey } from "@/lib/admin/onboarding";
 import type { Parallel } from "@/lib/admin/parallels";
@@ -103,7 +103,7 @@ export default function AdminClassList({
           onClick={() => router.push("/admin/onboarding")}
           className="btn-primary"
         >
-          <PlusOutlined /> Новий клас
+          Новий клас
         </Button>
       </div>
 

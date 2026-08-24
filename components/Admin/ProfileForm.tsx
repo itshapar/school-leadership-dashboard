@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button, Form, Input, Modal, message } from "antd";
-import { DeleteOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 
@@ -89,8 +88,8 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
   return (
     <>
       <div style={sectionStyle}>
-        <div style={{ fontWeight: 800, fontSize: "0.9rem", marginBottom: 12 }}>
-          <MailOutlined /> Email
+        <div style={{ fontWeight: 800, fontSize: "0.9rem", marginBottom: 12, textTransform: "uppercase" }}>
+          Email
         </div>
         <Form
           form={emailForm}
@@ -106,15 +105,15 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
           >
             <Input size="large" autoComplete="email" />
           </Form.Item>
-          <Button htmlType="submit" loading={savingEmail} className="btn-primary">
+          <Button htmlType="submit" loading={savingEmail} className="btn-secondary">
             Змінити email
           </Button>
         </Form>
       </div>
 
       <div style={sectionStyle}>
-        <div style={{ fontWeight: 800, fontSize: "0.9rem", marginBottom: 12 }}>
-          <LockOutlined /> Пароль
+        <div style={{ fontWeight: 800, fontSize: "0.9rem", marginBottom: 12, textTransform: "uppercase" }}>
+          Пароль
         </div>
         <Form form={passwordForm} layout="vertical" onFinish={onPasswordFinish}>
           <Form.Item
@@ -143,7 +142,7 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
           >
             <Input.Password size="large" autoComplete="new-password" />
           </Form.Item>
-          <Button htmlType="submit" loading={savingPassword} className="btn-primary">
+          <Button htmlType="submit" loading={savingPassword} className="btn-secondary">
             Змінити пароль
           </Button>
         </Form>
@@ -162,12 +161,7 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
         <div style={{ color: "#868e96", fontSize: "0.85rem", marginTop: 4, marginBottom: 12 }}>
           Видалить акаунт, усі класи, учнів, бали й нагороди безповоротно.
         </div>
-        <Button
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => setOpen(true)}
-          style={{ fontWeight: 800, textTransform: "uppercase", borderRadius: 10 }}
-        >
+        <Button danger onClick={() => setOpen(true)} className="btn-danger-outline">
           Видалити акаунт
         </Button>
       </div>
@@ -177,7 +171,13 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
         open={open}
         onCancel={() => setOpen(false)}
         okText="Видалити назавжди"
-        okButtonProps={{ danger: true, loading: deleting, disabled: confirmText !== "ВИДАЛИТИ" }}
+        okButtonProps={{
+          danger: true,
+          loading: deleting,
+          disabled: confirmText !== "ВИДАЛИТИ",
+          className: "btn-danger-outline",
+        }}
+        cancelButtonProps={{ className: "btn-secondary" }}
         cancelText="Скасувати"
         onOk={deleteAccount}
       >

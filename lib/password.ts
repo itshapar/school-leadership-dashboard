@@ -25,8 +25,8 @@ export function scorePassword(password: string): PasswordStrength {
     { label: "Дуже слабкий", color: "#e03131" },
     { label: "Слабкий", color: "#e8590c" },
     { label: "Середній", color: "#f08c00" },
-    { label: "Надійний", color: "#2f9e44" },
-    { label: "Дуже надійний", color: "#2f9e44" },
+    { label: "Надійний", color: "#52C51A" },
+    { label: "Дуже надійний", color: "#52C51A" },
   ];
   return { score: clamped, ...levels[clamped] };
 }

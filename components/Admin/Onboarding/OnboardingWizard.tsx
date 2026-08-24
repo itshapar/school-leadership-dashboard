@@ -305,7 +305,7 @@ export default function OnboardingWizard() {
             title: s.title,
             disabled: !cls && s.key !== "class",
             icon: done ? (
-              <CheckCircleFilled style={{ color: "#2f9e44", fontSize: "1.5rem" }} />
+              <CheckCircleFilled style={{ color: "#52C51A", fontSize: "1.5rem" }} />
             ) : (
               <span
                 style={{

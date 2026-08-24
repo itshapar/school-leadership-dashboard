@@ -163,7 +163,7 @@ export default async function DashboardPage({
         </div>
         <div style={kpiCardStyle}>
           <div style={kpiLabelStyle}>Відвідано уроків</div>
-          <div style={{ ...kpiValueStyle, color: "#40c057" }}>{data.kpi.attendedLessons}</div>
+          <div style={{ ...kpiValueStyle, color: "#52C51A" }}>{data.kpi.attendedLessons}</div>
         </div>
         <div style={kpiCardStyle}>
           <div style={kpiLabelStyle}>Кількість пропусків</div>

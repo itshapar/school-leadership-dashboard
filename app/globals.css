@@ -126,8 +126,8 @@ button, input, select, textarea {
 
 .prize-card.unlocked {
   background: #EBFBEE; /* Success light */
-  border-color: #2F9E44;
-  box-shadow: 3px 3px 0px #2F9E44;
+  border-color: #52C51A;
+  box-shadow: 3px 3px 0px #52C51A;
 }
 
 .prize-card.locked {
@@ -380,6 +380,30 @@ button, input, select, textarea {
 .btn-ghost:hover, .btn-ghost:focus {
   background: #f1f3f5 !important;
   color: #000000 !important;
+}
+
+/* Другорядна руйнівна дія (видалити учня/клас/акаунт) — той самий каркас,
+   що й .btn-secondary, але червоний замість чорного: обводка помітна одразу
+   як "небезпечно", а не розмита блідо-рожева за замовчуванням antd. */
+.btn-danger-outline {
+  background: #FFFFFF !important;
+  border: 3px solid #e03131 !important;
+  color: #e03131 !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  border-radius: 10px !important;
+  box-shadow: 3px 3px 0px #e03131 !important;
+}
+.btn-danger-outline:hover, .btn-danger-outline:focus {
+  background: #fff5f5 !important;
+  border-color: #c92a2a !important;
+  color: #c92a2a !important;
+}
+.btn-danger-outline:disabled, .btn-danger-outline[disabled] {
+  background: #f8f9fa !important;
+  border-color: #ffc9c9 !important;
+  color: #ffc9c9 !important;
+  box-shadow: none !important;
 }
 
 @media (max-width: 768px) {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Modal, Popconfirm, message, Alert } from "antd";
-import { KeyOutlined, CopyOutlined, PrinterOutlined, ReloadOutlined } from "@ant-design/icons";
+import { KeyOutlined } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
 /**
@@ -189,17 +189,7 @@ export function PrintClassPinsButton({
   }
 
   return (
-    <Button
-      icon={<PrinterOutlined />}
-      loading={loading}
-      onClick={handleClick}
-      style={{
-        fontWeight: 800,
-        borderRadius: "10px",
-        height: "38px",
-        fontSize: "0.85rem",
-      }}
-    >
+    <Button loading={loading} onClick={handleClick} className="btn-secondary" style={{ height: "38px" }}>
       РОЗДРУКУВАТИ PIN-И КЛАСУ
     </Button>
   );
@@ -251,16 +241,7 @@ export function RegenerateClassPinsButton({
         okText="Перегенерувати"
         cancelText="Ні"
       >
-        <Button
-          icon={<ReloadOutlined />}
-          loading={loading}
-          style={{
-            fontWeight: 800,
-            borderRadius: "10px",
-            height: "38px",
-            fontSize: "0.85rem",
-          }}
-        >
+        <Button loading={loading} className="btn-secondary" style={{ height: "38px" }}>
           ПЕРЕГЕНЕРУВАТИ PIN-И
         </Button>
       </Popconfirm>
@@ -272,12 +253,12 @@ export function RegenerateClassPinsButton({
         footer={[
           <Button
             key="print"
-            icon={<PrinterOutlined />}
+            className="btn-secondary"
             onClick={() => pins && printPins(className, pins, nameById)}
           >
             Друк
           </Button>,
-          <Button key="done" type="primary" onClick={() => setPins(null)} style={{ background: "#000" }}>
+          <Button key="done" type="primary" onClick={() => setPins(null)} className="btn-primary">
             Готово
           </Button>,
         ]}

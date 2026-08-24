@@ -109,13 +109,7 @@ export default function DeleteLessonButton({
             cancelText="Ні"
             okButtonProps={{ danger: true, loading }}
           >
-            <Button
-              danger
-              type="primary"
-              disabled={!selectedLessonId}
-              loading={loading}
-              style={{ fontWeight: 800, textTransform: "uppercase", borderRadius: 10 }}
-            >
+            <Button danger disabled={!selectedLessonId} loading={loading} className="btn-danger-outline">
               Видалити
             </Button>
           </Popconfirm>

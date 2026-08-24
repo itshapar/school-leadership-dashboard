@@ -43,9 +43,10 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
           // фідбек). Токен саме на Checkbox, а не глобальний CSS-патч.
           Checkbox: {
             // Той самий зелений, що й підсумок "За урок" у журналі
-            // (ManagementTable) — живий фідбек, мали збігатись.
-            colorPrimary: "#2b8a3e",
-            colorPrimaryHover: "#237032",
+            // (ManagementTable) і всюди в інтерфейсі — живий фідбек,
+            // єдиний зелений на весь сайт замість кількох відтінків.
+            colorPrimary: "#52C51A",
+            colorPrimaryHover: "#429e15",
           },
         },
       }}

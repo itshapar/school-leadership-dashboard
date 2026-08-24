@@ -402,7 +402,7 @@ export default function ManagementTable({
                           textAlign: "center",
                           fontWeight: 950,
                           fontSize: "1.1rem",
-                          color: lessonTotal > 0 ? "#2b8a3e" : "#adb5bd",
+                          color: lessonTotal > 0 ? "#52C51A" : "#adb5bd",
                           textShadow: lessonTotal > 0 ? "0 0 10px rgba(43,138,62,0.1)" : "none"
                         }}>
                           {lessonTotal}
@@ -479,8 +479,8 @@ export default function ManagementTable({
           border: 2px solid var(--color-border);
         }
         .ant-checkbox-checked .ant-checkbox-inner {
-          background-color: #2b8a3e;
-          border-color: #2b8a3e;
+          background-color: #52C51A;
+          border-color: #52C51A;
         }
         .management-grid .ant-select-dropdown,
         .management-grid .ant-select-item {
@@ -517,18 +517,18 @@ export default function ManagementTable({
           border-color: #dee2e6 !important;
         }
         .ant-checkbox-checked .ant-checkbox-inner {
-          background-color: #2b8a3e !important;
-          border-color: #2b8a3e !important;
+          background-color: #52C51A !important;
+          border-color: #52C51A !important;
         }
         /* MORE ROBUST PRIZE ELIGIBILITY */
         .prize-checkbox.prize-eligible .ant-checkbox-inner {
-          border-color: #2b8a3e !important;
+          border-color: #52C51A !important;
           border-width: 3px !important;
           box-shadow: 0 0 8px rgba(43,138,62,0.6) !important;
           background-color: #ffffff !important;
         }
         .prize-checkbox.prize-eligible.ant-checkbox-wrapper-checked .ant-checkbox-inner {
-          background-color: #2b8a3e !important;
+          background-color: #52C51A !important;
           border-width: 2px !important;
           box-shadow: none !important;
         }

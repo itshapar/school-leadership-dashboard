@@ -5,12 +5,9 @@ import { Table, Button, Modal, Form, Input, Space, message, Popconfirm } from "a
 import {
   UserOutlined,
   SmileOutlined,
-  PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   ArrowLeftOutlined,
-  EyeInvisibleOutlined,
-  EyeOutlined,
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
@@ -230,7 +227,7 @@ export default function StudentManager({
           <Button
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
-            style={{ borderRadius: "8px" }}
+            style={{ borderRadius: "8px", border: "2px solid #000" }}
           />
           <Popconfirm
             title="Видалити учня?"
@@ -239,7 +236,7 @@ export default function StudentManager({
             okText="Так"
             cancelText="Ні"
           >
-            <Button danger icon={<DeleteOutlined />} style={{ borderRadius: "8px" }} />
+            <Button danger icon={<DeleteOutlined />} className="btn-danger-outline" style={{ padding: "4px 12px" }} />
           </Popconfirm>
         </Space>
       ),
@@ -273,20 +270,14 @@ export default function StudentManager({
 
         <Space wrap>
           <Button
-            icon={pinsVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
             onClick={() => setPinsVisible((v) => !v)}
+            className="btn-secondary"
             style={{
-              fontWeight: 800,
-              borderRadius: "10px",
               height: "38px",
-              fontSize: "0.85rem",
               // Фіксована ширина (замість auto): "ПОКАЗАТИ PIN-И" і
               // "СХОВАТИ PIN-И" мають різну довжину, без цього кнопка
               // смикалась при кожному перемиканні (9.11, живий фідбек).
               width: "168px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
             }}
           >
             {pinsVisible ? "СХОВАТИ PIN-И" : "ПОКАЗАТИ PIN-И"}
@@ -304,21 +295,7 @@ export default function StudentManager({
             students={students}
             onReset={mergePins}
           />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-            size="middle"
-            style={{
-              background: "#000",
-              borderColor: "#000",
-              fontWeight: 800,
-              borderRadius: "10px",
-              height: "38px",
-              fontSize: "0.85rem",
-              boxShadow: "2px 2px 0px rgba(0,0,0,0.2)",
-            }}
-          >
+          <Button type="primary" onClick={handleAdd} className="btn-primary" style={{ height: "38px" }}>
             ДОДАТИ УЧНЯ
           </Button>
         </Space>
