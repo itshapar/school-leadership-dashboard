@@ -10,7 +10,9 @@ import { normalizeFullName, validateFullName } from "@/lib/students/fullName";
  * Прев'ю «прізвище | ім'я» вчитель уже бачить у формі на клієнті — тут
  * валідація повторюється, бо форму можна обійти прямим запитом.
  *
- * Аватари: емодзі-палітра по колу, щоб список не був однаковим.
+ * Аватар: єдиний дефолт (👤, живий фідбек) — під час масового додавання
+ * вчителя про емодзі не питають, тож усі нові учні лишаються з однаковим
+ * силуетом, поки хтось (вчитель разом з учнем) не поміняє його вручну.
  */
 
 const BulkSchema = z.object({
@@ -18,10 +20,7 @@ const BulkSchema = z.object({
   names: z.array(z.string()).min(1).max(60),
 });
 
-const AVATARS = [
-  "🦁", "🐯", "🐼", "🦊", "🐨", "🐸", "🦉", "🐧", "🦄", "🐙",
-  "🐝", "🦋", "🐬", "🦕", "🐢", "🦔", "🐺", "🦅", "🐴", "🦓",
-];
+const DEFAULT_AVATAR = "👤";
 
 export async function POST(request: Request) {
   const { user, supabaseForRls } = await getSupabaseForAdminApi(request);
@@ -81,10 +80,10 @@ export async function POST(request: Request) {
 
   const toInsert = valid
     .filter((name) => !existingNames.has(name.toLowerCase()))
-    .map((full_name, i) => ({
+    .map((full_name) => ({
       class_id: body.class_id,
       full_name,
-      avatar_emoji: AVATARS[i % AVATARS.length],
+      avatar_emoji: DEFAULT_AVATAR,
     }));
 
   if (toInsert.length === 0) {

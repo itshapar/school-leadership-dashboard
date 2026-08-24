@@ -19,10 +19,9 @@ import Link from "next/link";
 import { ResetPinButton, PrintClassPinsButton, RegenerateClassPinsButton } from "@/components/Admin/PinManager";
 import DataBasisReminder from "@/components/Admin/DataBasisReminder";
 import {
+  FULL_NAME_COMBINED_HINT,
   FULL_NAME_LABEL,
-  FULL_NAME_ORDER_HINT,
   FULL_NAME_PLACEHOLDER,
-  MINIMIZATION_HINT,
   checkNameOrder,
   fullNameRule,
 } from "@/lib/students/fullName";
@@ -105,7 +104,7 @@ export default function StudentManager({
   const handleAdd = () => {
     setEditingStudent(null);
     form.resetFields();
-    form.setFieldsValue({ avatar_emoji: "⭐" });
+    form.setFieldsValue({ avatar_emoji: "👤" });
     setIsModalOpen(true);
   };
 
@@ -370,8 +369,7 @@ export default function StudentManager({
             rules={[fullNameRule]}
             extra={
               <span style={{ color: "#868e96", fontSize: "0.8rem", display: "block", lineHeight: 1.55 }}>
-                ⓘ {FULL_NAME_ORDER_HINT}
-                <br />ⓘ {MINIMIZATION_HINT}
+                {FULL_NAME_COMBINED_HINT}
               </span>
             }
             validateStatus={orderWarning.suspicious ? "warning" : undefined}

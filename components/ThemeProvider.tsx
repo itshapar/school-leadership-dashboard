@@ -42,8 +42,10 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
           // сайтовий чорний colorPrimary вище випадково чорнив і їх (живий
           // фідбек). Токен саме на Checkbox, а не глобальний CSS-патч.
           Checkbox: {
-            colorPrimary: "#51cf66",
-            colorPrimaryHover: "#40c057",
+            // Той самий зелений, що й підсумок "За урок" у журналі
+            // (ManagementTable) — живий фідбек, мали збігатись.
+            colorPrimary: "#2b8a3e",
+            colorPrimaryHover: "#237032",
           },
         },
       }}

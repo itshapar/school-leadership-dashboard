@@ -18,7 +18,9 @@ import { adminApiFetch } from "@/lib/admin/adminApiFetch";
  */
 
 const sectionStyle: React.CSSProperties = {
-  border: "2px solid var(--color-border)",
+  background: "#fff",
+  border: "3px solid #000",
+  boxShadow: "4px 4px 0px #000",
   borderRadius: 12,
   padding: "16px 20px",
   marginBottom: 16,
@@ -104,7 +106,7 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
           >
             <Input size="large" autoComplete="email" />
           </Form.Item>
-          <Button htmlType="submit" loading={savingEmail} size="large" style={{ fontWeight: 700 }}>
+          <Button htmlType="submit" loading={savingEmail} className="btn-primary">
             Змінити email
           </Button>
         </Form>
@@ -141,7 +143,7 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
           >
             <Input.Password size="large" autoComplete="new-password" />
           </Form.Item>
-          <Button htmlType="submit" loading={savingPassword} size="large" style={{ fontWeight: 700 }}>
+          <Button htmlType="submit" loading={savingPassword} className="btn-primary">
             Змінити пароль
           </Button>
         </Form>
@@ -149,7 +151,9 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
 
       <div
         style={{
-          border: "2px solid #ffc9c9",
+          background: "#fff",
+          border: "3px solid #000",
+          boxShadow: "4px 4px 0px #e03131",
           borderRadius: 12,
           padding: "16px 20px",
         }}
@@ -158,7 +162,12 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
         <div style={{ color: "#868e96", fontSize: "0.85rem", marginTop: 4, marginBottom: 12 }}>
           Видалить акаунт, усі класи, учнів, бали й нагороди безповоротно.
         </div>
-        <Button danger icon={<DeleteOutlined />} onClick={() => setOpen(true)}>
+        <Button
+          danger
+          icon={<DeleteOutlined />}
+          onClick={() => setOpen(true)}
+          style={{ fontWeight: 800, textTransform: "uppercase", borderRadius: 10 }}
+        >
           Видалити акаунт
         </Button>
       </div>

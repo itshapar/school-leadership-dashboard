@@ -88,7 +88,7 @@ export function parseImportWorkbook(buffer: Buffer): ParsedImport {
     const rawName = String(row[0] ?? "").trim();
     if (!rawName) return;
 
-    const avatarEmoji = String(row[2] ?? "⭐").trim() || "⭐";
+    const avatarEmoji = String(row[2] ?? "👤").trim() || "👤";
     const nickname = row[3] ? String(row[3]).trim() || null : null;
 
     let bonusOffset = 0;

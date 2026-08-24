@@ -479,7 +479,7 @@ export default function ManagementTable({
           border: 2px solid var(--color-border);
         }
         .ant-checkbox-checked .ant-checkbox-inner {
-          background-color: #51cf66;
+          background-color: #2b8a3e;
           border-color: #2b8a3e;
         }
         .management-grid .ant-select-dropdown,
@@ -517,7 +517,7 @@ export default function ManagementTable({
           border-color: #dee2e6 !important;
         }
         .ant-checkbox-checked .ant-checkbox-inner {
-          background-color: #51cf66 !important;
+          background-color: #2b8a3e !important;
           border-color: #2b8a3e !important;
         }
         /* MORE ROBUST PRIZE ELIGIBILITY */
@@ -528,7 +528,7 @@ export default function ManagementTable({
           background-color: #ffffff !important;
         }
         .prize-checkbox.prize-eligible.ant-checkbox-wrapper-checked .ant-checkbox-inner {
-          background-color: #51cf66 !important;
+          background-color: #2b8a3e !important;
           border-width: 2px !important;
           box-shadow: none !important;
         }

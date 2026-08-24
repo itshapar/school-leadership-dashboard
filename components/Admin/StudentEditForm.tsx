@@ -7,10 +7,9 @@ import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import {
+  FULL_NAME_COMBINED_HINT,
   FULL_NAME_LABEL,
-  FULL_NAME_ORDER_HINT,
   FULL_NAME_PLACEHOLDER,
-  MINIMIZATION_HINT,
   fullNameRule,
 } from "@/lib/students/fullName";
 
@@ -90,8 +89,7 @@ export default function StudentEditForm({
             rules={[fullNameRule]}
             extra={
               <span style={{ color: "#868e96", fontSize: "0.8rem", display: "block", lineHeight: 1.55 }}>
-                ⓘ {FULL_NAME_ORDER_HINT}
-                <br />ⓘ {MINIMIZATION_HINT}
+                {FULL_NAME_COMBINED_HINT}
               </span>
             }
           >

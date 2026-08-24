@@ -220,7 +220,8 @@ export default function ClassSettingsClient({
       <div
         style={{
           background: "#fff",
-          border: "2px solid #dee2e6",
+          border: "3px solid #000",
+          boxShadow: "4px 4px 0px #000",
           borderRadius: 12,
           padding: "16px 20px",
           marginBottom: 20,
@@ -252,7 +253,8 @@ export default function ClassSettingsClient({
       <div
         style={{
           background: "#fff",
-          border: "2px solid #dee2e6",
+          border: "3px solid #000",
+          boxShadow: "4px 4px 0px #000",
           borderRadius: 12,
           padding: "16px 20px",
           marginBottom: 20,
@@ -290,7 +292,8 @@ export default function ClassSettingsClient({
       <div
         style={{
           background: "#fff",
-          border: "2px solid #dee2e6",
+          border: "3px solid #000",
+          boxShadow: "4px 4px 0px #000",
           borderRadius: 12,
           padding: "16px 20px",
           marginBottom: 20,
@@ -304,7 +307,7 @@ export default function ClassSettingsClient({
           <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Бали однокласників</div>
           <Switch checked={showClassmateStars} loading={savingVisibility} onChange={toggleClassmateStars} />
         </div>
-        <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 8, maxWidth: 480 }}>
+        <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 8 }}>
           На публічному дашборді класу (без PIN-коду) учні бачать список класу.
           Тут можна дозволити показувати й кількість зірок кожного. Історію
           "за що", свою чи чужу, це не відкриває, її бачить лише сам учень
@@ -369,7 +372,9 @@ export default function ClassSettingsClient({
       <div
         style={{
           marginTop: 24,
-          border: "2px solid #ffc9c9",
+          background: "#fff",
+          border: "3px solid #000",
+          boxShadow: "4px 4px 0px #e03131",
           borderRadius: 12,
           padding: "16px 20px",
           display: "flex",
