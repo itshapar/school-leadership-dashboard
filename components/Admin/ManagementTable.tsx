@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { Table, Select, Spin, message, Checkbox, Alert, Segmented } from "antd";
+import { useState, useEffect, useCallback } from "react";
+import { Table, Select, Spin, message, Checkbox, Alert } from "antd";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import dayjs from "dayjs";
@@ -12,7 +12,7 @@ import {
   type ManagementJournalLesson,
   type ManagementJournalPrize,
 } from "@/lib/admin/managementJournalData";
-import type { ClassGroup, EntryType } from "@/lib/admin/classConfig";
+import type { EntryType } from "@/lib/admin/classConfig";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 
 type Student = ManagementJournalStudent;
@@ -27,15 +27,10 @@ const STAR_OPTIONS = [
   { value: 3, label: "3" },
 ];
 
-/** Псевдо-значення фільтра груп: усі учні / учні без групи. */
-const GROUP_ALL = "__all__";
-const GROUP_NONE = "__none__";
-
 interface JournalState {
   students: Student[];
   lessons: Lesson[];
   prizes: Prize[];
-  groups: ClassGroup[];
   entryTypes: EntryType[];
   lessonType: EntryType | null;
   entries: Record<string, Record<string, number>>;
@@ -47,7 +42,6 @@ const EMPTY_STATE: JournalState = {
   students: [],
   lessons: [],
   prizes: [],
-  groups: [],
   entryTypes: [],
   lessonType: null,
   entries: {},
@@ -55,12 +49,15 @@ const EMPTY_STATE: JournalState = {
   totalStars: {},
 };
 
+// Групи (Етап 6) прибрано з журналу (9.8, живий фідбек) — фільтр і
+// бейджик групи в рядку учня ховаємо, поки функція не готова для
+// інтерфейсу; дані груп і далі приходять із loadManagementJournalData,
+// просто цей компонент їх не використовує.
 function toState(data: ManagementJournalData): JournalState {
   return {
     students: data.students,
     lessons: data.lessons,
     prizes: data.prizes,
-    groups: data.groups,
     entryTypes: data.entryTypes,
     lessonType: data.lessonType,
     entries: data.entries,
@@ -79,7 +76,6 @@ export default function ManagementTable({
   const [state, setState] = useState<JournalState>(
     initialData ? toState(initialData) : EMPTY_STATE
   );
-  const [groupFilter, setGroupFilter] = useState<string>(GROUP_ALL);
   const [loading, setLoading] = useState(!initialData);
 
   const supabase = getSupabaseClient();
@@ -88,7 +84,6 @@ export default function ManagementTable({
     students,
     lessons,
     prizes,
-    groups,
     lessonType,
     entries,
     givenPrizes,
@@ -120,28 +115,6 @@ export default function ManagementTable({
   useEffect(() => {
     if (initialData) setState(toState(initialData));
   }, [initialData]);
-
-  /**
-   * Фільтр за групою застосовується лише до РЯДКІВ і до сум Σ. Дані
-   * лишаються повними: перемикання фільтра не має ходити в мережу.
-   */
-  const visibleStudents = useMemo(() => {
-    if (groupFilter === GROUP_ALL) return students;
-    if (groupFilter === GROUP_NONE) return students.filter((s) => !s.group_id);
-    return students.filter((s) => s.group_id === groupFilter);
-  }, [students, groupFilter]);
-
-  const groupOptions = useMemo(() => {
-    if (groups.length === 0) return [];
-    const options: Array<{ label: string; value: string }> = [
-      { label: "Усі", value: GROUP_ALL },
-      ...groups.map((g) => ({ label: g.name, value: g.id })),
-    ];
-    if (students.some((s) => !s.group_id)) {
-      options.push({ label: "Без групи", value: GROUP_NONE });
-    }
-    return options;
-  }, [groups, students]);
 
   // Auto-save star amount (через API з серверною сесією — RLS у Supabase для запису)
   const handleStarChange = async (studentId: string, lessonId: string, amount: number) => {
@@ -230,11 +203,6 @@ export default function ManagementTable({
     }
   };
 
-  const groupNameById = useMemo(
-    () => new Map(groups.map((g) => [g.id, g.name] as const)),
-    [groups]
-  );
-
   const columns = [
     {
       title: <div style={{ fontWeight: 950, color: "#000" }}>#</div>,
@@ -256,28 +224,11 @@ export default function ManagementTable({
           <span style={{ fontSize: "1.4rem", flexShrink: 0 }}>{record.avatar_emoji}</span>
           <div style={{ lineHeight: "1.2" }}>
             <div style={{ fontWeight: 850, fontSize: "1rem" }}>{record.full_name}</div>
-            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-              {record.nickname && (
-                <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontWeight: 700 }}>
-                  {record.nickname}
-                </span>
-              )}
-              {record.group_id && groupNameById.has(record.group_id) && (
-                <span
-                  style={{
-                    fontSize: "0.68rem",
-                    fontWeight: 800,
-                    color: "#495057",
-                    background: "#f1f3f5",
-                    border: "1px solid #dee2e6",
-                    borderRadius: "6px",
-                    padding: "0 5px",
-                  }}
-                >
-                  {groupNameById.get(record.group_id)}
-                </span>
-              )}
-            </div>
+            {record.nickname && (
+              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontWeight: 700 }}>
+                {record.nickname}
+              </span>
+            )}
           </div>
         </div>
       ),
@@ -411,42 +362,9 @@ export default function ManagementTable({
         </div>
       )}
 
-      {groupOptions.length > 0 && (
-        <div
-          style={{
-            padding: "12px 16px",
-            borderBottom: "1px solid #eee",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            flexWrap: "wrap",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: 900,
-              textTransform: "uppercase",
-              color: "#868e96",
-            }}
-          >
-            Група
-          </span>
-          <Segmented
-            size="small"
-            value={groupFilter}
-            onChange={(v) => setGroupFilter(String(v))}
-            options={groupOptions}
-          />
-          <span style={{ fontSize: "0.8rem", color: "#868e96", fontWeight: 700 }}>
-            {visibleStudents.length} з {students.length}
-          </span>
-        </div>
-      )}
-
       <div style={{ padding: "0" }} className="full-width-table">
         <Table
-          dataSource={visibleStudents}
+          dataSource={students}
           columns={columns}
           rowKey="id"
           pagination={false}
@@ -473,10 +391,8 @@ export default function ManagementTable({
                       <div style={{ textAlign: "center", color: "#adb5bd" }}>-</div>
                     </Table.Summary.Cell>
                   ))}
-                  {/* Lesson sum columns — рахуємо по ВИДИМИХ учнях, щоб фільтр
-                      групи давав суму саме цієї групи, а не всього класу. */}
                   {lessons.map((lesson, i) => {
-                    const lessonTotal = visibleStudents.reduce((sum, st) => {
+                    const lessonTotal = students.reduce((sum, st) => {
                       const val = entries[st.id]?.[lesson.id] ?? 0;
                       return sum + (val > 0 ? val : 0);
                     }, 0);

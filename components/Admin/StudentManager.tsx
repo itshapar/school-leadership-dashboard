@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Table, Button, Modal, Form, Input, Space, message, Popconfirm, Select } from "antd";
+import { Table, Button, Modal, Form, Input, Space, message, Popconfirm } from "antd";
 import {
   UserOutlined,
   SmileOutlined,
@@ -18,7 +18,6 @@ import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import Link from "next/link";
 import { ResetPinButton, PrintClassPinsButton, RegenerateClassPinsButton } from "@/components/Admin/PinManager";
 import DataBasisReminder from "@/components/Admin/DataBasisReminder";
-import { loadClassGroups, type ClassGroup } from "@/lib/admin/classConfig";
 import {
   FULL_NAME_LABEL,
   FULL_NAME_ORDER_HINT,
@@ -36,7 +35,9 @@ import {
  * Порядок критичний: публічна сторінка показує ДРУГЕ слово (див.
  * lib/students/fullName.ts).
  *
- * Етап 6: додано колонку «Група» з інлайн-призначенням.
+ * Групи (Етап 6) прибрано з інтерфейсу (9.8, живий фідбек) — функція ще не
+ * готова для показу; group_id лишається в даних, просто нічого його не
+ * редагує звідси.
  */
 
 interface Student {
@@ -46,8 +47,6 @@ interface Student {
   avatar_emoji: string;
   group_id: string | null;
 }
-
-const NO_GROUP = "__none__";
 
 export default function StudentManager({
   classId,
@@ -61,13 +60,11 @@ export default function StudentManager({
   className?: string;
 }) {
   const [students, setStudents] = useState<Student[]>(initialStudents);
-  const [groups, setGroups] = useState<ClassGroup[]>([]);
   const [pins, setPins] = useState<Record<string, string>>({});
   const [pinsVisible, setPinsVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(false);
-  const [assigning, setAssigning] = useState<string | null>(null);
   const [form] = Form.useForm();
   const router = useRouter();
   const supabase = getSupabaseClient();
@@ -77,9 +74,6 @@ export default function StudentManager({
 
   useEffect(() => {
     let cancelled = false;
-    loadClassGroups(supabase, classId).then((g) => {
-      if (!cancelled) setGroups(g);
-    });
     supabase
       .rpc("get_class_pins", { p_class_id: classId })
       .then(
@@ -182,27 +176,6 @@ export default function StudentManager({
     }
   };
 
-  const assignGroup = async (studentId: string, value: string) => {
-    setAssigning(studentId);
-    const groupId = value === NO_GROUP ? null : value;
-    try {
-      const res = await adminApiFetch(supabase, "/api/admin/student", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: studentId, group_id: groupId }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.error ?? "Помилка");
-      setStudents((prev) =>
-        prev.map((s) => (s.id === studentId ? { ...s, group_id: groupId } : s))
-      );
-    } catch (err) {
-      message.error(err instanceof Error ? err.message : "Не вдалося змінити групу");
-    } finally {
-      setAssigning(null);
-    }
-  };
-
   const columns = [
     {
       title: "Аватар",
@@ -224,28 +197,6 @@ export default function StudentManager({
       key: "nickname",
       render: (nick: string) => nick || <span style={{ color: "#adb5bd" }}>—</span>,
     },
-    ...(groups.length > 0
-      ? [
-          {
-            title: "Група",
-            key: "group",
-            width: 170,
-            render: (_value: unknown, record: Student) => (
-              <Select
-                size="small"
-                style={{ width: "100%" }}
-                value={record.group_id ?? NO_GROUP}
-                loading={assigning === record.id}
-                onChange={(v) => assignGroup(record.id, v)}
-                options={[
-                  { value: NO_GROUP, label: "—" },
-                  ...groups.map((g) => ({ value: g.id, label: g.name })),
-                ]}
-              />
-            ),
-          },
-        ]
-      : []),
     {
       title: "PIN",
       key: "pin",

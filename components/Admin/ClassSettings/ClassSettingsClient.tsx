@@ -9,20 +9,16 @@ import {
   DeleteOutlined,
   GiftOutlined,
   InboxOutlined,
-  TeamOutlined,
   TrophyOutlined,
 } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
-  loadClassGroups,
   loadClassPrizes,
   loadIndividualPrizes,
-  type ClassGroup,
   type ClassPrize,
   type IndividualPrize,
 } from "@/lib/admin/classConfig";
 import PrizesPanel from "@/components/Admin/ClassSettings/PrizesPanel";
-import GroupsPanel from "@/components/Admin/ClassSettings/GroupsPanel";
 import { PrintClassPinsButton, RegenerateClassPinsButton } from "@/components/Admin/PinManager";
 import { setClassParallel, upsertParallelByName, type Parallel } from "@/lib/admin/parallels";
 
@@ -84,15 +80,13 @@ export default function ClassSettingsClient({
   const [busy, setBusy] = useState(false);
   const [individualPrizes, setIndividualPrizes] = useState<IndividualPrize[]>([]);
   const [classPrizes, setClassPrizes] = useState<ClassPrize[]>([]);
-  const [groups, setGroups] = useState<ClassGroup[]>([]);
   const [students, setStudents] = useState<StudentRow[]>(initialStudents);
 
   const refresh = useCallback(async () => {
     try {
-      const [indiv, cls, grps, studentsRes] = await Promise.all([
+      const [indiv, cls, studentsRes] = await Promise.all([
         loadIndividualPrizes(supabase, classId),
         loadClassPrizes(supabase, classId),
-        loadClassGroups(supabase, classId),
         supabase
           .from("students")
           .select("id, full_name, nickname, avatar_emoji, group_id")
@@ -102,7 +96,6 @@ export default function ClassSettingsClient({
       ]);
       setIndividualPrizes(indiv);
       setClassPrizes(cls);
-      setGroups(grps);
       setStudents((studentsRes.data ?? []) as StudentRow[]);
     } catch {
       message.error("Не вдалося завантажити налаштування");
@@ -365,22 +358,6 @@ export default function ClassSettingsClient({
                     classId={classId}
                     kind="class"
                     classPrizes={classPrizes}
-                    onChanged={refresh}
-                  />
-                ),
-              },
-              {
-                key: "groups",
-                label: (
-                  <span style={{ fontWeight: 800 }}>
-                    <TeamOutlined /> Групи
-                  </span>
-                ),
-                children: (
-                  <GroupsPanel
-                    classId={classId}
-                    groups={groups}
-                    students={students}
                     onChanged={refresh}
                   />
                 ),
