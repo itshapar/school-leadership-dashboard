@@ -51,6 +51,10 @@ export default function ClassQrButton({
         open={open}
         onCancel={() => setOpen(false)}
         width={380}
+        // Учні бачать проєктор, не лише QR: журнал за модалкою мусить бути
+        // нечитабельним, не лише затемненим (9.13, живий фідбек) — самого
+        // напівпрозорого чорного фону замало, текст/бали й далі проглядались.
+        styles={{ mask: { backdropFilter: "blur(12px)" } }}
         footer={[
           <Button key="copy" icon={<CopyOutlined />} onClick={copyLink}>
             Копіювати посилання

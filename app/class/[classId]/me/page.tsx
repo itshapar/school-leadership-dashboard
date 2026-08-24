@@ -1,8 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { Alert } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import PersonalDashboardClient from "@/components/PersonalDashboardClient";
+import PersonalDashboardIntroToast from "@/components/PersonalDashboardIntroToast";
 import StudentPinLogin from "@/components/StudentPinLogin";
 import StudentLogoutButton from "@/components/StudentLogoutButton";
 import { getPublicClassOverview } from "@/lib/public/classData";
@@ -23,10 +23,12 @@ interface Props {
  * тому підмінити чужий id неможливо. Це закриває залишковий ризик Етапу 1
  * («однокласник бачить чужу сторінку»), як тільки застосується міграція 024.
  *
- * ?blocked=1 (Етап 9.12, живий фідбек): сюди веде і старий маршрут
+ * ?blocked=1 (Етап 9.12-9.13, живий фідбек): сюди веде і старий маршрут
  * /class/[code]/student/[id], коли хтось намагався відкрити ЧУЖИЙ
  * персональний дашборд напряму — тепер це завжди редіректить на власний
- * /me за сесією, а прапорець показує пояснення, чому саме.
+ * /me за сесією, а PersonalDashboardIntroToast показує спливне пояснення
+ * чому саме (звичайний вхід теж отримує коротке нагадування, раз на сесію
+ * браузера).
  */
 export default async function MyDashboardPage({ params, searchParams }: Props) {
   const { classId: classParam } = await params;
@@ -82,16 +84,7 @@ export default async function MyDashboardPage({ params, searchParams }: Props) {
         </Link>
       </div>
 
-      {blocked === "1" && (
-        <Alert
-          type="info"
-          showIcon
-          closable
-          style={{ marginBottom: 16 }}
-          message="Це посилання вело на чужу сторінку"
-          description="Тут можна переглянути лише власний профіль, тож ми показали твій."
-        />
-      )}
+      <PersonalDashboardIntroToast blocked={blocked === "1"} />
 
       <PersonalDashboardClient
         student={data.student}
