@@ -84,16 +84,15 @@ export default function NewLessonButton({
         footer={
           mode === "single"
             ? [
-                <Button key="cancel" size="large" onClick={() => setOpen(false)}>
+                <Button key="cancel" onClick={() => setOpen(false)} className="btn-secondary">
                   Скасувати
                 </Button>,
                 <Button
                   key="ok"
                   type="primary"
-                  size="large"
                   loading={loading}
                   onClick={submitSingle}
-                  style={{ fontWeight: 700 }}
+                  className="btn-primary"
                 >
                   Додати
                 </Button>,

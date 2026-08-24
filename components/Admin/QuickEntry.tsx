@@ -158,7 +158,7 @@ export default function QuickEntry({
         open={isOpen}
         onCancel={() => setIsOpen(false)}
         footer={[
-          <Button key="back" onClick={() => setIsOpen(false)} size="middle">
+          <Button key="back" onClick={() => setIsOpen(false)} className="btn-secondary">
             Скасувати
           </Button>,
           <Button
@@ -167,8 +167,7 @@ export default function QuickEntry({
             onClick={() => form.submit()}
             loading={loading}
             disabled={configLoading || entryTypes.length === 0}
-            size="middle"
-            style={{ fontWeight: 700, background: "#000" }}
+            className="btn-primary"
           >
             Зберегти
           </Button>,

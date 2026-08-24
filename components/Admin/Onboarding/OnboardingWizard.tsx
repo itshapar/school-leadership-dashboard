@@ -283,19 +283,9 @@ export default function OnboardingWizard() {
             }}
           />
         </Link>
-        <div>
-          <h1 style={{ margin: 0, fontWeight: 900, fontSize: "1.6rem", textTransform: "uppercase", lineHeight: 1.1 }}>
-            Новий клас
-          </h1>
-          {/* Назва класу зникає з підзаголовка одразу після створення (живий
-              фідбек) — вона й так в Alert нижче, дублювати сірим під
-              заголовком нема сенсу. */}
-          {!cls && (
-            <div style={{ color: "#868e96", fontWeight: 700, fontSize: "0.9rem" }}>
-              Крок за кроком, будь-який можна пропустити
-            </div>
-          )}
-        </div>
+        <h1 style={{ margin: 0, fontWeight: 900, fontSize: "1.6rem", textTransform: "uppercase", lineHeight: 1.1 }}>
+          Новий клас
+        </h1>
       </div>
 
       <Steps
@@ -394,7 +384,6 @@ export default function OnboardingWizard() {
 
                 <Button
                   type="primary"
-                  size="large"
                   htmlType="submit"
                   loading={creating}
                   className="btn-primary"

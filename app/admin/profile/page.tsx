@@ -20,14 +20,27 @@ export default async function ProfilePage() {
 
   return (
     <div className="page-container" style={{ maxWidth: "560px" }}>
-      <div style={{ margin: "16px 0" }}>
-        <Link href="/admin" style={{ color: "inherit" }}>
-          <ArrowLeftOutlined /> До кабінету
+      <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "16px 0 24px" }}>
+        <Link href="/admin">
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 38,
+              height: 38,
+              borderRadius: 10,
+              background: "#000",
+              color: "#fff",
+            }}
+          >
+            <ArrowLeftOutlined />
+          </span>
         </Link>
+        <h1 style={{ fontSize: "1.8rem", fontWeight: 900, margin: 0 }}>
+          Профіль вчителя
+        </h1>
       </div>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: 900, marginBottom: "24px" }}>
-        Профіль вчителя
-      </h1>
       <ProfileForm currentEmail={user.email ?? ""} />
     </div>
   );

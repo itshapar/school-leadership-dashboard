@@ -154,7 +154,7 @@ export default function PrizesPanel({
       ),
     },
     {
-      title: isIndividual ? "Поріг (учень)" : "Поріг (клас)",
+      title: "Кількість зірок",
       dataIndex: "threshold",
       key: "threshold",
       width: 160,
@@ -201,9 +201,8 @@ export default function PrizesPanel({
             сам, а кнопка (flexShrink:0) завжди лишається праворуч. */}
         <span style={{ color: "#868e96", fontSize: "0.85rem", fontWeight: 700, flex: "1 1 auto", minWidth: 0 }}>
           {isIndividual
-            ? "Учень отримує нагороду, коли набирає поріг власних зірок"
-            : "Нагороду отримує весь клас, коли сумарні зірки класу сягають порогу"}{" "}
-          · {rows.length} / {limit}
+            ? "Учень отримує нагороду, коли набирає потрібну кількість власних зірок"
+            : "Нагороду отримує весь клас, коли зірки класу сягають потрібної кількості"}
         </span>
         <Button
           type="primary"

@@ -97,7 +97,7 @@ export default function DeleteLessonButton({
         open={open}
         onCancel={() => setOpen(false)}
         footer={[
-          <Button key="back" onClick={() => setOpen(false)} size="middle">
+          <Button key="back" onClick={() => setOpen(false)} className="btn-secondary">
             Скасувати
           </Button>,
           <Popconfirm
@@ -109,7 +109,13 @@ export default function DeleteLessonButton({
             cancelText="Ні"
             okButtonProps={{ danger: true, loading }}
           >
-            <Button danger type="primary" size="middle" disabled={!selectedLessonId} loading={loading}>
+            <Button
+              danger
+              type="primary"
+              disabled={!selectedLessonId}
+              loading={loading}
+              style={{ fontWeight: 800, textTransform: "uppercase", borderRadius: 10 }}
+            >
               Видалити
             </Button>
           </Popconfirm>

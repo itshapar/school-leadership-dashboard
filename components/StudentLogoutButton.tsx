@@ -19,20 +19,7 @@ export default function StudentLogoutButton() {
   }
 
   return (
-    <Button
-      loading={loading}
-      onClick={onLogout}
-      style={{
-        fontWeight: 800,
-        borderRadius: "10px",
-        height: "38px",
-        padding: "0 16px",
-        background: "#ffffff",
-        color: "#000",
-        border: "2px solid #000",
-        boxShadow: "3px 3px 0px #000",
-      }}
-    >
+    <Button loading={loading} onClick={onLogout} className="btn-secondary">
       Вийти
     </Button>
   );

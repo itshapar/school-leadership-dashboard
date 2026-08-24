@@ -27,6 +27,24 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
           colorLink: "#000000",
           colorLinkHover: "#2c2c2c",
           colorLinkActive: "#000000",
+          // Побічний ефект чорного colorPrimary (живий фідбек): підсвітка
+          // опції під курсором у Select/Dropdown/Menu за замовчуванням теж
+          // бралась від colorPrimary (раніше м'який блакитний відтінок, тепер
+          // важкий чорний з білим текстом). Нейтральний сірий тут — саме для
+          // цієї підсвітки, не для чекбоксів/кнопок.
+          controlItemBgHover: "#f1f3f5",
+          controlItemBgActive: "#f1f3f5",
+          controlItemBgActiveHover: "#e9ecef",
+        },
+        components: {
+          // Чекбокси нагород у журналі (ManagementTable) навмисно зелені —
+          // це той самий colorPrimary, що визначає й ховер/фокус, тож
+          // сайтовий чорний colorPrimary вище випадково чорнив і їх (живий
+          // фідбек). Токен саме на Checkbox, а не глобальний CSS-патч.
+          Checkbox: {
+            colorPrimary: "#51cf66",
+            colorPrimaryHover: "#40c057",
+          },
         },
       }}
     >

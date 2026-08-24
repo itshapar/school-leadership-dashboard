@@ -219,7 +219,7 @@ export default function ClassSettingsClient({
 
       <div
         style={{
-          background: "#f8f9fa",
+          background: "#fff",
           border: "2px solid #dee2e6",
           borderRadius: 12,
           padding: "16px 20px",
@@ -251,7 +251,7 @@ export default function ClassSettingsClient({
 
       <div
         style={{
-          background: "#f8f9fa",
+          background: "#fff",
           border: "2px solid #dee2e6",
           borderRadius: 12,
           padding: "16px 20px",
@@ -289,28 +289,27 @@ export default function ClassSettingsClient({
 
       <div
         style={{
-          background: "#f8f9fa",
+          background: "#fff",
           border: "2px solid #dee2e6",
           borderRadius: 12,
           padding: "16px 20px",
           marginBottom: 20,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-          flexWrap: "wrap",
         }}
       >
-        <div>
+        {/* Тоггл в одному рядку саме з тайтлом, не з усім блоком опису
+            (живий фідбек) — раніше alignItems:"center" на всій картці
+            центрував Switch проти багаторядкового опису, і він "плавав"
+            десь посередині замість рівня заголовка. */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
           <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Бали однокласників</div>
-          <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2, maxWidth: 480 }}>
-            На публічному дашборді класу (без PIN-коду) учні бачать список класу.
-            Тут можна дозволити показувати й кількість зірок кожного. Історію
-            "за що", свою чи чужу, це не відкриває, її бачить лише сам учень
-            через власний PIN.
-          </div>
+          <Switch checked={showClassmateStars} loading={savingVisibility} onChange={toggleClassmateStars} />
         </div>
-        <Switch checked={showClassmateStars} loading={savingVisibility} onChange={toggleClassmateStars} />
+        <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 8, maxWidth: 480 }}>
+          На публічному дашборді класу (без PIN-коду) учні бачать список класу.
+          Тут можна дозволити показувати й кількість зірок кожного. Історію
+          "за що", свою чи чужу, це не відкриває, її бачить лише сам учень
+          через власний PIN.
+        </div>
       </div>
 
       <div
@@ -387,7 +386,7 @@ export default function ClassSettingsClient({
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Button icon={<InboxOutlined />} loading={busy} onClick={toggleArchive}>
+          <Button icon={<InboxOutlined />} loading={busy} onClick={toggleArchive} className="btn-secondary">
             {archived ? "Повернути з архіву" : "Архівувати"}
           </Button>
           <Popconfirm
@@ -398,7 +397,12 @@ export default function ClassSettingsClient({
             okButtonProps={{ danger: true }}
             cancelText="Скасувати"
           >
-            <Button danger icon={<DeleteOutlined />} loading={busy}>
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              loading={busy}
+              style={{ fontWeight: 800, textTransform: "uppercase", borderRadius: 10 }}
+            >
               Видалити назавжди
             </Button>
           </Popconfirm>
