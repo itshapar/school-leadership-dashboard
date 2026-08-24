@@ -168,7 +168,7 @@ export default function PersonalDashboardClient({
       >
         <LockOutlined style={{ fontSize: "1.3rem", flexShrink: 0 }} />
         <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--color-text-muted)" }}>
-          Цю сторінку бачите лише ви та вчитель. Однокласники доступу до неї не мають.
+          Цю сторінку бачиш лише ти та вчитель. Однокласники доступу до неї не мають.
         </div>
       </div>
 

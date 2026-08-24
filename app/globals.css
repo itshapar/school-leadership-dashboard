@@ -306,6 +306,16 @@ html, body {
   box-shadow: 4px 4px 0px var(--color-border);
 }
 
+/* Специфічність (0,2,0) свідомо вища за a:hover з antd-скидання (0,1,1) —
+   інакше синій колір посилань перебиває колір кнопки на ховері. */
+.admin-btn-black:hover {
+  color: #FFFFFF;
+}
+
+.admin-btn-white:hover {
+  color: var(--color-text);
+}
+
 @media (max-width: 768px) {
   .admin-card-row {
     flex-direction: column;

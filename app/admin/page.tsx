@@ -117,8 +117,12 @@ export default async function AdminPage() {
         <h1 style={{ margin: 0, fontSize: "2.2rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "-1px" }}>
           Адмін-панель
         </h1>
-        <div style={{ marginTop: "8px", display: "flex", gap: "16px", justifyContent: "center", fontSize: "0.9rem", fontWeight: 700, flexWrap: "wrap" }}>
-          <Link href="/admin/profile" style={{ color: "inherit" }}>
+        <div style={{ marginTop: "16px", display: "flex", justifyContent: "center" }}>
+          <Link
+            href="/admin/profile"
+            className="admin-action-btn admin-btn-white"
+            style={{ display: "inline-flex", alignItems: "center", gap: "8px", minWidth: "auto" }}
+          >
             <UserOutlined /> Профіль вчителя
           </Link>
         </div>

@@ -14,15 +14,8 @@ export default function AdminLogoutButton() {
   return (
     <button
       onClick={logout}
-      style={{
-        padding: "8px 16px",
-        background: "transparent",
-        border: "1px solid var(--color-border)",
-        borderRadius: "8px",
-        color: "var(--color-text-muted)",
-        cursor: "pointer",
-        fontSize: "0.85rem",
-      }}
+      className="admin-action-btn admin-btn-white"
+      style={{ cursor: "pointer", minWidth: "auto", padding: "8px 24px" }}
     >
       Вийти
     </button>

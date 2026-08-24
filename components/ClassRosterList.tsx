@@ -85,7 +85,7 @@ export default function ClassRosterList({
       // важить — і далі підпорядковувався центруванню з antd-обгортки.
       content: (
         <div style={{ textAlign: "left" }}>
-          Ви можете переглядати лише власний профіль.
+          Ти можеш переглядати лише власний профіль.
         </div>
       ),
     });
@@ -124,7 +124,7 @@ export default function ClassRosterList({
             <div style={{ fontWeight: 850, fontSize: "1.1rem", color: "#000000" }}>
               {student.display_name}
               {student.id === currentStudentId && (
-                <span style={{ color: "var(--color-text-muted)", fontWeight: 700 }}> (ти)</span>
+                <span style={{ color: "var(--color-star)", fontWeight: 700 }}> (ти)</span>
               )}
             </div>
             {student.full_name && (

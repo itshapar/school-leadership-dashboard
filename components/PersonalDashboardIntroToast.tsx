@@ -28,7 +28,7 @@ export default function PersonalDashboardIntroToast({ blocked }: { blocked: bool
   const { message } = App.useApp();
 
   useEffect(() => {
-    const content = <div style={TOAST_STYLE}>Ви можете переглядати лише власний профіль.</div>;
+    const content = <div style={TOAST_STYLE}>Ти можеш переглядати лише власний профіль.</div>;
     if (blocked) {
       // key (9.17, живий фідбек): той самий ключ ОНОВЛЮЄ наявний попап
       // замість того, щоб штабелювати новий на кожен клік — інакше
