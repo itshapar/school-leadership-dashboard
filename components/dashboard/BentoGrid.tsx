@@ -5,8 +5,6 @@ import LeaderboardWidget from "./widgets/LeaderboardWidget";
 import LootRoadWidget from "./widgets/LootRoadWidget";
 import ClassGoalsWidget from "./widgets/ClassGoalsWidget";
 import EfficiencyWidget from "./widgets/EfficiencyWidget";
-import VelocityWidget from "./widgets/VelocityWidget";
-import KPIStatsWidget from "./widgets/KPIStatsWidget";
 import StudentModal from "./StudentModal";
 
 /**
@@ -14,8 +12,9 @@ import StudentModal from "./StudentModal";
  * класу — у кожного класу свій набір і своя кількість нагород. На
  * агрегованому перегляді (усі паралелі/класи, без обраного classId) ці два
  * віджети показувати нема сенсу: там немає одного набору цілей, який можна
- * було б проілюструвати. У цьому режимі показуємо натомість щось спільне
- * для всіх — прорив місяця і бонуси місяця (обидва вже рахує analytics.ts).
+ * було б проілюструвати. Пробували замінити на "Прорив місяця"/"Бонуси
+ * місяця" (9.5) — прибрано за фідбеком: на агрегованому перегляді лишається
+ * лише перший ряд (Глобальний рейтинг + Топ ефективності).
  */
 export default function BentoGrid({ data, classId }: { data: any; classId: string | null }) {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
@@ -40,8 +39,8 @@ export default function BentoGrid({ data, classId }: { data: any; classId: strin
           <EfficiencyWidget leaderboard={data.leaderboard} />
         </div>
 
-        {/* Row 2 */}
-        {selectedClassInfo ? (
+        {/* Row 2 — лише коли обрано конкретний клас (свій набір нагород/цілей). */}
+        {selectedClassInfo && (
           <>
             <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
               <LootRoadWidget
@@ -52,16 +51,6 @@ export default function BentoGrid({ data, classId }: { data: any; classId: strin
 
             <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
               <ClassGoalsWidget classInfo={selectedClassInfo} leaderboard={data.leaderboard} />
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
-              <VelocityWidget topStudent={data.topVelocity} />
-            </div>
-
-            <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
-              <KPIStatsWidget kpi={data.kpi} />
             </div>
           </>
         )}

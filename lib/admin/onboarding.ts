@@ -19,7 +19,7 @@ export const ONBOARDING_STEPS = [
   { key: "class", title: "Клас" },
   { key: "students", title: "Учні" },
   { key: "scoring", title: "Бали" },
-  { key: "prizes", title: "Призи" },
+  { key: "prizes", title: "Нагороди" },
   { key: "codes", title: "Коди" },
 ] as const;
 

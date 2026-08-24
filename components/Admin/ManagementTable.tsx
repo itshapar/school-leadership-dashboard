@@ -509,7 +509,7 @@ export default function ManagementTable({
           background: #ffffff !important;
           border-bottom: 2px solid var(--color-border) !important;
           color: var(--color-text) !important;
-          font-family: 'Montserrat', sans-serif !important;
+          font-family: var(--font-montserrat), 'Montserrat', sans-serif !important;
           text-transform: uppercase;
           font-size: 0.85rem;
           padding: 16px 8px !important;

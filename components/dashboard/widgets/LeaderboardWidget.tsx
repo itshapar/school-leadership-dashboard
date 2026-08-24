@@ -32,13 +32,18 @@ export default function LeaderboardWidget({ leaderboard, isGlobal, onStudentClic
         style={{ justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}
       >
         {isGlobal ? "Глобальний Рейтинг" : "Рейтинг Класу"}
-        <Segmented
-          size="small"
-          value={sortBy}
-          onChange={(v) => setSortBy(v as SortKey)}
-          options={SORT_OPTIONS}
-          style={{ fontWeight: 700, textTransform: "none" }}
-        />
+        {/* Сортування має сенс лише для одного конкретного класу — на
+            агрегованому перегляді (усі паралелі/класи) лишаємо лише
+            рейтинг за зірками. */}
+        {!isGlobal && (
+          <Segmented
+            size="small"
+            value={sortBy}
+            onChange={(v) => setSortBy(v as SortKey)}
+            options={SORT_OPTIONS}
+            style={{ fontWeight: 700, textTransform: "none" }}
+          />
+        )}
       </div>
       <div className="leaderboard-list custom-scrollbar">
         {sorted.map((item: any) => {

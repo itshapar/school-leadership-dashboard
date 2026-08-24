@@ -6,7 +6,6 @@ import AdminClassToolbar from "@/components/Admin/AdminClassToolbar";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { resolveOwnedClass } from "@/lib/admin/resolveClass";
 import { loadManagementJournalData } from "@/lib/admin/managementJournalData";
-import { formatClassCode } from "@/lib/classCodes";
 
 export const dynamic = "force-dynamic";
 
@@ -65,22 +64,9 @@ export default async function AdminClassPage({ params }: Props) {
             <ArrowLeftOutlined />
           </Link>
           <div style={{ width: "2px", height: "24px", background: "#e9ecef" }} />
-          <div>
-            <h1 style={{ fontSize: "1.5rem", fontWeight: 900, margin: 0, textTransform: "uppercase", lineHeight: 1.2 }}>
-              {cls.name}
-            </h1>
-            <div
-              style={{
-                fontFamily: "monospace",
-                fontSize: "0.75rem",
-                fontWeight: 700,
-                letterSpacing: "0.08em",
-                color: "var(--color-text-muted)",
-              }}
-            >
-              {formatClassCode(cls.public_code)}
-            </div>
-          </div>
+          <h1 style={{ fontSize: "1.5rem", fontWeight: 900, margin: 0, textTransform: "uppercase", lineHeight: 1.2 }}>
+            {cls.name}
+          </h1>
         </div>
 
         <AdminClassToolbar

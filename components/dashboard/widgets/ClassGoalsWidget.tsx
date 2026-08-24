@@ -161,7 +161,7 @@ export default function ClassGoalsWidget({
         {!classInfo ? (
           emptyState("Оберіть клас, щоб побачити прогрес цілей")
         ) : prizes.length === 0 ? (
-          emptyState("У цього класу ще немає класових призів")
+          emptyState("У цього класу ще немає класових нагород")
         ) : (
           <>
             <div

@@ -19,7 +19,7 @@ export default function ClassProgressBars({
   if (prizes.length === 0) {
     return (
       <div style={{ color: "var(--color-text-muted)", fontWeight: 700, fontSize: "0.9rem" }}>
-        Призи класу ще не налаштовані.
+        Нагороди класу ще не налаштовані.
       </div>
     );
   }

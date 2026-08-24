@@ -35,7 +35,7 @@ import StudentLinesInput from "@/components/Admin/Onboarding/StudentLinesInput";
 import LessonSeriesForm from "@/components/Admin/LessonSeriesForm";
 
 /**
- * Майстер онбордингу: клас → учні → призи.
+ * Майстер онбордингу: клас → уроки → учні → призи.
  *
  * До Етапу 9 тут було ще два кроки — «Бали» (ручний вибір/редагування типів
  * нарахувань) і «Коди» (показ коду й генерація PIN-ів). Обидва прибрані:
@@ -49,12 +49,21 @@ import LessonSeriesForm from "@/components/Admin/LessonSeriesForm";
  * «Налаштувати X/5» у списку класів; майстер лише не показує кроки для
  * «бали» (завжди true одразу) і «коди» (тепер у налаштуваннях).
  *
+ * «Уроки» (9.5, живий фідбек) — окремий, повністю необов'язковий крок,
+ * не частина прогресу з lib/admin/onboarding.ts (там немає такої сутності):
+ * раніше форму серії уроків впихнули ВСЕРЕДИНУ кроку «Клас», а
+ * createClass одразу стрибав на «Учні» — форма фізично не встигала
+ * показатись. Тепер це власний крок зі своїми «Далі»/«Пропустити».
+ *
  * КЛАС СТВОРЮЄТЬСЯ ОДРАЗУ на першому кроці — далі кожен крок працює з
  * реальним class_id, а не з чернеткою.
  */
 
-const WIZARD_STEPS: Array<{ key: OnboardingStepKey; title: string }> = [
+type WizardStepKey = OnboardingStepKey | "lessons";
+
+const WIZARD_STEPS: Array<{ key: WizardStepKey; title: string }> = [
   { key: "class", title: "Клас" },
+  { key: "lessons", title: "Уроки" },
   { key: "students", title: "Учні" },
   { key: "prizes", title: "Нагороди" },
 ];
@@ -84,7 +93,7 @@ export default function OnboardingWizard() {
   const supabase = getSupabaseClient();
 
   const classIdParam = searchParams.get("classId");
-  const stepParam = searchParams.get("step") as OnboardingStepKey | null;
+  const stepParam = searchParams.get("step") as WizardStepKey | null;
 
   const [cls, setCls] = useState<ClassRow | null>(null);
   const [progress, setProgress] = useState<OnboardingProgress | null>(null);
@@ -102,7 +111,7 @@ export default function OnboardingWizard() {
   const [creating, setCreating] = useState(false);
   const [classForm] = Form.useForm<{ name: string }>();
 
-  const stepIndex = useCallback((key: OnboardingStepKey) => {
+  const stepIndex = useCallback((key: WizardStepKey) => {
     const i = WIZARD_STEPS.findIndex((s) => s.key === key);
     // "Бали" й "Коди" більше не кроки майстра — найближчий видимий крок: призи.
     return i === -1 ? WIZARD_STEPS.length - 1 : i;
@@ -235,9 +244,7 @@ export default function OnboardingWizard() {
     setCreating(false);
     message.success("Клас створено");
     // Кладемо classId в URL: майстер стає відновлюваним по посиланню.
-    // Лишаємось на кроці "клас" (НЕ стрибаємо одразу на "учні") — тут-таки
-    // можна одразу додати серію уроків; далі вчитель сам тисне "Далі".
-    router.replace(`/admin/onboarding?classId=${data.id}&step=class`);
+    router.replace(`/admin/onboarding?classId=${data.id}&step=lessons`);
   }
 
   const goTo = (index: number) => setCurrent(index);
@@ -289,9 +296,12 @@ export default function OnboardingWizard() {
         items={WIZARD_STEPS.map((s) => ({
           title: s.title,
           disabled: !cls && s.key !== "class",
-          icon: doneMap?.[s.key] ? (
-            <CheckCircleFilled style={{ color: "#2f9e44" }} />
-          ) : undefined,
+          // "Уроки" не входить у прогрес lib/admin/onboarding.ts (не одна з
+          // п'яти відстежуваних сутностей) — для нього ніколи немає галочки.
+          icon:
+            s.key !== "lessons" && doneMap?.[s.key] ? (
+              <CheckCircleFilled style={{ color: "#2f9e44" }} />
+            ) : undefined,
         }))}
       />
 
@@ -313,35 +323,17 @@ export default function OnboardingWizard() {
             />
 
             {cls ? (
-              <>
-                <Alert
-                  type="success"
-                  showIcon
-                  message={`Клас «${cls.name}» створено`}
-                  description={
-                    <span>
-                      Код для учнів: <b>{formatClassCode(cls.public_code)}</b> (повний код і
-                      PIN-и учнів у налаштуваннях класу)
-                    </span>
-                  }
-                />
-
-                <div style={{ marginTop: 24 }}>
-                  <StepHeader
-                    title="Додайте уроки (необов'язково)"
-                    hint="Кількість уроків можна задати одразу: оберіть дні тижня й період — решту можна додати пізніше в журналі."
-                  />
-                  {lessonsCount > 0 && (
-                    <Alert
-                      type="success"
-                      showIcon
-                      style={{ marginBottom: 16 }}
-                      message={`У класі вже ${lessonsCount} уроків`}
-                    />
-                  )}
-                  <LessonSeriesForm classId={cls.id} onCreated={() => void refresh(cls.id)} />
-                </div>
-              </>
+              <Alert
+                type="success"
+                showIcon
+                message={`Клас «${cls.name}» створено`}
+                description={
+                  <span>
+                    Код для учнів: <b>{formatClassCode(cls.public_code)}</b> (повний код і
+                    PIN-и учнів у налаштуваннях класу)
+                  </span>
+                }
+              />
             ) : (
               <Form form={classForm} layout="vertical" onFinish={createClass}>
                 <Form.Item label={<span style={{ fontWeight: 700 }}>Паралель (необов&apos;язково)</span>}>
@@ -381,8 +373,27 @@ export default function OnboardingWizard() {
           </div>
         )}
 
-        {/* ───────────────── Крок 2: учні ───────────────── */}
+        {/* ───────────────── Крок 2: уроки ───────────────── */}
         {current === 1 && cls && (
+          <div>
+            <StepHeader
+              title="Додайте уроки (необов'язково)"
+              hint="Кількість уроків можна задати одразу: оберіть дні тижня й період — решту можна додати пізніше в журналі."
+            />
+            {lessonsCount > 0 && (
+              <Alert
+                type="success"
+                showIcon
+                style={{ marginBottom: 16 }}
+                message={`У класі вже ${lessonsCount} уроків`}
+              />
+            )}
+            <LessonSeriesForm classId={cls.id} onCreated={() => void refresh(cls.id)} />
+          </div>
+        )}
+
+        {/* ───────────────── Крок 3: учні ───────────────── */}
+        {current === 2 && cls && (
           <div>
             <StepHeader
               title="Додайте учнів"
@@ -425,8 +436,8 @@ export default function OnboardingWizard() {
           </div>
         )}
 
-        {/* ───────────────── Крок 3: призи ───────────────── */}
-        {current === 2 && cls && (
+        {/* ───────────────── Крок 4: призи ───────────────── */}
+        {current === 3 && cls && (
           <div>
             <StepHeader
               title="Нагороди"

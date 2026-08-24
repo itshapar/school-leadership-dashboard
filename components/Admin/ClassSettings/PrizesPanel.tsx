@@ -13,9 +13,9 @@ import {
 } from "@/lib/admin/classConfig";
 
 /**
- * Призи класу — і індивідуальні, і класові, одним компонентом.
+ * Нагороди класу — і індивідуальні, і класові, одним компонентом.
  *
- * Класові призи (class_prizes, міграція 016) замінюють два зашиті стовпці
+ * Класові нагороди (class_prizes, міграція 016) замінюють два зашиті стовпці
  * classes.game_day_threshold / pizza_day_threshold. Різниця між двома видами
  * лише в тому, з чим порівнюється поріг:
  *   • індивідуальний — із сумою зірок ОДНОГО учня (stars_required);
@@ -114,15 +114,15 @@ export default function PrizesPanel({
       const limitHit = error.message?.includes("Досягнуто ліміт");
       message.error(
         duplicate
-          ? "Приз із такою назвою вже є в класі"
+          ? "Нагорода з такою назвою вже є в класі"
           : limitHit
-          ? `Досягнуто ліміт: не більше ${limit} призів на клас`
-          : "Не вдалося зберегти приз"
+          ? `Досягнуто ліміт: не більше ${limit} нагород на клас`
+          : "Не вдалося зберегти нагороду"
       );
       return;
     }
 
-    message.success(editing ? "Приз оновлено" : "Приз додано");
+    message.success(editing ? "Нагороду оновлено" : "Нагороду додано");
     setOpen(false);
     onChanged();
   };
@@ -133,18 +133,18 @@ export default function PrizesPanel({
       : await removeClassPrize(supabase, row.id);
 
     if (error) {
-      message.error("Не вдалося видалити приз");
+      message.error("Не вдалося видалити нагороду");
       return;
     }
     message.success(
-      softDeleted ? "Приз сховано. Історія видач збережена." : "Приз видалено"
+      softDeleted ? "Нагороду сховано. Історія видач збережена." : "Нагороду видалено"
     );
     onChanged();
   };
 
   const columns = [
     {
-      title: "Приз",
+      title: "Нагорода",
       key: "name",
       render: (_v: unknown, row: Row) => (
         <span style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}>
@@ -170,8 +170,8 @@ export default function PrizesPanel({
         <span style={{ display: "flex", gap: 8, justifyContent: "center" }}>
           <Button icon={<EditOutlined />} onClick={() => openEdit(row)} style={{ borderRadius: 8 }} />
           <Popconfirm
-            title="Видалити приз?"
-            description="Якщо приз уже видавали, його буде сховано, а історія збережеться."
+            title="Видалити нагороду?"
+            description="Якщо нагороду вже видавали, її буде сховано, а історія збережеться."
             onConfirm={() => onDelete(row)}
             okText="Так"
             cancelText="Ні"
@@ -197,8 +197,8 @@ export default function PrizesPanel({
       >
         <span style={{ color: "#868e96", fontSize: "0.85rem", fontWeight: 700 }}>
           {isIndividual
-            ? "Учень отримує приз, коли набирає поріг власних зірок"
-            : "Приз отримує весь клас, коли сумарні зірки класу сягають порогу"}{" "}
+            ? "Учень отримує нагороду, коли набирає поріг власних зірок"
+            : "Нагороду отримує весь клас, коли сумарні зірки класу сягають порогу"}{" "}
           · {rows.length} / {limit}
         </span>
         <Button
@@ -208,7 +208,7 @@ export default function PrizesPanel({
           disabled={atLimit}
           style={{ background: "#000", borderColor: "#000", fontWeight: 800, borderRadius: 10 }}
         >
-          ДОДАТИ ПРИЗ
+          ДОДАТИ НАГОРОДУ
         </Button>
       </div>
 
@@ -218,13 +218,13 @@ export default function PrizesPanel({
         rowKey="id"
         pagination={false}
         size="middle"
-        locale={{ emptyText: "Призів ще немає" }}
+        locale={{ emptyText: "Нагород ще немає" }}
       />
 
       <Modal
         title={
           <div style={{ fontWeight: 900, textTransform: "uppercase" }}>
-            {editing ? "Редагувати приз" : "Новий приз"}
+            {editing ? "Редагувати нагороду" : "Нова нагорода"}
           </div>
         }
         open={open}
