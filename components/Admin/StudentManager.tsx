@@ -82,10 +82,23 @@ export default function StudentManager({
     });
     supabase
       .rpc("get_class_pins", { p_class_id: classId })
-      .then(({ data }: { data: Array<{ student_id: string; pin: string }> | null }) => {
-        if (cancelled || !data) return;
-        setPins(Object.fromEntries(data.map((r) => [r.student_id, r.pin])));
-      });
+      .then(
+        ({
+          data,
+          error,
+        }: {
+          data: Array<{ student_id: string; pin: string }> | null;
+          error: { message: string } | null;
+        }) => {
+          if (cancelled) return;
+          if (error) {
+            console.error("get_class_pins:", error);
+            message.error("Не вдалося завантажити PIN-и");
+            return;
+          }
+          setPins(Object.fromEntries((data ?? []).map((r) => [r.student_id, r.pin])));
+        }
+      );
     return () => {
       cancelled = true;
     };

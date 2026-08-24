@@ -235,7 +235,9 @@ export default function OnboardingWizard() {
     setCreating(false);
     message.success("Клас створено");
     // Кладемо classId в URL: майстер стає відновлюваним по посиланню.
-    router.replace(`/admin/onboarding?classId=${data.id}&step=students`);
+    // Лишаємось на кроці "клас" (НЕ стрибаємо одразу на "учні") — тут-таки
+    // можна одразу додати серію уроків; далі вчитель сам тисне "Далі".
+    router.replace(`/admin/onboarding?classId=${data.id}&step=class`);
   }
 
   const goTo = (index: number) => setCurrent(index);

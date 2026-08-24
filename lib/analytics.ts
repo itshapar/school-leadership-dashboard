@@ -46,8 +46,19 @@ export async function getDashboardData(
     .from("classes")
     .select("id, name, public_code, archived_at, is_demo, parallel_id")
     .is("deleted_at", null)
+    // Постійний публічний демо-клас технічно належить цьому акаунту
+    // (носій для /demo), але це не реальні дані вчителя — не показуємо
+    // його в жодній агрегованій аналітиці.
+    .eq("is_public_demo", false)
     .order("name");
   const classMap = new Map((classes ?? []).map((c) => [c.id, c]));
+
+  // Без явного фільтра (перегляд "усі паралелі / усі класи") — скопуємо
+  // студентів і нарахування до класів ІЗ ЦЬОГО Ж (уже без демо-класу)
+  // списку, а не до всього, що бачить RLS: інакше картка демо-класу зникає
+  // з фільтрів, а його учні й зірки все одно тягнуться в загальні суми.
+  const effectiveClassFilter: string | string[] =
+    classIdFilter ?? (classes ?? []).map((c) => c.id);
 
   // 1b. Класові призи — джерело правди для «Епічних цілей» замість двох
   // зашитих стовпців classes.game_day_threshold / pizza_day_threshold.
@@ -104,8 +115,9 @@ export async function getDashboardData(
       .from("students")
       .select("id, class_id, full_name, nickname, avatar_emoji, group_id")
       .is("deleted_at", null);
-    if (!classIdFilter) return q;
-    return Array.isArray(classIdFilter) ? q.in("class_id", classIdFilter) : q.eq("class_id", classIdFilter);
+    return Array.isArray(effectiveClassFilter)
+      ? q.in("class_id", effectiveClassFilter)
+      : q.eq("class_id", effectiveClassFilter);
   });
   const studentMap = new Map(students.map((s) => [s.id, s]));
 
@@ -119,8 +131,9 @@ export async function getDashboardData(
     const q = supabase
       .from("star_entries")
       .select("student_id, amount, created_at, entry_type_id");
-    if (!classIdFilter) return q;
-    return Array.isArray(classIdFilter) ? q.in("class_id", classIdFilter) : q.eq("class_id", classIdFilter);
+    return Array.isArray(effectiveClassFilter)
+      ? q.in("class_id", effectiveClassFilter)
+      : q.eq("class_id", effectiveClassFilter);
   });
 
   // 4. Calculate Basic Stats

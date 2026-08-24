@@ -39,6 +39,7 @@ export default async function DashboardPage({
       .from("classes")
       .select("id")
       .eq("parallel_id", parallelId)
+      .eq("is_public_demo", false)
       .is("deleted_at", null);
     classFilter = (classesInParallel ?? []).map((c) => c.id);
   }

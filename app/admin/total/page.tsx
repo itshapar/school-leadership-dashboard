@@ -22,6 +22,7 @@ export default async function TotalDashboardPage() {
     supabase
       .from("classes")
       .select("id, name, public_code, parallel_id")
+      .eq("is_public_demo", false)
       .is("deleted_at", null),
     loadParallels(supabase),
   ]);
@@ -83,16 +84,19 @@ export default async function TotalDashboardPage() {
     }
   });
 
-  // Format data for the client component
-  const formattedData = (students ?? []).map((st) => ({
-    id: st.id,
-    full_name: st.full_name,
-    avatar_emoji: st.avatar_emoji,
-    className: classMap[st.class_id] ?? "Невідомо",
-    classCode: codeMap[st.class_id] ?? st.class_id,
-    parallelId: parallelIdByClass[st.class_id] ?? null,
-    totalStars: starTotals[st.id] ?? 0,
-  }));
+  // Format data for the client component — лише учні класів зі списку вище
+  // (демо-клас туди вже не входить, students-запит його не фільтрував).
+  const formattedData = (students ?? [])
+    .filter((st) => classMap[st.class_id] !== undefined)
+    .map((st) => ({
+      id: st.id,
+      full_name: st.full_name,
+      avatar_emoji: st.avatar_emoji,
+      className: classMap[st.class_id],
+      classCode: codeMap[st.class_id] ?? st.class_id,
+      parallelId: parallelIdByClass[st.class_id] ?? null,
+      totalStars: starTotals[st.id] ?? 0,
+    }));
 
   return <TotalDashboardClient initialData={formattedData} parallels={parallels} />;
 }

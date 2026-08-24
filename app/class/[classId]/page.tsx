@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import ClassProgressBars from "@/components/ClassProgress";
 import { StarFilled } from "@ant-design/icons";
 import { getPublicClassOverview } from "@/lib/public/classData";
-import { formatClassCode, isLegacyClassCode } from "@/lib/classCodes";
+import { isLegacyClassCode } from "@/lib/classCodes";
 import LegacyCodeNotice from "@/components/LegacyCodeNotice";
 
 export const dynamic = "force-dynamic";
@@ -290,18 +290,6 @@ export default async function ClassPage({ params }: Props) {
             )}
           </div>
         ))}
-      </div>
-
-      <div
-        style={{
-          marginTop: "24px",
-          textAlign: "center",
-          color: "var(--color-text-muted)",
-          fontSize: "0.8rem",
-          fontWeight: 700,
-        }}
-      >
-        Код класу: {formatClassCode(overview.public_code)}
       </div>
     </div>
   );

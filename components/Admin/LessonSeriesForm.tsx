@@ -111,10 +111,11 @@ export default function LessonSeriesForm({
       <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <Button
           type="primary"
+          size="large"
           onClick={submit}
           loading={loading}
           disabled={seriesDates.length === 0}
-          style={{ background: "#000", fontWeight: 800, borderRadius: 10 }}
+          style={{ fontWeight: 700, borderRadius: 10 }}
         >
           {seriesDates.length > 0 ? `Створити ${seriesDates.length} уроків` : "Створити уроки"}
         </Button>

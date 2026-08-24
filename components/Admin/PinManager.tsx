@@ -42,20 +42,37 @@ export function studentDashboardLink(publicCode: string): string {
   return `${origin}/class/${publicCode}/me`;
 }
 
-function printPins(
+/**
+ * ВАЖЛИВО: window.open мусить викликатись СИНХРОННО прямо в onClick, без
+ * жодного await перед ним — інакше браузер більше не бачить це як прямий
+ * результат кліку і мовчки блокує спливне вікно (без помилки в консолі,
+ * просто "нічого не відбувається"). Тому відкриваємо порожнє вікно одразу
+ * (openPrintWindow), а дані вже дописуємо в нього пізніше (renderPinsInto).
+ */
+function openPrintWindow(): Window | null {
+  const w = window.open("", "_blank");
+  if (w) {
+    w.document.write(
+      `<html><head><title>PIN-и</title></head><body style="font-family:sans-serif">Завантаження…</body></html>`
+    );
+  }
+  return w;
+}
+
+function renderPinsInto(
+  w: Window,
   className: string,
   publicCode: string,
   rows: Array<{ student_id: string; pin: string }>,
   nameById: Map<string, string>
 ) {
-  const w = window.open("", "_blank");
-  if (!w) return;
   const trs = rows
     .map(
       (p) =>
         `<tr><td>${nameById.get(p.student_id) ?? p.student_id}</td><td style="font-family:monospace;font-size:20px;font-weight:800;letter-spacing:0.15em">${p.pin}</td></tr>`
     )
     .join("");
+  w.document.open();
   w.document.write(
     `<html><head><title>PIN-и: ${className}</title></head><body style="font-family:sans-serif">` +
       `<h2>${className}</h2>` +
@@ -65,6 +82,21 @@ function printPins(
   );
   w.document.close();
   w.print();
+}
+
+/** Синхронний друк — коли PIN-и вже завантажені (з готового стану). */
+function printPins(
+  className: string,
+  publicCode: string,
+  rows: Array<{ student_id: string; pin: string }>,
+  nameById: Map<string, string>
+) {
+  const w = openPrintWindow();
+  if (!w) {
+    message.error("Браузер заблокував спливне вікно — дозвольте спливні вікна для цього сайту");
+    return;
+  }
+  renderPinsInto(w, className, publicCode, rows, nameById);
 }
 
 /** Кнопка «Скинути PIN» для одного учня. Новий PIN одразу лишається видимим у списку. */
@@ -126,19 +158,28 @@ export function PrintClassPinsButton({
   const nameById = new Map(students.map((s) => [s.id, s.full_name] as const));
 
   async function handleClick() {
+    // Відкриваємо вікно ПЕРШИМ ділом, синхронно — див. коментар у
+    // openPrintWindow. Дані підвантажуємо вже в уже відкрите вікно.
+    const w = openPrintWindow();
     setLoading(true);
     const { data, error } = await supabase.rpc("get_class_pins", { p_class_id: classId });
     setLoading(false);
     if (error) {
+      w?.close();
       message.error("Не вдалося завантажити PIN-и");
       return;
     }
     const rows = (data ?? []) as Array<{ student_id: string; pin: string }>;
     if (rows.length === 0) {
+      w?.close();
       message.warning("У цього класу ще немає PIN-ів — спершу згенеруйте їх");
       return;
     }
-    printPins(className, publicCode, rows, nameById);
+    if (!w) {
+      message.error("Браузер заблокував спливне вікно — дозвольте спливні вікна для цього сайту");
+      return;
+    }
+    renderPinsInto(w, className, publicCode, rows, nameById);
   }
 
   return (

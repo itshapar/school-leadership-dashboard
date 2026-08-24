@@ -5,13 +5,23 @@ import LeaderboardWidget from "./widgets/LeaderboardWidget";
 import LootRoadWidget from "./widgets/LootRoadWidget";
 import ClassGoalsWidget from "./widgets/ClassGoalsWidget";
 import EfficiencyWidget from "./widgets/EfficiencyWidget";
+import VelocityWidget from "./widgets/VelocityWidget";
+import KPIStatsWidget from "./widgets/KPIStatsWidget";
 import StudentModal from "./StudentModal";
 
+/**
+ * Шлях нагород і епічні цілі класу читаються з class_prizes КОНКРЕТНОГО
+ * класу — у кожного класу свій набір і своя кількість нагород. На
+ * агрегованому перегляді (усі паралелі/класи, без обраного classId) ці два
+ * віджети показувати нема сенсу: там немає одного набору цілей, який можна
+ * було б проілюструвати. У цьому режимі показуємо натомість щось спільне
+ * для всіх — прорив місяця і бонуси місяця (обидва вже рахує analytics.ts).
+ */
 export default function BentoGrid({ data, classId }: { data: any; classId: string | null }) {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
 
-  const selectedClassInfo = classId 
-    ? data.classes.find((c: any) => c.id === classId) 
+  const selectedClassInfo = classId
+    ? data.classes.find((c: any) => c.id === classId)
     : null;
 
   return (
@@ -19,34 +29,48 @@ export default function BentoGrid({ data, classId }: { data: any; classId: strin
       <div className="bento-grid">
         {/* Row 1 */}
         <div className="bento-widget col-span-2 row-span-2">
-          <LeaderboardWidget 
-            leaderboard={data.leaderboard} 
-            isGlobal={!classId} 
+          <LeaderboardWidget
+            leaderboard={data.leaderboard}
+            isGlobal={!classId}
             onStudentClick={setSelectedStudent}
           />
         </div>
-        
+
         <div className="bento-widget col-span-2 row-span-2">
           <EfficiencyWidget leaderboard={data.leaderboard} />
         </div>
 
         {/* Row 2 */}
-        <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
-          <LootRoadWidget 
-            leaderboard={data.leaderboard} 
-            classInfo={selectedClassInfo}
-          />
-        </div>
+        {selectedClassInfo ? (
+          <>
+            <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
+              <LootRoadWidget
+                leaderboard={data.leaderboard}
+                classInfo={selectedClassInfo}
+              />
+            </div>
 
-        <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
-          <ClassGoalsWidget classInfo={selectedClassInfo} leaderboard={data.leaderboard} />
-        </div>
+            <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
+              <ClassGoalsWidget classInfo={selectedClassInfo} leaderboard={data.leaderboard} />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
+              <VelocityWidget topStudent={data.topVelocity} />
+            </div>
+
+            <div className="bento-widget col-span-2 row-span-1" style={{ minHeight: "260px" }}>
+              <KPIStatsWidget kpi={data.kpi} />
+            </div>
+          </>
+        )}
       </div>
 
       {selectedStudent && (
-        <StudentModal 
-          student={selectedStudent} 
-          onClose={() => setSelectedStudent(null)} 
+        <StudentModal
+          student={selectedStudent}
+          onClose={() => setSelectedStudent(null)}
         />
       )}
     </>
