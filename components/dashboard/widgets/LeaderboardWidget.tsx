@@ -1,63 +1,22 @@
 import { StarFilled, ArrowUpOutlined, ArrowDownOutlined, MinusOutlined } from "@ant-design/icons";
-import { Segmented } from "antd";
-import React, { useMemo, useState } from "react";
-import { splitFullName } from "@/lib/students/fullName";
-
-type SortKey = "rank" | "surname" | "given";
-
-const SORT_OPTIONS: Array<{ label: string; value: SortKey }> = [
-  { label: "Рейтинг", value: "rank" },
-  { label: "Прізвище", value: "surname" },
-  { label: "Ім'я", value: "given" },
-];
+import React from "react";
 
 export default function LeaderboardWidget({ leaderboard, isGlobal, onStudentClick }: any) {
-  const [sortBy, setSortBy] = useState<SortKey>("rank");
-
-  const sorted = useMemo(() => {
-    if (sortBy === "rank") return leaderboard;
-    const collator = new Intl.Collator("uk-UA");
-    return [...leaderboard].sort((a: any, b: any) => {
-      const partsA = splitFullName(a.student.full_name);
-      const partsB = splitFullName(b.student.full_name);
-      const key = sortBy === "surname" ? "surname" : "given";
-      return collator.compare(partsA[key], partsB[key]);
-    });
-  }, [leaderboard, sortBy]);
-
   return (
     <>
-      <div
-        className="widget-title"
-        style={{ justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}
-      >
+      <div className="widget-title">
         {isGlobal ? "Глобальний Рейтинг" : "Рейтинг Класу"}
-        {/* Сортування має сенс лише для одного конкретного класу — на
-            агрегованому перегляді (усі паралелі/класи) лишаємо лише
-            рейтинг за зірками. */}
-        {!isGlobal && (
-          <Segmented
-            size="small"
-            value={sortBy}
-            onChange={(v) => setSortBy(v as SortKey)}
-            options={SORT_OPTIONS}
-            style={{ fontWeight: 700, textTransform: "none" }}
-          />
-        )}
       </div>
       <div className="leaderboard-list custom-scrollbar">
-        {sorted.map((item: any) => {
-          // Золото/срібло/бронза — за СПРАВЖНІМ рейтингом (item.rank), а не
-          // позицією в масиві: після сортування за прізвищем/іменем позиція
-          // вже не збігається з місцем у рейтингу.
+        {leaderboard.map((item: any, idx: number) => {
           let rankClass = "";
-          if (item.rank === 1) rankClass = "rank-1";
-          else if (item.rank === 2) rankClass = "rank-2";
-          else if (item.rank === 3) rankClass = "rank-3";
+          if (idx === 0) rankClass = "rank-1";
+          else if (idx === 1) rankClass = "rank-2";
+          else if (idx === 2) rankClass = "rank-3";
 
           return (
-            <div 
-              key={item.student.id} 
+            <div
+              key={item.student.id}
               className="leaderboard-item"
               onClick={() => onStudentClick(item)}
             >
@@ -95,7 +54,7 @@ export default function LeaderboardWidget({ leaderboard, isGlobal, onStudentClic
             </div>
           );
         })}
-        {sorted.length === 0 && (
+        {leaderboard.length === 0 && (
           <div style={{ textAlign: "center", color: "#868e96", marginTop: "20px" }}>Немає даних</div>
         )}
       </div>

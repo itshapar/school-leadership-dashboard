@@ -276,7 +276,19 @@ export default function StudentManager({
           <Button
             icon={pinsVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
             onClick={() => setPinsVisible((v) => !v)}
-            style={{ fontWeight: 800, borderRadius: "10px", height: "38px", fontSize: "0.85rem" }}
+            style={{
+              fontWeight: 800,
+              borderRadius: "10px",
+              height: "38px",
+              fontSize: "0.85rem",
+              // Фіксована ширина (замість auto): "ПОКАЗАТИ PIN-И" і
+              // "СХОВАТИ PIN-И" мають різну довжину, без цього кнопка
+              // смикалась при кожному перемиканні (9.11, живий фідбек).
+              width: "168px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
             {pinsVisible ? "СХОВАТИ PIN-И" : "ПОКАЗАТИ PIN-И"}
           </Button>

@@ -60,6 +60,22 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  /* Фіксована висота (не auto!) — інакше кількість чипів (класів у
+     паралелі) міняє висоту рядка, і все під фільтрами стрибає вгору-вниз
+     при кожному перемиканні паралелі (9.11, живий фідбек). Замість цього —
+     стала висота на ~2 рядки чипів, решта скролиться всередині. */
+  max-height: 84px;
+  overflow-y: auto;
+  align-content: flex-start;
+  padding-right: 4px;
+}
+
+.class-filter::-webkit-scrollbar {
+  width: 6px;
+}
+.class-filter::-webkit-scrollbar-thumb {
+  background: #dee2e6;
+  border-radius: 4px;
 }
 
 .filter-btn {

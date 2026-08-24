@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ClassProgressBars from "@/components/ClassProgress";
-import { StarFilled } from "@ant-design/icons";
+import ClassRosterList from "@/components/ClassRosterList";
+import { BarChartOutlined, StarFilled } from "@ant-design/icons";
 import { getPublicClassOverview } from "@/lib/public/classData";
 import { isLegacyClassCode } from "@/lib/classCodes";
 import LegacyCodeNotice from "@/components/LegacyCodeNotice";
@@ -281,8 +282,12 @@ export default async function ClassPage({ params }: Props) {
       )}
 
       {/*
-        Мій дашборд: вхід за PIN один раз → довгоживуча сесія (Етап 4).
-        У демо цього флоу НЕМАЄ навмисно (Етап 9, live-фідбек) — це реальний
+        Мій дашборд: посилання на особисту статистику й історію нарахувань.
+        Текст навмисно НЕ каже "увійди зі своїм PIN" (9.11, живий фідбек) —
+        щоб дійти до цього блоку, учень уже пройшов PIN-гейт всієї сторінки
+        класу, тож повторний заклик "увійти" тут вводив в оману. Підпис
+        замість цього пояснює приватність: бачить лише свій прогрес.
+        У демо цього блоку НЕМАЄ навмисно (Етап 9, live-фідбек) — це реальний
         студентський вхід, а не те, що має пробувати вчитель-гість. Замість
         нього — посилання на "погляд вчителя" (хто скільки балів отримав).
         Вчителю-власнику (isTeacherPreview) цей блок теж не потрібен — у
@@ -334,13 +339,13 @@ export default async function ClassPage({ params }: Props) {
           >
             <div>
               <div style={{ fontSize: "1.3rem", fontWeight: 900, color: "#000000" }}>
-                Мій дашборд
+                Моя статистика
               </div>
               <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#000000", opacity: 0.75 }}>
-                Увійди зі своїм PIN, один раз
+                Твій особистий прогрес і нагороди, бачиш лише ти
               </div>
             </div>
-            <div style={{ fontSize: "2rem" }}>🔑</div>
+            <BarChartOutlined style={{ fontSize: "2rem", color: "#000000" }} />
           </div>
         </Link>
       )}
@@ -349,32 +354,21 @@ export default async function ClassPage({ params }: Props) {
         Список класу. Раніше кожен рядок вів на /class/[code]/student/[id].
         Після 024+026 персональна сторінка вимагає PIN-сесію, тож ці
         посилання перетворились би на 19 однакових редіректів у форму PIN.
-        Замість цього — один зрозумілий вхід «Мій дашборд» вище.
+        Замість цього — один зрозумілий вхід «Моя статистика» вище.
         ПІБ (rosterByStudentId) видно лише після входу за власним PIN —
-        у демо-класі мапа порожня, там і далі лише публічне ім'я.
+        у демо-класі мапа порожня, там і далі лише публічне ім'я. Сортування
+        (за зірками/прізвищем/іменем) живе в ClassRosterList — саме тут, на
+        боці учня, а не на агрегованому дашборді вчителя (9.11, живий фідбек).
       */}
-      <div className="star-card" style={{ padding: "24px 16px" }}>
-        {students.map((student) => (
-          <div key={student.id} className="leaderboard-row">
-            <div style={{ fontSize: "1.8rem" }}>{student.avatar_emoji}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 850, fontSize: "1.1rem", color: "#000000" }}>
-                {student.display_name}
-              </div>
-              {rosterByStudentId[student.id] && (
-                <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", fontWeight: 700 }}>
-                  {rosterByStudentId[student.id]}
-                </div>
-              )}
-            </div>
-            {typeof student.stars === "number" && (
-              <div style={{ fontWeight: 900, color: "var(--color-star)", display: "flex", alignItems: "center", gap: "4px" }}>
-                {student.stars} <StarFilled style={{ fontSize: "0.9rem" }} />
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+      <ClassRosterList
+        students={students.map((s) => ({
+          id: s.id,
+          display_name: s.display_name,
+          full_name: rosterByStudentId[s.id] ?? null,
+          avatar_emoji: s.avatar_emoji,
+          stars: s.stars,
+        }))}
+      />
     </div>
   );
 }
