@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { message } from "antd";
+import { App } from "antd";
 
 /**
  * Спливне повідомлення "тут бачиш лише себе" (9.13, живий фідбек) — раніше
@@ -9,8 +9,13 @@ import { message } from "antd";
  * саме попап. showOnce=false (blocked-редірект) показує щоразу, бо це
  * пояснення КОНКРЕТНОЇ дії (чуже посилання не спрацювало); showOnce=true
  * (звичайний вхід) — раз на сесію браузера, щоб не набридало.
+ *
+ * message беремо через App.useApp() (9.13), не статичним імпортом — той
+ * не завжди надійно консюмить контекст у antd v5+.
  */
 export default function PersonalDashboardIntroToast({ blocked }: { blocked: boolean }) {
+  const { message } = App.useApp();
+
   useEffect(() => {
     if (blocked) {
       message.info({
@@ -26,6 +31,7 @@ export default function PersonalDashboardIntroToast({ blocked }: { blocked: bool
       content: "Тут видно лише твій особистий профіль, однокласники його не бачать.",
       duration: 4,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blocked]);
 
   return null;
