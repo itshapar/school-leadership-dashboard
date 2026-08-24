@@ -31,11 +31,15 @@
 
 .filter-row {
   display: flex;
-  align-items: center;
+  /* flex-start, не center: коли чипів класів менше/більше і рядок сам
+     переходить з одного рядка на два, мітка "Клас"/"Паралель" лишається
+     на місці, а не "стрибає" вертикально до центру нової висоти. */
+  align-items: flex-start;
   gap: 12px;
   flex-wrap: wrap;
   width: 100%;
   padding-top: 10px;
+  min-height: 40px;
 }
 
 .filter-row + .filter-row {

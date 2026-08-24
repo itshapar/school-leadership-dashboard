@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import QuickEntry from "@/components/Admin/QuickEntry";
 import NewLessonButton from "@/components/Admin/NewLessonButton";
 import DeleteLessonButton from "@/components/Admin/DeleteLessonButton";
+import ClassQrButton from "@/components/Admin/ClassQrButton";
 
 interface Student {
   id: string;
@@ -120,6 +121,8 @@ export default function AdminClassToolbar({
           />
         </Link>
       </Tooltip>
+
+      <ClassQrButton classCode={classCode} iconButtonStyle={iconButtonStyle} />
     </div>
   );
 }

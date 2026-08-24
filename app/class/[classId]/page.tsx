@@ -8,6 +8,7 @@ import LegacyCodeNotice from "@/components/LegacyCodeNotice";
 import StudentPinLogin from "@/components/StudentPinLogin";
 import StudentLogoutButton from "@/components/StudentLogoutButton";
 import { getClassRosterFromSession, getStudentDashboardFromSession } from "@/lib/studentSession";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -46,23 +47,60 @@ export default async function ClassPage({ params }: Props) {
    * дашборду». Демо-клас — виняток: це маркетингова вітрина для вчителів,
    * що ще не зареєструвались, там PIN концептуально нема кого вводити.
    *
-   * ПІБ однокласників (public_class_roster) віддається ЛИШЕ тут, за чинною
-   * сесією — анонімний public_class_overview і далі full_name не повертає.
+   * ВЧИТЕЛЬ-ВЛАСНИК (9.9, живий фідбек): кнопка «Дашборд» у журналі веде
+   * саме сюди як попередній перегляд — вимагати від вчителя PIN учня, щоб
+   * побачити ВЛАСНИЙ клас, безглуздо. Якщо в нього чинна сесія Supabase
+   * Auth і цей клас належить йому — пускаємо без PIN, ПІБ читаємо прямо з
+   * students під його ж RLS (не через public_class_roster — той чекає
+   * саме учнівський токен сесії).
+   *
+   * ПІБ однокласників (public_class_roster) для УЧНЯ віддається лише за
+   * чинною сесією — анонімний public_class_overview full_name не повертає.
    */
   let rosterByStudentId: Record<string, string> = {};
+  let isTeacherPreview = false;
+
   if (!overview.is_public_demo) {
-    const session = await getStudentDashboardFromSession();
-    if (!session || session.public_code !== overview.public_code) {
-      return (
-        <div className="page-container">
-          <StudentPinLogin code={overview.public_code} className={overview.name} />
-        </div>
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data: owned } = await supabase
+        .from("classes")
+        .select("id")
+        .eq("id", overview.class_id)
+        .eq("teacher_id", user.id)
+        .is("deleted_at", null)
+        .maybeSingle();
+      if (owned) {
+        isTeacherPreview = true;
+        const { data: rosterRows } = await supabase
+          .from("students")
+          .select("id, full_name")
+          .eq("class_id", overview.class_id)
+          .is("deleted_at", null);
+        rosterByStudentId = Object.fromEntries(
+          (rosterRows ?? []).map((r) => [r.id, r.full_name])
+        );
+      }
+    }
+
+    if (!isTeacherPreview) {
+      const session = await getStudentDashboardFromSession();
+      if (!session || session.public_code !== overview.public_code) {
+        return (
+          <div className="page-container">
+            <StudentPinLogin code={overview.public_code} className={overview.name} />
+          </div>
+        );
+      }
+      const roster = await getClassRosterFromSession();
+      rosterByStudentId = Object.fromEntries(
+        (roster ?? []).map((r) => [r.id, r.full_name])
       );
     }
-    const roster = await getClassRosterFromSession();
-    rosterByStudentId = Object.fromEntries(
-      (roster ?? []).map((r) => [r.id, r.full_name])
-    );
   }
 
   const students = overview.students ?? [];
@@ -106,8 +144,15 @@ export default async function ClassPage({ params }: Props) {
         className="page-header"
         style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}
       >
-        <h1 style={{ fontSize: "2.8rem", fontWeight: 900, margin: 0 }}>{overview.name}</h1>
-        {!overview.is_public_demo && <StudentLogoutButton />}
+        <div>
+          <h1 style={{ fontSize: "2.8rem", fontWeight: 900, margin: 0 }}>{overview.name}</h1>
+          {isTeacherPreview && (
+            <div style={{ color: "var(--color-text-muted)", fontWeight: 700, fontSize: "0.85rem" }}>
+              Попередній перегляд — так це бачать учні після входу за PIN
+            </div>
+          )}
+        </div>
+        {!overview.is_public_demo && !isTeacherPreview && <StudentLogoutButton />}
       </div>
 
       {/* Total Class Stars Counter (Prominent) */}
@@ -241,8 +286,10 @@ export default async function ClassPage({ params }: Props) {
         У демо цього флоу НЕМАЄ навмисно (Етап 9, live-фідбек) — це реальний
         студентський вхід, а не те, що має пробувати вчитель-гість. Замість
         нього — посилання на "погляд вчителя" (хто скільки балів отримав).
+        Вчителю-власнику (isTeacherPreview) цей блок теж не потрібен — у
+        нього немає власного учнівського PIN.
       */}
-      {overview.is_public_demo ? (
+      {isTeacherPreview ? null : overview.is_public_demo ? (
         <Link href="/demo/students" style={{ textDecoration: "none" }}>
           <div
             className="star-card"
