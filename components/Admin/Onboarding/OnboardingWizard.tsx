@@ -28,7 +28,6 @@ import {
   type OnboardingProgress,
   type OnboardingStepKey,
 } from "@/lib/admin/onboarding";
-import { formatClassCode } from "@/lib/classCodes";
 import PrizesPanel from "@/components/Admin/ClassSettings/PrizesPanel";
 import StudentImport from "@/components/Admin/StudentImport";
 import StudentLinesInput from "@/components/Admin/Onboarding/StudentLinesInput";
@@ -288,9 +287,14 @@ export default function OnboardingWizard() {
           <h1 style={{ margin: 0, fontWeight: 900, fontSize: "1.6rem", textTransform: "uppercase", lineHeight: 1.1 }}>
             Новий клас
           </h1>
-          <div style={{ color: "#868e96", fontWeight: 700, fontSize: "0.9rem" }}>
-            {cls ? cls.name : "Крок за кроком, будь-який можна пропустити"}
-          </div>
+          {/* Назва класу зникає з підзаголовка одразу після створення (живий
+              фідбек) — вона й так в Alert нижче, дублювати сірим під
+              заголовком нема сенсу. */}
+          {!cls && (
+            <div style={{ color: "#868e96", fontWeight: 700, fontSize: "0.9rem" }}>
+              Крок за кроком, будь-який можна пропустити
+            </div>
+          )}
         </div>
       </div>
 
@@ -299,16 +303,39 @@ export default function OnboardingWizard() {
         onChange={cls ? goTo : undefined}
         size="small"
         style={{ marginBottom: 28 }}
-        items={WIZARD_STEPS.map((s) => ({
-          title: s.title,
-          disabled: !cls && s.key !== "class",
+        items={WIZARD_STEPS.map((s, i) => {
           // "Уроки" не входить у прогрес lib/admin/onboarding.ts (не одна з
-          // п'яти відстежуваних сутностей) — для нього ніколи немає галочки.
-          icon:
-            s.key !== "lessons" && doneMap?.[s.key] ? (
-              <CheckCircleFilled style={{ color: "#2f9e44" }} />
-            ) : undefined,
-        }))}
+          // п'яти відстежуваних сутностей) — для нього ніколи немає
+          // справжнього "виконано". Явна іконка на КОЖНОМУ кроці (не лише
+          // виконаних) — інакше antd сама домальовує "пройденим" крокам
+          // чорне (colorPrimary) коло з галочкою, що виглядає як фальшиве
+          // "виконано" для того ж кроку "Уроки" (живий фідбек).
+          const done = s.key !== "lessons" && doneMap?.[s.key];
+          return {
+            title: s.title,
+            disabled: !cls && s.key !== "class",
+            icon: done ? (
+              <CheckCircleFilled style={{ color: "#2f9e44", fontSize: "1.5rem" }} />
+            ) : (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 24,
+                  height: 24,
+                  borderRadius: "50%",
+                  border: `2px solid ${i === current ? "#000" : "#dee2e6"}`,
+                  color: i === current ? "#000" : "#adb5bd",
+                  fontWeight: 800,
+                  fontSize: "0.8rem",
+                }}
+              >
+                {i + 1}
+              </span>
+            ),
+          };
+        })}
       />
 
       <div
@@ -333,12 +360,7 @@ export default function OnboardingWizard() {
                 type="success"
                 showIcon
                 message={`Клас «${cls.name}» створено`}
-                description={
-                  <span>
-                    Код для учнів: <b>{formatClassCode(cls.public_code)}</b> (повний код і
-                    PIN-и учнів у налаштуваннях класу)
-                  </span>
-                }
+                description="Можна продовжити реєстрацію: додати учнів, налаштувати уроки та нагороди — або зробити це пізніше."
               />
             ) : (
               <Form form={classForm} layout="vertical" onFinish={createClass}>
@@ -487,7 +509,9 @@ export default function OnboardingWizard() {
         )}
       </div>
 
-      {/* Навігація. «Далі» ніколи не заблоковане: пропустити можна будь-що. */}
+      {/* Навігація. «Далі» ніколи не заблоковане (пропустити можна будь-що) —
+          окрема кнопка «Пропустити» була б тим самим кроком і лише
+          дублювала «Далі» (живий фідбек), тому прибрана. */}
       {cls && (
         <div
           style={{
@@ -508,28 +532,16 @@ export default function OnboardingWizard() {
 
           <div style={{ display: "flex", gap: 12 }}>
             {current < WIZARD_STEPS.length - 1 ? (
-              <>
-                <Button
-                  type="text"
-                  onClick={() => {
-                    void refresh(cls.id);
-                    goTo(current + 1);
-                  }}
-                  className="btn-ghost"
-                >
-                  Пропустити
-                </Button>
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    void refresh(cls.id);
-                    goTo(current + 1);
-                  }}
-                  className="btn-primary"
-                >
-                  Далі
-                </Button>
-              </>
+              <Button
+                type="primary"
+                onClick={() => {
+                  void refresh(cls.id);
+                  goTo(current + 1);
+                }}
+                className="btn-primary"
+              >
+                Далі
+              </Button>
             ) : (
               <Button
                 type="primary"
@@ -550,7 +562,7 @@ function StepHeader({ title, hint }: { title: string; hint: string }) {
   return (
     <div style={{ marginBottom: 20 }}>
       <h2 style={{ margin: "0 0 6px", fontWeight: 900, fontSize: "1.25rem" }}>{title}</h2>
-      <p style={{ margin: 0, color: "#868e96", fontWeight: 600, lineHeight: 1.6 }}>{hint}</p>
+      <p style={{ margin: 0, color: "#868e96", fontWeight: 600, fontSize: "0.95rem", lineHeight: 1.6 }}>{hint}</p>
     </div>
   );
 }

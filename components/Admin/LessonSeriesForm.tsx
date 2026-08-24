@@ -115,7 +115,7 @@ export default function LessonSeriesForm({
           onClick={submit}
           loading={loading}
           disabled={seriesDates.length === 0}
-          style={{ fontWeight: 700, borderRadius: 10 }}
+          className="btn-primary"
         >
           {seriesDates.length > 0 ? `Створити ${seriesDates.length} уроків` : "Створити уроки"}
         </Button>

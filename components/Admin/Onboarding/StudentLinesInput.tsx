@@ -131,7 +131,7 @@ export default function StudentLinesInput({
         placeholder={`${FULL_NAME_PLACEHOLDER}\nПетренко Олександр\nКовальчук Марія`}
         style={{ fontFamily: "inherit", fontSize: "0.95rem" }}
       />
-      <div style={{ color: "#868e96", fontSize: "0.8rem", margin: "8px 0 16px", lineHeight: 1.55 }}>
+      <div style={{ color: "#868e96", fontSize: "0.82rem", margin: "8px 0 16px", lineHeight: 1.55 }}>
         ⓘ Один учень на рядок, спершу прізвище.
         <br />ⓘ {MINIMIZATION_HINT}
       </div>
@@ -170,7 +170,7 @@ export default function StudentLinesInput({
             loading={busy}
             disabled={invalid.length > 0}
             onClick={submit}
-            style={{ background: "#000", fontWeight: 800, borderRadius: 10 }}
+            className="btn-primary"
           >
             Додати {rawLines.length} {rawLines.length === 1 ? "учня" : "учнів"}
           </Button>

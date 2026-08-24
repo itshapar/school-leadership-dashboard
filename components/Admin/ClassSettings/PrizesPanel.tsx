@@ -192,10 +192,14 @@ export default function PrizesPanel({
           alignItems: "center",
           marginBottom: 16,
           gap: 12,
-          flexWrap: "wrap",
         }}
       >
-        <span style={{ color: "#868e96", fontSize: "0.85rem", fontWeight: 700 }}>
+        {/* flex:1 + minWidth:0 (живий фідбек): текст тут довший для класових
+            нагород, ніж для індивідуальних — без цього довший варіант не
+            вміщався в рядок і виштовхував кнопку на новий рядок, тоді як
+            коротший лишався в один рядок. Тепер довгий текст переноситься
+            сам, а кнопка (flexShrink:0) завжди лишається праворуч. */}
+        <span style={{ color: "#868e96", fontSize: "0.85rem", fontWeight: 700, flex: "1 1 auto", minWidth: 0 }}>
           {isIndividual
             ? "Учень отримує нагороду, коли набирає поріг власних зірок"
             : "Нагороду отримує весь клас, коли сумарні зірки класу сягають порогу"}{" "}
@@ -206,7 +210,8 @@ export default function PrizesPanel({
           icon={<PlusOutlined />}
           onClick={openCreate}
           disabled={atLimit}
-          style={{ background: "#000", borderColor: "#000", fontWeight: 800, borderRadius: 10 }}
+          className="btn-primary"
+          style={{ flexShrink: 0 }}
         >
           ДОДАТИ НАГОРОДУ
         </Button>
