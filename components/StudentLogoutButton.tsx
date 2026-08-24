@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "antd";
-import { LogoutOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 
 /** Вихід учня зі свого дашборда (стирає сесію в БД + cookie). */
@@ -21,7 +20,6 @@ export default function StudentLogoutButton() {
 
   return (
     <Button
-      icon={<LogoutOutlined />}
       loading={loading}
       onClick={onLogout}
       style={{

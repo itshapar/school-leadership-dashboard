@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { Alert } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import PersonalDashboardClient from "@/components/PersonalDashboardClient";
 import StudentPinLogin from "@/components/StudentPinLogin";
@@ -11,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ classId: string }>;
+  searchParams: Promise<{ blocked?: string }>;
 }
 
 /**
@@ -20,9 +22,15 @@ interface Props {
  * У URL немає student_id: кого показувати, вирішує сесія (httpOnly-cookie),
  * тому підмінити чужий id неможливо. Це закриває залишковий ризик Етапу 1
  * («однокласник бачить чужу сторінку»), як тільки застосується міграція 024.
+ *
+ * ?blocked=1 (Етап 9.12, живий фідбек): сюди веде і старий маршрут
+ * /class/[code]/student/[id], коли хтось намагався відкрити ЧУЖИЙ
+ * персональний дашборд напряму — тепер це завжди редіректить на власний
+ * /me за сесією, а прапорець показує пояснення, чому саме.
  */
-export default async function MyDashboardPage({ params }: Props) {
+export default async function MyDashboardPage({ params, searchParams }: Props) {
   const { classId: classParam } = await params;
+  const { blocked } = await searchParams;
 
   const overview = await getPublicClassOverview(classParam);
   if (!overview) return notFound();
@@ -53,14 +61,7 @@ export default async function MyDashboardPage({ params }: Props) {
 
   return (
     <div className="page-container">
-      <div
-        style={{
-          marginBottom: "8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
+      <div style={{ marginBottom: "8px" }}>
         <Link
           href={`/class/${data.public_code}`}
           style={{
@@ -79,8 +80,18 @@ export default async function MyDashboardPage({ params }: Props) {
         >
           <ArrowLeftOutlined />
         </Link>
-        <StudentLogoutButton />
       </div>
+
+      {blocked === "1" && (
+        <Alert
+          type="info"
+          showIcon
+          closable
+          style={{ marginBottom: 16 }}
+          message="Це посилання вело на чужу сторінку"
+          description="Тут можна переглянути лише власний профіль, тож ми показали твій."
+        />
+      )}
 
       <PersonalDashboardClient
         student={data.student}
@@ -93,6 +104,10 @@ export default async function MyDashboardPage({ params }: Props) {
         history={data.history ?? []}
         classId={data.class_id}
       />
+
+      <div style={{ textAlign: "center", marginTop: 24 }}>
+        <StudentLogoutButton />
+      </div>
     </div>
   );
 }

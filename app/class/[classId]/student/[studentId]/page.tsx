@@ -13,12 +13,14 @@ interface Props {
 export default async function StudentDashboardPage({ params }: Props) {
   const { classId: classParam, studentId } = await params;
 
-  // RPC сама перевіряє, що учень належить саме цьому класу, і повертає NULL
-  // і для неіснуючого коду, і для чужого student_id — без різниці назовні.
-  // Після міграції 024 (Фаза B Етапу 4) anon втрачає цю RPC взагалі —
-  // тоді старі посилання м'яко ведуть на вхід за PIN (/me).
+  // Легасі-маршрут (кожен рядок списку колись вів сюди). Після міграції 035
+  // (Етап 9.12, живий фідбек — застосована лише зараз, хоч 024 писала цей
+  // намір ще в Етапі 4) RPC більше НЕ виконується ні для anon, ні для
+  // authenticated: раніше будь-хто, хто знав код класу й student_id, бачив
+  // ЧУЖИЙ персональний дашборд без жодного PIN. Тепер RPC завжди повертає
+  // NULL, і візит сюди веде на власний /me за сесією — з поясненням, чому.
   const data = await getPublicStudentDashboard(classParam, studentId);
-  if (!data) redirect(`/class/${classParam}/me`);
+  if (!data) redirect(`/class/${classParam}/me?blocked=1`);
 
   if (data.public_code.toUpperCase() !== classParam.toUpperCase().replace(/[^A-Z0-9]/g, "")) {
     redirect(`/class/${data.public_code}/student/${studentId}`);

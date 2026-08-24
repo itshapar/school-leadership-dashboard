@@ -141,16 +141,11 @@ export default async function ClassPage({ params }: Props) {
         </Link>
       )}
 
-      <div className="page-header" style={{ position: "relative", textAlign: "center" }}>
+      <div className="page-header">
         <h1 style={{ fontSize: "2.8rem", fontWeight: 900, margin: 0 }}>{overview.name}</h1>
         {isTeacherPreview && (
           <div style={{ color: "var(--color-text-muted)", fontWeight: 700, fontSize: "0.85rem" }}>
             Попередній перегляд: так це бачать учні після входу за PIN
-          </div>
-        )}
-        {!overview.is_public_demo && !isTeacherPreview && (
-          <div style={{ position: "absolute", top: 0, right: 0 }}>
-            <StudentLogoutButton />
           </div>
         )}
       </div>
@@ -369,6 +364,12 @@ export default async function ClassPage({ params }: Props) {
           stars: s.stars,
         }))}
       />
+
+      {!overview.is_public_demo && !isTeacherPreview && (
+        <div style={{ textAlign: "center", marginTop: 24 }}>
+          <StudentLogoutButton />
+        </div>
+      )}
     </div>
   );
 }
