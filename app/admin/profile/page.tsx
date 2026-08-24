@@ -7,9 +7,9 @@ import ProfileForm from "@/components/Admin/ProfileForm";
 export const dynamic = "force-dynamic";
 
 /**
- * Профіль вчителя (Етап 9.2): свідомо мінімальний — email і видалення
- * акаунту. Ім'я й назву школи прибрали з реєстрації та звідси зовсім, щоб
- * не зв'язувати особу вчителя з конкретною школою без потреби.
+ * Профіль вчителя: зміна email, зміна пароля, видалення акаунту. Ім'я й
+ * назву школи прибрали з реєстрації та звідси зовсім, щоб не зв'язувати
+ * особу вчителя з конкретною школою без потреби.
  */
 export default async function ProfilePage() {
   const supabase = await createSupabaseServerClient();
@@ -25,13 +25,10 @@ export default async function ProfilePage() {
           <ArrowLeftOutlined /> До кабінету
         </Link>
       </div>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: 900, marginBottom: "8px" }}>
-        Мій профіль
+      <h1 style={{ fontSize: "1.8rem", fontWeight: 900, marginBottom: "24px" }}>
+        Профіль вчителя
       </h1>
-      <p style={{ color: "var(--color-text-muted)", marginBottom: "24px" }}>
-        Email: {user.email}
-      </p>
-      <ProfileForm />
+      <ProfileForm currentEmail={user.email ?? ""} />
     </div>
   );
 }

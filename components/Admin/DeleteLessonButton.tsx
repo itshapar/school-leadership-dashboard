@@ -75,15 +75,15 @@ export default function DeleteLessonButton({
             fontWeight: 800,
             borderRadius: "12px",
             background: "#ffffff",
-            color: "#e03131",
-            border: "2px solid #e03131",
-            height: "42px", 
+            color: "#000",
+            border: "2px solid #000",
+            height: "42px",
             width: "42px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: "1.2rem",
-            boxShadow: "3px 3px 0px #e03131"
+            boxShadow: "3px 3px 0px #000"
           }}
         />
       </Tooltip>

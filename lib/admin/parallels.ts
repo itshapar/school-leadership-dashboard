@@ -42,9 +42,14 @@ export async function upsertParallelByName(
     .maybeSingle();
   if (existing) return { id: existing.id };
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { id: null, error: "Сесія завершилась" };
+
   const { data: created, error } = await supabase
     .from("parallels")
-    .insert({ name: trimmed })
+    .insert({ name: trimmed, teacher_id: user.id })
     .select("id")
     .single();
   if (error || !created) return { id: null, error: error?.message ?? "Помилка" };

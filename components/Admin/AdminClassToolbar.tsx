@@ -97,9 +97,9 @@ export default function AdminClassToolbar({
             style={{
               ...iconButtonStyle,
               background: "#ffffff",
-              color: "var(--color-star)",
-              border: "2px solid var(--color-star)",
-              boxShadow: "3px 3px 0px var(--color-star)",
+              color: "#000",
+              border: "2px solid #000",
+              boxShadow: "3px 3px 0px #000",
             }}
           />
         </Link>

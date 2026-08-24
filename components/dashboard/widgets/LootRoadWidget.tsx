@@ -21,7 +21,7 @@ export default function LootRoadWidget({ leaderboard, classInfo }: any) {
   return (
     <>
       <div className="widget-title">
-        Loot Road {classInfo && `- ${classInfo.name}`}
+        Шлях нагород {classInfo && `— ${classInfo.name}`}
       </div>
       
       <div style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", minHeight: "100px", marginTop: "15px" }}>

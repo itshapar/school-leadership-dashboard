@@ -9,12 +9,14 @@ import {
   EditOutlined,
   DeleteOutlined,
   ArrowLeftOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import Link from "next/link";
-import { ResetPinButton, ResetClassPinsButton } from "@/components/Admin/PinManager";
+import { ResetPinButton, PrintClassPinsButton, RegenerateClassPinsButton } from "@/components/Admin/PinManager";
 import DataBasisReminder from "@/components/Admin/DataBasisReminder";
 import { loadClassGroups, type ClassGroup } from "@/lib/admin/classConfig";
 import {
@@ -61,6 +63,7 @@ export default function StudentManager({
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [groups, setGroups] = useState<ClassGroup[]>([]);
   const [pins, setPins] = useState<Record<string, string>>({});
+  const [pinsVisible, setPinsVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(false);
@@ -245,7 +248,7 @@ export default function StudentManager({
               color: pins[record.id] ? "var(--color-text)" : "#adb5bd",
             }}
           >
-            {pins[record.id] ?? "—"}
+            {pins[record.id] ? (pinsVisible ? pins[record.id] : "••••") : "—"}
           </span>
           <ResetPinButton
             student={record}
@@ -305,8 +308,21 @@ export default function StudentManager({
           </h1>
         </Space>
 
-        <Space>
-          <ResetClassPinsButton
+        <Space wrap>
+          <Button
+            icon={pinsVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+            onClick={() => setPinsVisible((v) => !v)}
+            style={{ fontWeight: 800, borderRadius: "10px", height: "38px", fontSize: "0.85rem" }}
+          >
+            {pinsVisible ? "СХОВАТИ PIN-И" : "ПОКАЗАТИ PIN-И"}
+          </Button>
+          <PrintClassPinsButton
+            classId={classId}
+            publicCode={publicCode}
+            className={className}
+            students={students}
+          />
+          <RegenerateClassPinsButton
             classId={classId}
             publicCode={publicCode}
             className={className}

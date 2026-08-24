@@ -119,7 +119,7 @@ export default async function AdminPage() {
         </h1>
         <div style={{ marginTop: "8px", display: "flex", gap: "16px", justifyContent: "center", fontSize: "0.9rem", fontWeight: 700, flexWrap: "wrap" }}>
           <Link href="/admin/profile" style={{ color: "inherit" }}>
-            <UserOutlined /> Профіль
+            <UserOutlined /> Профіль вчителя
           </Link>
         </div>
       </div>

@@ -32,6 +32,7 @@ import { formatClassCode } from "@/lib/classCodes";
 import PrizesPanel from "@/components/Admin/ClassSettings/PrizesPanel";
 import StudentImport from "@/components/Admin/StudentImport";
 import StudentLinesInput from "@/components/Admin/Onboarding/StudentLinesInput";
+import LessonSeriesForm from "@/components/Admin/LessonSeriesForm";
 
 /**
  * Майстер онбордингу: клас → учні → призи.
@@ -96,6 +97,7 @@ export default function OnboardingWizard() {
   const [individualPrizes, setIndividualPrizes] = useState<IndividualPrize[]>([]);
   const [classPrizes, setClassPrizes] = useState<ClassPrize[]>([]);
   const [students, setStudents] = useState<StudentLite[]>([]);
+  const [lessonsCount, setLessonsCount] = useState(0);
 
   const [creating, setCreating] = useState(false);
   const [classForm] = Form.useForm<{ name: string }>();
@@ -109,7 +111,7 @@ export default function OnboardingWizard() {
   /** Перезавантажує все, що показує майстер, з БД. */
   const refresh = useCallback(
     async (classId: string) => {
-      const [indiv, clsPrizes, prog, studentsRes] = await Promise.all([
+      const [indiv, clsPrizes, prog, studentsRes, lessonsRes] = await Promise.all([
         loadIndividualPrizes(supabase, classId),
         loadClassPrizes(supabase, classId),
         getOnboardingProgress(supabase, classId),
@@ -119,12 +121,17 @@ export default function OnboardingWizard() {
           .eq("class_id", classId)
           .is("deleted_at", null)
           .order("full_name"),
+        supabase
+          .from("lessons")
+          .select("id", { count: "exact", head: true })
+          .eq("class_id", classId),
       ]);
 
       setIndividualPrizes(indiv);
       setClassPrizes(clsPrizes);
       setProgress(prog);
       setStudents((studentsRes.data ?? []) as StudentLite[]);
+      setLessonsCount(lessonsRes.count ?? 0);
     },
     [supabase]
   );
@@ -304,17 +311,35 @@ export default function OnboardingWizard() {
             />
 
             {cls ? (
-              <Alert
-                type="success"
-                showIcon
-                message={`Клас «${cls.name}» створено`}
-                description={
-                  <span>
-                    Код для учнів: <b>{formatClassCode(cls.public_code)}</b> (повний код і
-                    PIN-и учнів у налаштуваннях класу)
-                  </span>
-                }
-              />
+              <>
+                <Alert
+                  type="success"
+                  showIcon
+                  message={`Клас «${cls.name}» створено`}
+                  description={
+                    <span>
+                      Код для учнів: <b>{formatClassCode(cls.public_code)}</b> (повний код і
+                      PIN-и учнів у налаштуваннях класу)
+                    </span>
+                  }
+                />
+
+                <div style={{ marginTop: 24 }}>
+                  <StepHeader
+                    title="Додайте уроки (необов'язково)"
+                    hint="Кількість уроків можна задати одразу: оберіть дні тижня й період — решту можна додати пізніше в журналі."
+                  />
+                  {lessonsCount > 0 && (
+                    <Alert
+                      type="success"
+                      showIcon
+                      style={{ marginBottom: 16 }}
+                      message={`У класі вже ${lessonsCount} уроків`}
+                    />
+                  )}
+                  <LessonSeriesForm classId={cls.id} onCreated={() => void refresh(cls.id)} />
+                </div>
+              </>
             ) : (
               <Form form={classForm} layout="vertical" onFinish={createClass}>
                 <Form.Item label={<span style={{ fontWeight: 700 }}>Паралель (необов&apos;язково)</span>}>

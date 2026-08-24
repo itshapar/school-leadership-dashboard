@@ -23,8 +23,7 @@ import {
 } from "@/lib/admin/classConfig";
 import PrizesPanel from "@/components/Admin/ClassSettings/PrizesPanel";
 import GroupsPanel from "@/components/Admin/ClassSettings/GroupsPanel";
-import { ResetClassPinsButton } from "@/components/Admin/PinManager";
-import { formatClassCode } from "@/lib/classCodes";
+import { PrintClassPinsButton, RegenerateClassPinsButton } from "@/components/Admin/PinManager";
 import { setClassParallel, upsertParallelByName, type Parallel } from "@/lib/admin/parallels";
 
 // Той самий фіксований список 1–12, що й у майстрі створення класу.
@@ -272,28 +271,26 @@ export default function ClassSettingsClient({
         }}
       >
         <div>
-          <div style={{ fontSize: "0.8rem", fontWeight: 800, color: "#868e96", textTransform: "uppercase" }}>
-            Код класу
-          </div>
-          <div
-            style={{
-              fontFamily: "monospace",
-              fontSize: "1.5rem",
-              fontWeight: 900,
-              letterSpacing: "0.1em",
-              marginTop: 2,
-            }}
-          >
-            {formatClassCode(classCode)}
+          <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>PIN-и учнів</div>
+          <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2 }}>
+            PIN-и завжди видно у списку учнів. Тут — лише друк і перегенерація.
           </div>
         </div>
         {!loading && students.length > 0 && (
-          <ResetClassPinsButton
-            classId={classId}
-            publicCode={classCode}
-            className={className}
-            students={students}
-          />
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <PrintClassPinsButton
+              classId={classId}
+              publicCode={classCode}
+              className={className}
+              students={students}
+            />
+            <RegenerateClassPinsButton
+              classId={classId}
+              publicCode={classCode}
+              className={className}
+              students={students}
+            />
+          </div>
         )}
       </div>
 

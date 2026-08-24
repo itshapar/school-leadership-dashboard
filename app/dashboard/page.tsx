@@ -99,39 +99,45 @@ export default async function DashboardPage({
           </h1>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "flex-end" }}>
+        <div className="dashboard-filters">
           {parallels.length > 0 && (
+            <div className="filter-row">
+              <span className="filter-row-label">Паралель</span>
+              <div className="class-filter">
+                <Link href="/dashboard" className={`filter-btn ${!parallelId && !classId ? 'active' : ''}`}>
+                  Усі паралелі
+                </Link>
+                {parallels.map((p) => (
+                  <Link
+                    key={p.id}
+                    href={`/dashboard?parallelId=${p.id}`}
+                    className={`filter-btn ${!classId && parallelId === p.id ? 'active' : ''}`}
+                  >
+                    {p.name} клас
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="filter-row">
+            <span className="filter-row-label">Клас</span>
             <div className="class-filter">
-              <Link href="/dashboard" className={`filter-btn ${!parallelId && !classId ? 'active' : ''}`}>
-                Усі паралелі
+              <Link
+                href={parallelId ? `/dashboard?parallelId=${parallelId}` : "/dashboard"}
+                className={`filter-btn ${!classId ? 'active' : ''}`}
+              >
+                Всі класи
               </Link>
-              {parallels.map((p) => (
+              {(parallelId ? data.classes.filter((c) => c.parallel_id === parallelId) : data.classes).map(c => (
                 <Link
-                  key={p.id}
-                  href={`/dashboard?parallelId=${p.id}`}
-                  className={`filter-btn ${!classId && parallelId === p.id ? 'active' : ''}`}
+                  key={c.id}
+                  href={`/dashboard?classId=${c.id}`}
+                  className={`filter-btn ${classId === c.id ? 'active' : ''}`}
                 >
-                  {p.name} клас
+                  {c.name}
                 </Link>
               ))}
             </div>
-          )}
-          <div className="class-filter">
-            <Link
-              href={parallelId ? `/dashboard?parallelId=${parallelId}` : "/dashboard"}
-              className={`filter-btn ${!classId ? 'active' : ''}`}
-            >
-              Всі класи
-            </Link>
-            {(parallelId ? data.classes.filter((c) => c.parallel_id === parallelId) : data.classes).map(c => (
-              <Link
-                key={c.id}
-                href={`/dashboard?classId=${c.id}`}
-                className={`filter-btn ${classId === c.id ? 'active' : ''}`}
-              >
-                {c.name}
-              </Link>
-            ))}
           </div>
         </div>
       </div>

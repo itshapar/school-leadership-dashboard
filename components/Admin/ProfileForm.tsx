@@ -1,23 +1,74 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input, Modal, message } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
-import { useRouter } from "next/navigation";
+import { Button, Form, Input, Modal, message } from "antd";
+import { DeleteOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 
 /**
- * Налаштування акаунту (Етап 9.2, live-фідбек): свідомо лише видалення.
- * Ім'я й назву школи прибрали з реєстрації та профілю зовсім, щоб не
- * зв'язувати особу вчителя з конкретною школою в наших даних без потреби.
+ * Профіль вчителя: зміна email, зміна пароля, видалення акаунту. Ім'я й
+ * назву школи прибрали з реєстрації та профілю зовсім, щоб не зв'язувати
+ * особу вчителя з конкретною школою в наших даних без потреби.
+ *
+ * Обидві форми йдуть через supabase.auth.updateUser — сесія вже є,
+ * повторного пароля не питаємо. Зміна email надсилає лист-підтвердження на
+ * нову адресу (стандартна поведінка Supabase); стара сесія лишається чинною
+ * до підтвердження.
  */
-export default function ProfileForm() {
-  const router = useRouter();
+
+const sectionStyle: React.CSSProperties = {
+  border: "2px solid var(--color-border)",
+  borderRadius: 12,
+  padding: "16px 20px",
+  marginBottom: 16,
+};
+
+export default function ProfileForm({ currentEmail }: { currentEmail: string }) {
   const supabase = getSupabaseClient();
+
+  const [emailForm] = Form.useForm<{ email: string }>();
+  const [passwordForm] = Form.useForm<{ password: string; confirm: string }>();
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+
   const [open, setOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
+
+  async function onEmailFinish(values: { email: string }) {
+    if (values.email.trim().toLowerCase() === currentEmail.trim().toLowerCase()) {
+      message.info("Це вже поточний email");
+      return;
+    }
+    setSavingEmail(true);
+    const { error } = await supabase.auth.updateUser(
+      { email: values.email.trim() },
+      { emailRedirectTo: `${window.location.origin}/auth/callback?next=/admin/profile` }
+    );
+    setSavingEmail(false);
+    if (error) {
+      message.error(error.message || "Не вдалося змінити email");
+      return;
+    }
+    message.success("Лист-підтвердження надіслано на нову адресу");
+  }
+
+  async function onPasswordFinish(values: { password: string }) {
+    setSavingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: values.password });
+    setSavingPassword(false);
+    if (error) {
+      message.error(
+        error.message.includes("Password")
+          ? "Пароль надто слабкий або вже засвітився у витоках"
+          : "Не вдалося змінити пароль"
+      );
+      return;
+    }
+    passwordForm.resetFields();
+    message.success("Пароль оновлено");
+  }
 
   async function deleteAccount() {
     setDeleting(true);
@@ -35,6 +86,67 @@ export default function ProfileForm() {
 
   return (
     <>
+      <div style={sectionStyle}>
+        <div style={{ fontWeight: 800, fontSize: "0.9rem", marginBottom: 12 }}>
+          <MailOutlined /> Email
+        </div>
+        <Form
+          form={emailForm}
+          layout="inline"
+          onFinish={onEmailFinish}
+          initialValues={{ email: currentEmail }}
+          style={{ flexWrap: "wrap", gap: 8 }}
+        >
+          <Form.Item
+            name="email"
+            rules={[{ required: true, type: "email", message: "Введіть коректний email" }]}
+            style={{ flex: 1, minWidth: 220, marginRight: 0 }}
+          >
+            <Input size="large" autoComplete="email" />
+          </Form.Item>
+          <Button htmlType="submit" loading={savingEmail} size="large" style={{ fontWeight: 700 }}>
+            Змінити email
+          </Button>
+        </Form>
+      </div>
+
+      <div style={sectionStyle}>
+        <div style={{ fontWeight: 800, fontSize: "0.9rem", marginBottom: 12 }}>
+          <LockOutlined /> Пароль
+        </div>
+        <Form form={passwordForm} layout="vertical" onFinish={onPasswordFinish}>
+          <Form.Item
+            name="password"
+            label={<span>Новий пароль</span>}
+            rules={[
+              { required: true, message: "Введіть новий пароль" },
+              { min: 8, message: "Мінімум 8 символів" },
+            ]}
+          >
+            <Input.Password size="large" autoComplete="new-password" />
+          </Form.Item>
+          <Form.Item
+            name="confirm"
+            label={<span>Повторіть пароль</span>}
+            dependencies={["password"]}
+            rules={[
+              { required: true, message: "Повторіть новий пароль" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) return Promise.resolve();
+                  return Promise.reject(new Error("Паролі не збігаються"));
+                },
+              }),
+            ]}
+          >
+            <Input.Password size="large" autoComplete="new-password" />
+          </Form.Item>
+          <Button htmlType="submit" loading={savingPassword} size="large" style={{ fontWeight: 700 }}>
+            Змінити пароль
+          </Button>
+        </Form>
+      </div>
+
       <div
         style={{
           border: "2px solid #ffc9c9",
