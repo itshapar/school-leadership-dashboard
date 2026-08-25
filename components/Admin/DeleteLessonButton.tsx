@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Modal, Select, message, Tooltip } from "antd";
-import { CalendarSlash, Trash } from "@phosphor-icons/react";
+import { CalendarSlash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import dayjs from "dayjs";
@@ -90,7 +90,8 @@ export default function DeleteLessonButton({
 
       <Modal
         // Заголовок без іконки, капсом і жирним — як у решти поп-апів
-        // (живий фідбек); іконка переїхала в саму кнопку «Видалити».
+        // (живий фідбек). Кнопки внизу теж без іконок: це commit-кнопки
+        // модалки, як «Скасувати»/«Зберегти» всюди.
         title={<div style={{ fontWeight: 900, textTransform: "uppercase" }}>Видалити урок</div>}
         open={open}
         onCancel={() => setOpen(false)}
@@ -105,7 +106,6 @@ export default function DeleteLessonButton({
           <Button
             key="delete"
             danger
-            icon={<Trash />}
             disabled={!selectedLessonId}
             loading={loading}
             onClick={handleDelete}

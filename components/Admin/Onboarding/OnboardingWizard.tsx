@@ -267,10 +267,15 @@ export default function OnboardingWizard() {
     // на першому кроці встигав блимнути зелений блок «Клас створено», і
     // лише потім майстер стрибав на «Уроки». Сам блок лишається — він
     // доречний, коли вчитель повертається на крок «Клас» назад.
+    // Крок і сам клас ставимо ОДНИМ рендером, до будь-якого await (живий
+    // фідбек): між setCls і setCurrent React встигав перемалювати перший
+    // крок уже з блоком «клас створено», і людина бачила, як контент
+    // кроку змінюється за мить до переходу. Блок лишається доречним, коли
+    // вчитель повертається на крок «Клас» назад.
     justCreatedRef.current = true;
     setCls(data as ClassRow);
-    await refresh(data.id);
     setCurrent(stepIndex("lessons"));
+    void refresh(data.id);
 
     // Кладемо classId в URL: майстер стає відновлюваним по посиланню.
     router.replace(`/admin/onboarding?classId=${data.id}&step=lessons`);
@@ -473,14 +478,14 @@ export default function OnboardingWizard() {
           <div>
             <StepHeader
               title="Нагороди"
-              hint="Індивідуальні учень відкриває власними зірками, а класові присуджуються, коли клас разом набирає поріг."
+              hint="Індивідуальні нагороди учень відкриває власними зірками, а нагороди класу присуджуються, коли клас разом набирає поріг."
             />
 
             <Tabs
               items={[
                 {
                   key: "individual",
-                  label: <span style={{ fontWeight: 600 }}>Індивідуальні</span>,
+                  label: <span style={{ fontWeight: 600 }}>Індивідуальні нагороди</span>,
                   children: (
                     <PrizesPanel
                       classId={cls.id}
@@ -492,7 +497,7 @@ export default function OnboardingWizard() {
                 },
                 {
                   key: "class",
-                  label: <span style={{ fontWeight: 600 }}>Класові</span>,
+                  label: <span style={{ fontWeight: 600 }}>Нагороди класу</span>,
                   children: (
                     <PrizesPanel
                       classId={cls.id}

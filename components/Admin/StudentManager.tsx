@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Table, Button, Modal, Form, Input, Space, message, Popconfirm } from "antd";
 import { Eye, EyeSlash, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
@@ -61,31 +61,32 @@ export default function StudentManager({
   const watchedName = Form.useWatch("full_name", form) as string | undefined;
   const orderWarning = useMemo(() => checkNameOrder(watchedName), [watchedName]);
 
-  useEffect(() => {
-    let cancelled = false;
-    supabase
-      .rpc("get_class_pins", { p_class_id: classId })
-      .then(
-        ({
-          data,
-          error,
-        }: {
-          data: Array<{ student_id: string; pin: string }> | null;
-          error: { message: string } | null;
-        }) => {
-          if (cancelled) return;
-          if (error) {
-            console.error("get_class_pins:", error);
-            message.error("Не вдалося завантажити PIN-и");
-            return;
-          }
-          setPins(Object.fromEntries((data ?? []).map((r) => [r.student_id, r.pin])));
-        }
-      );
-    return () => {
-      cancelled = true;
-    };
+  /**
+   * PIN-и класу одним запитом. Винесено в окрему функцію (живий фідбек):
+   * раніше це був разовий ефект при монтуванні, тож щойно доданий учень
+   * показувався з прочерком у стовпці PIN, хоча PIN уже згенеровано на
+   * боці API. Тепер після додавання просто перечитуємо список.
+   */
+  const loadPins = useCallback(async () => {
+    const { data, error } = await supabase.rpc("get_class_pins", { p_class_id: classId });
+    if (error) {
+      console.error("get_class_pins:", error);
+      message.error("Не вдалося завантажити PIN-и");
+      return;
+    }
+    setPins(
+      Object.fromEntries(
+        ((data ?? []) as Array<{ student_id: string; pin: string }>).map((r) => [
+          r.student_id,
+          r.pin,
+        ])
+      )
+    );
   }, [classId, supabase]);
+
+  useEffect(() => {
+    void loadPins();
+  }, [loadPins]);
 
   function mergePins(next: Record<string, string>) {
     setPins((prev) => ({ ...prev, ...next }));
@@ -153,6 +154,9 @@ export default function StudentManager({
           )
         );
         message.success("Учня додано");
+        // PIN новому учню генерує сам API — одразу підтягуємо його в
+        // таблицю, щоб вчитель бачив код, а не прочерк.
+        void loadPins();
       }
 
       setIsModalOpen(false);

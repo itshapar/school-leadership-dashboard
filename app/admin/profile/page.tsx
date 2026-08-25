@@ -21,7 +21,14 @@ export default async function ProfilePage() {
     <div className="page-container" style={{ maxWidth: "560px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "16px 0 24px" }}>
         <BackButton href="/admin" label="Назад до кабінету" />
-        <h1 style={{ fontSize: "1.8rem", fontWeight: 900, margin: 0 }}>
+        <h1
+          style={{
+            fontSize: "1.8rem",
+            fontWeight: 900,
+            margin: 0,
+            textTransform: "uppercase",
+          }}
+        >
           Профіль вчителя
         </h1>
       </div>

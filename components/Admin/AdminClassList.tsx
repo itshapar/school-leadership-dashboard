@@ -83,6 +83,12 @@ export default function AdminClassList({
         </div>
       )}
 
+      {/* Чорний дивайдер між фільтром паралелей і списком класів (живий
+          фідбек): два блоки просто йшли один за одним і читались як один. */}
+      {sortedParallels.length > 0 && (
+        <div style={{ height: 3, background: "#000000", borderRadius: 2, margin: "0 0 16px" }} />
+      )}
+
       <div
         style={{
           display: "flex",
@@ -93,7 +99,7 @@ export default function AdminClassList({
           flexWrap: "wrap",
         }}
       >
-        <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 900, textTransform: "uppercase", opacity: 0.5 }}>
+        <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 900, textTransform: "uppercase", color: "#000000" }}>
           Класи
         </h2>
 
