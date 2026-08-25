@@ -1,14 +1,22 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import type { EmailOtpType } from "@supabase/supabase-js";
 
 /**
- * GET /auth/callback — єдина точка обміну коду на сесію (PKCE):
- *   • Google OAuth (signInWithOAuth → consent → сюди з ?code=)
- *   • підтвердження email після реєстрації (emailRedirectTo → сюди)
- *   • лист скидання пароля (redirectTo → сюди з ?next=/reset-password)
+ * GET /auth/callback — єдина точка обміну коду на сесію:
+ *   • Google OAuth (signInWithOAuth → consent → сюди з ?code=, PKCE)
+ *   • підтвердження email після реєстрації (?token_hash=&type=email)
+ *   • підтвердження зміни адреси (?token_hash=&type=email_change)
+ *   • лист скидання пароля — сюди НЕ доходить, шаблон веде одразу на
+ *     /reset-password; але старі листи ще можуть прилетіти, тому нижче
+ *     лишається гілка, яка їх переадресовує.
  *
  * ?next приймає ЛИШЕ відносний шлях (анти open-redirect).
  */
+
+/** Типи, які ми реально розсилаємо. Усе інше з ?type= ігноруємо. */
+const ALLOWED_OTP_TYPES: EmailOtpType[] = ["email", "email_change", "signup", "invite", "magiclink"];
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -32,7 +40,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(target);
   }
 
-  if (!code) {
+  if (!code && !tokenHash) {
     return NextResponse.redirect(`${origin}/admin/login?error=auth`);
   }
 
@@ -55,7 +63,24 @@ export async function GET(request: NextRequest) {
     }
   );
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  // token_hash — формат наших листів. На відміну від ?code=, він не
+  // прив'язаний до code_verifier у localStorage конкретного браузера,
+  // тому лист працює й тоді, коли його відкрили на іншому пристрої.
+  if (tokenHash) {
+    if (!type || !ALLOWED_OTP_TYPES.includes(type as EmailOtpType)) {
+      return NextResponse.redirect(`${origin}/admin/login?error=auth`);
+    }
+    const { error } = await supabase.auth.verifyOtp({
+      type: type as EmailOtpType,
+      token_hash: tokenHash,
+    });
+    if (error) {
+      return NextResponse.redirect(`${origin}/admin/login?error=auth`);
+    }
+    return response;
+  }
+
+  const { error } = await supabase.auth.exchangeCodeForSession(code!);
   if (error) {
     return NextResponse.redirect(`${origin}/admin/login?error=auth`);
   }

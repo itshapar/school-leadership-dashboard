@@ -1,50 +1,43 @@
 <!--
-  Брендований шаблон листа підтвердження реєстрації (StarBoard).
+  StarBoard · Confirm signup
+  Supabase Dashboard → Authentication → Email Templates → Confirm signup → Message body.
 
-  ЦЕЙ ФАЙЛ НЕ ЗАСТОСОВУЄТЬСЯ АВТОМАТИЧНО — Supabase не читає шаблони з
-  репозиторію (немає supabase/config.toml із [auth.email] у цьому проєкті).
-  Щоб увімкнути: Supabase Dashboard → Authentication → Email Templates →
-  Confirm signup → вставити вміст цього файлу в поле "Message body" і
-  зберегти. Змінні {{ .ConfirmationURL }} тощо — стандартний синтаксис
-  Supabase, підставляються самим Supabase при відправці.
+  Посилання свідомо НЕ використовує {{ .ConfirmationURL }}. У PKCE-режимі
+  (createBrowserClient за замовчуванням) той URL віддає ?code=, прив'язаний
+  до code_verifier у localStorage ТОГО САМОГО браузера: відкрив лист на
+  телефоні, а реєструвався на ноуті — посилання мертве. {{ .TokenHash }}
+  такої прив'язки не має і перевіряється на нашому /auth/callback.
 -->
-<div style="background:#f8f9fa;padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table role="presentation" width="100%" style="max-width:480px;margin:0 auto;background:#ffffff;border:3px solid #000000;border-radius:16px;overflow:hidden;">
+<div style="background:#FFF9F0;padding:32px 16px;font-family:'Montserrat',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:480px;margin:0 auto;background:#FFFFFF;border:3px solid #2C2C2C;border-radius:16px;">
     <tr>
       <td style="padding:32px 32px 24px;text-align:center;">
         <div style="font-size:40px;line-height:1;">⭐</div>
-        <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#f5a623,#ffd700);-webkit-background-clip:text;background-clip:text;color:#f5a623;margin-top:4px;">
-          StarBoard
-        </div>
+        <div style="font-size:20px;font-weight:900;letter-spacing:-0.5px;color:#F08C00;margin-top:4px;">StarBoard</div>
       </td>
     </tr>
     <tr>
       <td style="padding:0 32px 8px;">
-        <h1 style="margin:0;font-size:22px;font-weight:900;text-transform:uppercase;color:#111;">
-          Підтвердьте email
-        </h1>
+        <h1 style="margin:0;font-size:22px;font-weight:900;text-transform:uppercase;color:#2C2C2C;">Підтвердьте email</h1>
       </td>
     </tr>
     <tr>
-      <td style="padding:8px 32px 28px;color:#495057;font-size:15px;line-height:1.6;">
-        Ви реєструєтесь як вчитель у StarBoard. Щоб активувати акаунт і почати
-        працювати з класами, підтвердьте свою email-адресу.
+      <td style="padding:8px 32px 28px;color:#666666;font-size:15px;font-weight:600;line-height:1.6;">
+        Ви реєструєтесь як вчитель у StarBoard. Щоб активувати акаунт і почати працювати з класами, підтвердьте свою email-адресу.
       </td>
     </tr>
     <tr>
       <td style="padding:0 32px 32px;text-align:center;">
-        <a
-          href="{{ .ConfirmationURL }}"
-          style="display:inline-block;background:#000000;color:#ffffff;font-weight:800;font-size:15px;text-decoration:none;padding:14px 32px;border-radius:12px;box-shadow:4px 4px 0px #f5a623;"
-        >
+        <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email&next=/admin"
+           style="display:inline-block;background:#2C2C2C;color:#FFFFFF;font-weight:800;font-size:15px;text-transform:uppercase;text-decoration:none;padding:14px 32px;border-radius:10px;box-shadow:3px 3px 0px #F08C00;">
           Підтвердити email
         </a>
       </td>
     </tr>
     <tr>
-      <td style="padding:0 32px 32px;color:#868e96;font-size:12.5px;line-height:1.6;">
+      <td style="padding:0 32px 32px;color:#666666;font-size:12.5px;font-weight:600;line-height:1.6;">
         Якщо кнопка не працює, скопіюйте це посилання в браузер:<br />
-        <span style="word-break:break-all;">{{ .ConfirmationURL }}</span>
+        <span style="word-break:break-all;">{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email&next=/admin</span>
         <br /><br />
         Не реєструвались у StarBoard? Просто проігноруйте цей лист.
       </td>
