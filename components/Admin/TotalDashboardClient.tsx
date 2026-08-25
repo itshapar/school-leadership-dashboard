@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { Table, Input, Tag } from "antd";
-import { ArrowLeft, MagnifyingGlass } from "@phosphor-icons/react";
+import { MagnifyingGlass } from "@phosphor-icons/react";
 import Link from "next/link";
 import type { Parallel } from "@/lib/admin/parallels";
 import StarIcon from "@/components/StarIcon";
+import BackButton from "@/components/BackButton";
 
 interface StudentData {
   id: string;
@@ -178,22 +179,7 @@ export default function TotalDashboardClient({
         gap: "20px",
         marginBottom: "32px"
       }}>
-        <Link
-          href="/admin"
-          style={{
-            background: "#000000",
-            color: "#ffffff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "38px",
-            height: "38px",
-            borderRadius: "10px",
-            textShadow: "none"
-          }}
-        >
-          <ArrowLeft />
-        </Link>
+        <BackButton href="/admin" label="Назад до кабінету" />
         <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 900, textTransform: "uppercase" }}>
           Рейтинг усіх учнів
         </h1>

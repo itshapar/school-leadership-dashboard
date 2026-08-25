@@ -33,6 +33,7 @@ import PrizesPanel from "@/components/Admin/ClassSettings/PrizesPanel";
 import StudentImport from "@/components/Admin/StudentImport";
 import StudentLinesInput from "@/components/Admin/Onboarding/StudentLinesInput";
 import LessonSeriesForm from "@/components/Admin/LessonSeriesForm";
+import BackButton from "@/components/BackButton";
 
 /**
  * Майстер онбордингу: клас → уроки → учні → призи.
@@ -268,22 +269,7 @@ export default function OnboardingWizard() {
   return (
     <div style={{ padding: 24, maxWidth: 860, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-        <Link href="/admin">
-          <Button
-            icon={<ArrowLeft />}
-            style={{
-              background: "#000",
-              color: "#fff",
-              border: "none",
-              height: 38,
-              width: 38,
-              borderRadius: 10,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          />
-        </Link>
+        <BackButton href="/admin" label="Назад до кабінету" />
         <h1 style={{ margin: 0, fontWeight: 900, fontSize: "1.6rem", textTransform: "uppercase", lineHeight: 1.1 }}>
           Новий клас
         </h1>
@@ -306,7 +292,7 @@ export default function OnboardingWizard() {
             title: s.title,
             disabled: !cls && s.key !== "class",
             icon: done ? (
-              <CheckCircleFilled style={{ color: "#52C51A", fontSize: "1.5rem" }} />
+              <CheckCircleFilled style={{ color: "#20C31A", fontSize: "1.5rem" }} />
             ) : (
               <span
                 style={{
@@ -517,7 +503,7 @@ export default function OnboardingWizard() {
             icon={<ArrowLeft />}
             disabled={current === 0}
             onClick={() => goTo(current - 1)}
-            className="btn-secondary"
+            className="btn-primary"
           >
             Назад
           </Button>

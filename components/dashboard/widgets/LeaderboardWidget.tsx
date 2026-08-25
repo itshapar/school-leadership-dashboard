@@ -39,7 +39,7 @@ export default function LeaderboardWidget({ leaderboard, isGlobal, onStudentClic
                 </div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
                   {item.trend > 0 ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: "2px", color: "#52C51A" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "2px", color: "#20C31A" }}>
                       <ArrowUpOutlined style={{ fontSize: "12px" }} /> {item.trend}
                     </div>
                   ) : item.trend < 0 ? (

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Modal, DatePicker, Space, message, Tooltip, Radio } from "antd";
-import { Calendar, Plus } from "@phosphor-icons/react";
+import { Button, Modal, DatePicker, message, Tooltip, Radio } from "antd";
+import { Plus } from "@phosphor-icons/react";
 import dayjs from "dayjs";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
@@ -74,11 +74,9 @@ export default function NewLessonButton({
       </Tooltip>
 
       <Modal
-        title={
-          <Space>
-            <Calendar /> Додати урок
-          </Space>
-        }
+        // Заголовок без іконки, капсом і жирним — як у решти поп-апів
+        // (живий фідбек).
+        title={<div style={{ fontWeight: 900, textTransform: "uppercase" }}>Новий урок</div>}
         open={open}
         onCancel={() => setOpen(false)}
         footer={
@@ -94,21 +92,27 @@ export default function NewLessonButton({
                   onClick={submitSingle}
                   className="btn-primary"
                 >
-                  Додати
+                  Додати урок
                 </Button>,
               ]
             : null
         }
       >
         <div style={{ padding: "24px 0" }}>
+          {/* Той самий перемикач, що й «Кому призначити?» в поп-апі
+              нарахування (живий фідбек): обраний варіант залитий кольором
+              повністю, а не лише підсвічений обводкою. */}
           <Radio.Group
             value={mode}
             onChange={(e) => setMode(e.target.value)}
             style={{ marginBottom: 20 }}
-          >
-            <Radio.Button value="single">Один урок</Radio.Button>
-            <Radio.Button value="series">Серія уроків</Radio.Button>
-          </Radio.Group>
+            optionType="button"
+            buttonStyle="solid"
+            options={[
+              { value: "single", label: "Один урок" },
+              { value: "series", label: "Серія уроків" },
+            ]}
+          />
 
           {mode === "single" ? (
             <>

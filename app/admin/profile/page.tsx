@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/Admin/ProfileForm";
+import BackButton from "@/components/BackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -21,22 +20,7 @@ export default async function ProfilePage() {
   return (
     <div className="page-container" style={{ maxWidth: "560px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "16px 0 24px" }}>
-        <Link href="/admin">
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 38,
-              height: 38,
-              borderRadius: 10,
-              background: "#000",
-              color: "#fff",
-            }}
-          >
-            <ArrowLeft weight="bold" />
-          </span>
-        </Link>
+        <BackButton href="/admin" label="Назад до кабінету" />
         <h1 style={{ fontSize: "1.8rem", fontWeight: 900, margin: 0 }}>
           Профіль вчителя
         </h1>

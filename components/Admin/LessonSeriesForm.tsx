@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { Button, Checkbox, DatePicker, message } from "antd";
-import { CalendarPlus } from "@phosphor-icons/react";
 import dayjs from "dayjs";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
@@ -110,15 +109,16 @@ export default function LessonSeriesForm({
       />
 
       <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        {/* Без іконки (живий фідбек): це та сама commit-кнопка поп-апу, що
+            й «Додати урок» у режимі одного уроку. */}
         <Button
           type="primary"
-          icon={<CalendarPlus />}
           onClick={submit}
           loading={loading}
           disabled={seriesDates.length === 0}
           className="btn-primary"
         >
-          {seriesDates.length > 0 ? `Створити ${seriesDates.length} уроків` : "Створити уроки"}
+          {seriesDates.length > 0 ? `Додати ${seriesDates.length} уроків` : "Додати уроки"}
         </Button>
         {seriesDates.length > 0 && (
           <span style={{ color: "#868e96", fontSize: "0.82rem" }}>

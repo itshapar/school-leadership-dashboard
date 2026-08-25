@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Modal, Popconfirm, message, Alert } from "antd";
-import { ArrowsClockwise, CheckCircle, Key, Printer } from "@phosphor-icons/react";
+import { ArrowsClockwise, CheckCircle, Printer } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
 /**
@@ -138,7 +138,14 @@ export function ResetPinButton({
       okText="Скинути"
       cancelText="Ні"
     >
-      <Button icon={<Key />} loading={loading} size="small" style={{ borderRadius: "8px" }} />
+      {/* Та сама іконка, що й у «Перегенерувати PIN-и», і той самий розмір,
+          що в кнопок «редагувати»/«видалити» поруч (живий фідбек): ключик
+          був і чужою іконкою, і помітно дрібнішим за сусідів. */}
+      <Button
+        icon={<ArrowsClockwise />}
+        loading={loading}
+        style={{ borderRadius: "8px", border: "2px solid #000" }}
+      />
     </Popconfirm>
   );
 }

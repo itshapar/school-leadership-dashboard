@@ -2,7 +2,7 @@
   --bg-primary: #FFF9F0;
   --bg-card: #FFFFFF;
   --bg-elevated: #FFF0F6;
-  --color-primary: #52C41A;
+  --color-primary: #20C31A;
   --color-text: #2C2C2C;
   --color-text-muted: #666666;
   --color-border: #2C2C2C;
@@ -114,6 +114,20 @@ b, strong {
   height: 1.3em !important;
 }
 
+/* Зсув інтерфейсу ліворуч у момент відкриття поп-апу (живий фідбек).
+   antd (rc-util) при відкритті модалки дописує в <head> правило
+   `html body { overflow-y: hidden; width: calc(100% - 10px) }` — компенсує
+   смугу прокрутки, яку він нібито щойно прибрав, заблокувавши скрол. Але
+   в нас смуга стоїть постійно (`html { overflow-y: scroll }` вище), нічого
+   не зникає, і ці 10px просто звужують сторінку: центрований контент
+   стрибав ліворуч щоразу, коли відкривався QR чи «Новий урок».
+   `!important` тут обов'язковий: правило antd інжектиться ПІСЛЯ цього
+   файлу, тож за рівної специфічності виграє воно. overflow-y: hidden
+   лишаємо — це і є блокування скролу фону, воно доречне. */
+html body {
+  width: 100% !important;
+}
+
 /* Форм-контроли (button/input/select/textarea) не успадковують font-family
    від body за замовчуванням (UA-стиль ставить їм системний шрифт напряму),
    тому нативні кнопки-чипи (паралель/клас) рендерились не Montserrat. */
@@ -199,8 +213,8 @@ button, input, select, textarea {
 
 .prize-card.unlocked {
   background: #EBFBEE; /* Success light */
-  border-color: #52C51A;
-  box-shadow: 3px 3px 0px #52C51A;
+  border-color: #20C31A;
+  box-shadow: 3px 3px 0px #20C31A;
 }
 
 .prize-card.locked {
@@ -304,9 +318,13 @@ button, input, select, textarea {
   box-shadow: 3px 3px 0px var(--color-border) !important;
 }
 
+/* Ефект натискання — один на весь інтерфейс: кнопка «втоплюється» рівно
+   на висоту власної тіні (3px), тінь зникає. Ті самі 3px повторені нижче
+   для посилань-кнопок (.admin-action-btn, .back-btn, .filter-btn), бо вони
+   не antd-кнопки й під це правило не підпадають. */
 .ant-btn:active {
   box-shadow: 0 0 0px var(--color-border) !important;
-  transform: translate(2px, 2px);
+  transform: translate(3px, 3px);
 }
 
 /* Admin Dashboard specific styles */
@@ -369,7 +387,8 @@ button, input, select, textarea {
 }
 
 .admin-action-btn:active {
-  transform: translateY(2px);
+  transform: translate(4px, 4px);
+  box-shadow: none;
 }
 
 .admin-btn-black {
@@ -396,6 +415,37 @@ button, input, select, textarea {
   color: var(--color-text);
 }
 
+/* Кнопка «назад» (живий фідбек): усюди однакова — чорна, біла стрілка,
+   чорна обводка й та сама тінь-натискання, що й у решти кнопок. Живе
+   класом, а не інлайн-стилями на кожній сторінці, бо раніше кожен екран
+   мав свій розмір, тінь і обводку. */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #000000;
+  color: #ffffff;
+  border: 3px solid #000000;
+  box-shadow: 3px 3px 0px #000000;
+  font-size: 1.2rem;
+  text-decoration: none;
+  transition: transform 0.05s ease, box-shadow 0.05s ease;
+}
+
+.back-btn:hover {
+  background: #2c2c2c;
+  color: #ffffff;
+}
+
+.back-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
 /* Консистентні Primary/Secondary/Ghost для antd <Button> по всьому
    інтерфейсу — antd власні inline-стилі й CSS-in-JS мають вищий
    пріоритет за звичайний клас, тому !important тут навмисно (той самий
@@ -414,11 +464,15 @@ button, input, select, textarea {
   border-color: #2c2c2c !important;
   color: #FFFFFF !important;
 }
+/* Вимкнений стан — без сірого (живий фідбек): колір обводки лишається
+   тим самим, що й у активному стані (тобто відповідає ролі кнопки), а
+   «недоступність» показує прозорість і відсутність тіні. */
 .btn-primary:disabled, .btn-primary[disabled] {
-  background: #dee2e6 !important;
-  border-color: #dee2e6 !important;
-  color: #868e96 !important;
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
   box-shadow: none !important;
+  opacity: 0.35 !important;
 }
 
 .btn-secondary {
@@ -436,10 +490,11 @@ button, input, select, textarea {
   color: #000000 !important;
 }
 .btn-secondary:disabled, .btn-secondary[disabled] {
-  background: #f8f9fa !important;
-  border-color: #dee2e6 !important;
-  color: #adb5bd !important;
+  background: #ffffff !important;
+  border-color: #000000 !important;
+  color: #000000 !important;
   box-shadow: none !important;
+  opacity: 0.35 !important;
 }
 
 .btn-ghost {
@@ -473,10 +528,11 @@ button, input, select, textarea {
   color: #c92a2a !important;
 }
 .btn-danger-outline:disabled, .btn-danger-outline[disabled] {
-  background: #f8f9fa !important;
-  border-color: #ffc9c9 !important;
-  color: #ffc9c9 !important;
+  background: #ffffff !important;
+  border-color: #e03131 !important;
+  color: #e03131 !important;
   box-shadow: none !important;
+  opacity: 0.35 !important;
 }
 
 @media (max-width: 768px) {
@@ -519,10 +575,14 @@ button, input, select, textarea {
     font-size: 0.85rem;
   }
 }
-.total-dashboard-card:hover {
-  transform: scale(1.02);
+.total-dashboard-card:hover .star-card {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px var(--color-border);
 }
 
-.total-dashboard-card:active {
-  transform: scale(0.98);
+/* Той самий ефект натискання, що й у кнопок (живий фідбек): картка
+   «втоплюється» на висоту тіні, а не змінює масштаб. */
+.total-dashboard-card:active .star-card {
+  transform: translate(4px, 4px);
+  box-shadow: none;
 }

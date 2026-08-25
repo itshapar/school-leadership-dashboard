@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Button, Popconfirm, Space, Table, Tag, message } from "antd";
-import { ArrowLeft, Trash } from "@phosphor-icons/react";
-import Link from "next/link";
+import { Trash } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { uk } from "date-fns/locale";
@@ -11,6 +10,7 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import { entryTypeLabel, type EntryType } from "@/lib/admin/classConfig";
 import StarIcon from "@/components/StarIcon";
+import BackButton from "@/components/BackButton";
 
 /**
  * Історія нарахувань поза журналом.
@@ -169,7 +169,9 @@ export default function EntryHistoryClient({
         return (
           <Space>
             <span style={{ fontSize: "1.2rem" }}>{row.studentEmoji}</span>
-            <span style={{ fontWeight: 600 }}>{row.studentName}</span>
+            {/* 800 (живий фідбек): ПІБ — головне в рядку, на 600 воно
+                губилось серед типу, причини й дати. */}
+            <span style={{ fontWeight: 800 }}>{row.studentName}</span>
           </Space>
         );
       },
@@ -256,24 +258,7 @@ export default function EntryHistoryClient({
   return (
     <div className="page-container" style={{ maxWidth: "1000px" }}>
       <div style={{ marginBottom: "24px" }}>
-        {/* Лише іконка (живий фідбек): та сама квадратна чорна кнопка
-            «назад», що й у налаштуваннях класу та списку учнів. */}
-        <Link href={`/admin/${classCode}`} aria-label="Назад до журналу">
-          <Button
-            icon={<ArrowLeft />}
-            style={{
-              background: "#000",
-              color: "#fff",
-              border: "none",
-              height: 38,
-              width: 38,
-              borderRadius: 10,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          />
-        </Link>
+        <BackButton href={`/admin/${classCode}`} label="Назад до журналу" />
       </div>
 
       <div className="page-header" style={{ marginBottom: "32px", textAlign: "center" }}>
@@ -290,9 +275,25 @@ export default function EntryHistoryClient({
           rowKey="key"
           pagination={{ pageSize: 20 }}
           size="large"
+          className="entry-history-table"
           locale={{ emptyText: "Історія порожня" }}
         />
       </div>
+
+      {/* Шапку треба явно відділяти від рядків (живий фідбек): дефолтна
+          antd-шапка тут майже зливалась із першим записом. Той самий
+          прийом, що вже застосований у таблицях журналу й рейтингу:
+          сіра підкладка, капс і чорна лінія знизу. */}
+      <style jsx global>{`
+        .entry-history-table .ant-table-thead > tr > th {
+          background: #f1f3f5 !important;
+          font-weight: 900 !important;
+          text-transform: uppercase !important;
+          font-size: 0.75rem !important;
+          letter-spacing: 0.5px !important;
+          border-bottom: 3px solid #000 !important;
+        }
+      `}</style>
     </div>
   );
 }

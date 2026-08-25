@@ -3,6 +3,7 @@ import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
 import { assertClassOwnership } from "@/lib/admin/classOwnership";
 import { randomUUID } from "node:crypto";
+import { uuidLike } from "@/lib/validation/uuid";
 
 /**
  * Нарахування поза журналом: учню, ГРУПІ або всьому класу.
@@ -23,14 +24,14 @@ import { randomUUID } from "node:crypto";
  */
 
 const TargetSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("student"), student_id: z.string().uuid() }),
-  z.object({ kind: z.literal("group"), group_id: z.string().uuid() }),
+  z.object({ kind: z.literal("student"), student_id: uuidLike }),
+  z.object({ kind: z.literal("group"), group_id: uuidLike }),
   z.object({ kind: z.literal("class") }),
 ]);
 
 const EntrySchema = z.object({
-  class_id: z.string().uuid(),
-  entry_type_id: z.string().uuid(),
+  class_id: uuidLike,
+  entry_type_id: uuidLike,
   amount: z.number().int().min(-100).max(100).refine((v) => v !== 0, {
     message: "Нарахування на 0 не має сенсу",
   }),

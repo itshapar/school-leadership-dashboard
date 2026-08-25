@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import PersonalDashboardClient from "@/components/PersonalDashboardClient";
-import { ArrowLeftOutlined } from "@ant-design/icons";
 import { getPublicStudentDashboard } from "@/lib/public/classData";
+import BackButton from "@/components/BackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -34,24 +33,7 @@ export default async function StudentDashboardPage({ params }: Props) {
   return (
     <div className="page-container">
       <div style={{ marginBottom: "8px" }}>
-        <Link
-          href={`/class/${data.public_code}`}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "44px",
-            height: "44px",
-            borderRadius: "10px",
-            color: "#ffffff",
-            fontSize: "1.2rem",
-            textDecoration: "none",
-            background: "#000000",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-          }}
-        >
-          <ArrowLeftOutlined />
-        </Link>
+        <BackButton href={`/class/${data.public_code}`} label="Назад до класу" />
       </div>
 
       <PersonalDashboardClient

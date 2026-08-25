@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Modal, Select, Space, message, Popconfirm, Tooltip } from "antd";
+import { Button, Modal, Select, message, Tooltip } from "antd";
 import { Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
@@ -89,30 +89,30 @@ export default function DeleteLessonButton({
       </Tooltip>
 
       <Modal
-        title={
-          <Space>
-            <Trash style={{ color: "#E03131" }} /> Видалити урок
-          </Space>
-        }
+        // Заголовок без іконки, капсом і жирним — як у решти поп-апів
+        // (живий фідбек); іконка переїхала в саму кнопку «Видалити».
+        title={<div style={{ fontWeight: 900, textTransform: "uppercase" }}>Видалити урок</div>}
         open={open}
         onCancel={() => setOpen(false)}
+        // Без вкладеного Popconfirm (живий фідбек): сам поп-ап уже і є
+        // підтвердженням, друга пара кнопок «Так, видалити»/«Ні» поверх
+        // нього тільки плодила кнопки. Попередження про зірки лишилось
+        // текстом у тілі поп-апу.
         footer={[
           <Button key="back" onClick={() => setOpen(false)} className="btn-secondary">
             Скасувати
           </Button>,
-          <Popconfirm
+          <Button
             key="delete"
-            title="Ви впевнені?"
-            description="Це видалить урок та всі оцінки учнів за цей день."
-            onConfirm={handleDelete}
-            okText="Так, видалити"
-            cancelText="Ні"
-            okButtonProps={{ danger: true, loading }}
+            danger
+            icon={<Trash />}
+            disabled={!selectedLessonId}
+            loading={loading}
+            onClick={handleDelete}
+            className="btn-danger-outline"
           >
-            <Button danger icon={<Trash />} disabled={!selectedLessonId} loading={loading} className="btn-danger-outline">
-              Видалити
-            </Button>
-          </Popconfirm>
+            Видалити
+          </Button>,
         ]}
       >
         <div style={{ padding: "24px 0" }}>

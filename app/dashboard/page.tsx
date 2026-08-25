@@ -4,8 +4,8 @@ import { getDashboardData } from "@/lib/analytics";
 import { loadParallels } from "@/lib/admin/parallels";
 import BentoGrid from "@/components/dashboard/BentoGrid";
 import Link from "next/link";
-import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import "./dashboard.css";
+import BackButton from "@/components/BackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -82,22 +82,7 @@ export default async function DashboardPage({
     <div className="dashboard-container">
       <div className="dashboard-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "32px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <Link
-            href="/admin"
-            style={{
-              background: "#000000",
-              color: "#ffffff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "38px",
-              height: "38px",
-              borderRadius: "10px",
-              textShadow: "none"
-            }}
-          >
-            <ArrowLeft weight="bold" />
-          </Link>
+          <BackButton href="/admin" label="Назад до кабінету" />
           <h1 style={{ margin: 0, textTransform: "uppercase", fontSize: "2.2rem", fontWeight: 900, letterSpacing: "-1px" }}>
             ЗАГАЛЬНИЙ ДАШБОРД
           </h1>
@@ -115,7 +100,7 @@ export default async function DashboardPage({
                   <Link
                     key={p.id}
                     href={`/dashboard?parallelId=${p.id}`}
-                    className={`filter-btn ${!classId && parallelId === p.id ? 'active' : ''}`}
+                    className={`filter-btn ${parallelId === p.id ? 'active' : ''}`}
                   >
                     {p.name} клас
                   </Link>
@@ -132,10 +117,14 @@ export default async function DashboardPage({
               >
                 Всі класи
               </Link>
+              {/* parallelId тягнеться в посилання разом із класом (живий
+                  фідбек): без нього вибір конкретного класу скидав саму
+                  паралель — чіп «7 клас» гаснув, а список класів під ним
+                  розгортався назад до всіх класів. */}
               {(parallelId ? data.classes.filter((c) => c.parallel_id === parallelId) : data.classes).map(c => (
                 <Link
                   key={c.id}
-                  href={`/dashboard?classId=${c.id}`}
+                  href={parallelId ? `/dashboard?parallelId=${parallelId}&classId=${c.id}` : `/dashboard?classId=${c.id}`}
                   className={`filter-btn ${classId === c.id ? 'active' : ''}`}
                 >
                   {c.name}
@@ -163,7 +152,7 @@ export default async function DashboardPage({
         </div>
         <div style={kpiCardStyle}>
           <div style={kpiLabelStyle}>Відвідано уроків</div>
-          <div style={{ ...kpiValueStyle, color: "#52C51A" }}>{data.kpi.attendedLessons}</div>
+          <div style={{ ...kpiValueStyle, color: "#20C31A" }}>{data.kpi.attendedLessons}</div>
         </div>
         <div style={kpiCardStyle}>
           <div style={kpiLabelStyle}>Кількість пропусків</div>

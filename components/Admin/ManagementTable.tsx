@@ -218,12 +218,16 @@ export default function ManagementTable({
       title: <div style={{ fontWeight: 900, color: "#000" }}>УЧЕНЬ</div>,
       key: "student",
       fixed: "left" as const,
-      width: 220,
+      // 280, не 220 (живий фідбек): «Прізвище Ім'я» більшості учнів
+      // переносилось на два рядки й розсовувало висоту рядків таблиці.
+      width: 280,
       render: (_value: unknown, record: Student) => (
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ fontSize: "1.4rem", flexShrink: 0 }}>{record.avatar_emoji}</span>
           <div style={{ lineHeight: "1.2" }}>
-            <div style={{ fontWeight: 900, fontSize: "1rem" }}>{record.full_name}</div>
+            {/* 800, не 900 (живий фідбек): у стовпці ПІБ на кожному рядку,
+                найважчою вагою він перекрикував самі бали. */}
+            <div style={{ fontWeight: 800, fontSize: "1rem" }}>{record.full_name}</div>
             {record.nickname && (
               <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontWeight: 600 }}>
                 {record.nickname}
@@ -285,10 +289,13 @@ export default function ManagementTable({
         }
       };
     }),
-    ...lessons.map((lesson, idx) => {
+    ...lessons.map((lesson) => {
       const lessonDate = dayjs(lesson.date);
-      const isToday = dayjs().isSame(lessonDate, "day");
-      const isHighlighted = isToday || (idx === lessons.length - 1 && lessonDate.isBefore(dayjs()));
+      // Сірим підсвічується РІВНО сьогоднішній урок (живий фідбек). Раніше
+      // сюди ж потрапляв просто останній урок у списку, тож у класі, де
+      // останній урок був у травні, травнева колонка виглядала як
+      // «сьогоднішня» цілий рік.
+      const isHighlighted = dayjs().isSame(lessonDate, "day");
 
       return {
         title: (
@@ -402,7 +409,7 @@ export default function ManagementTable({
                           textAlign: "center",
                           fontWeight: 900,
                           fontSize: "1.1rem",
-                          color: lessonTotal > 0 ? "#52C51A" : "#adb5bd",
+                          color: lessonTotal > 0 ? "#20C31A" : "#adb5bd",
                           textShadow: lessonTotal > 0 ? "0 0 10px rgba(43,138,62,0.1)" : "none"
                         }}>
                           {lessonTotal}
@@ -479,8 +486,8 @@ export default function ManagementTable({
           border: 2px solid var(--color-border);
         }
         .ant-checkbox-checked .ant-checkbox-inner {
-          background-color: #52C51A;
-          border-color: #52C51A;
+          background-color: #20C31A;
+          border-color: #20C31A;
         }
         .management-grid .ant-select-dropdown,
         .management-grid .ant-select-item {
@@ -517,18 +524,18 @@ export default function ManagementTable({
           border-color: #dee2e6 !important;
         }
         .ant-checkbox-checked .ant-checkbox-inner {
-          background-color: #52C51A !important;
-          border-color: #52C51A !important;
+          background-color: #20C31A !important;
+          border-color: #20C31A !important;
         }
         /* MORE ROBUST PRIZE ELIGIBILITY */
         .prize-checkbox.prize-eligible .ant-checkbox-inner {
-          border-color: #52C51A !important;
+          border-color: #20C31A !important;
           border-width: 3px !important;
           box-shadow: 0 0 8px rgba(43,138,62,0.6) !important;
           background-color: #ffffff !important;
         }
         .prize-checkbox.prize-eligible.ant-checkbox-wrapper-checked .ant-checkbox-inner {
-          background-color: #52C51A !important;
+          background-color: #20C31A !important;
           border-width: 2px !important;
           box-shadow: none !important;
         }

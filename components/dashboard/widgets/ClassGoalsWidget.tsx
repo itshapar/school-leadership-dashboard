@@ -15,7 +15,7 @@ import StarIcon from "@/components/StarIcon";
  * видно на публічній сторінці класу.
  */
 
-const CHART_COLORS = ["#52C51A", "#f59f00", "#7048e8", "#1971c2"];
+const CHART_COLORS = ["#20C31A", "#f59f00", "#7048e8", "#1971c2"];
 
 /** Скільки цілей показуємо; решта свідомо не влазить у віджет. */
 const MAX_GOALS = 4;

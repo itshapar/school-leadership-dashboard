@@ -3,6 +3,7 @@ import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
 import { assertClassOwnership } from "@/lib/admin/classOwnership";
 import { normalizeFullName, validateFullName } from "@/lib/students/fullName";
+import { uuidLike } from "@/lib/validation/uuid";
 
 /**
  * Додавання учнів списком (майстер онбордингу, крок «Учні» → вкладка «Рядками»).
@@ -16,7 +17,7 @@ import { normalizeFullName, validateFullName } from "@/lib/students/fullName";
  */
 
 const BulkSchema = z.object({
-  class_id: z.string().uuid(),
+  class_id: uuidLike,
   names: z.array(z.string()).min(1).max(60),
 });
 

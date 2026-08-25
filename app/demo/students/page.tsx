@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeftOutlined } from "@ant-design/icons";
 import { getDemoTeacherView } from "@/lib/public/demoTeacherView";
 import { PUBLIC_DEMO_CLASS_CODE } from "@/lib/publicDemo";
 import DemoStudentList from "@/components/DemoStudentList";
+import BackButton from "@/components/BackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -19,21 +19,7 @@ export default async function DemoStudentsPage() {
   return (
     <div className="page-container">
       <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
-        <Link
-          href={`/class/${PUBLIC_DEMO_CLASS_CODE}`}
-          style={{
-            background: "#000000",
-            color: "#ffffff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "38px",
-            height: "38px",
-            borderRadius: "10px",
-          }}
-        >
-          <ArrowLeftOutlined />
-        </Link>
+        <BackButton href={`/class/${PUBLIC_DEMO_CLASS_CODE}`} label="Назад до класу" />
         <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 900, textTransform: "uppercase" }}>
           Учні: {view.name}
         </h1>

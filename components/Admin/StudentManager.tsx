@@ -2,13 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Table, Button, Modal, Form, Input, Space, message, Popconfirm } from "antd";
-import { ArrowLeft, Eye, EyeSlash, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
+import { Eye, EyeSlash, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
-import Link from "next/link";
 import { ResetPinButton, PrintClassPinsButton, RegenerateClassPinsButton } from "@/components/Admin/PinManager";
-import DataBasisReminder from "@/components/Admin/DataBasisReminder";
 import {
   FULL_NAME_COMBINED_HINT,
   FULL_NAME_LABEL,
@@ -16,6 +14,7 @@ import {
   checkNameOrder,
   fullNameRule,
 } from "@/lib/students/fullName";
+import BackButton from "@/components/BackButton";
 
 /**
  * Список учнів класу.
@@ -241,22 +240,7 @@ export default function StudentManager({
     <div style={{ padding: "24px", maxWidth: "1000px", margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", gap: 12, flexWrap: "wrap" }}>
         <Space size="large">
-          <Link href={`/admin/${publicCode || classId}`}>
-            <Button
-              icon={<ArrowLeft />}
-              style={{
-                background: "#000",
-                color: "#fff",
-                border: "none",
-                height: "38px",
-                width: "38px",
-                borderRadius: "10px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            />
-          </Link>
+          <BackButton href={`/admin/${publicCode || classId}`} label="Назад до журналу" />
           <h1 style={{ margin: 0, fontWeight: 900, fontSize: "1.8rem", textTransform: "uppercase" }}>
             Список учнів
           </h1>
@@ -297,7 +281,6 @@ export default function StudentManager({
       </div>
 
       {/* Неблокуюче нагадування про запевнення з розділу 5 Умов (Етап 5). */}
-      <DataBasisReminder style={{ marginBottom: 20 }} />
 
       <div
         style={{
@@ -334,7 +317,16 @@ export default function StudentManager({
         okButtonProps={{ className: "btn-primary" }}
         cancelButtonProps={{ className: "btn-secondary" }}
       >
-        <Form form={form} layout="vertical" onFinish={handleFinish} style={{ marginTop: "20px" }}>
+        {/* Підказки під полями (Form.Item extra) щільно тиснулись до
+            наступного поля (живий фідбек) — розсуваємо самі поля, а не
+            додаємо відступ кожній підказці окремо. */}
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleFinish}
+          style={{ marginTop: "20px" }}
+          className="student-form"
+        >
           <Form.Item
             label={<span style={{ fontWeight: 600 }}>{FULL_NAME_LABEL}</span>}
             name="full_name"
@@ -380,6 +372,12 @@ export default function StudentManager({
       </Modal>
 
       <style jsx global>{`
+        .student-form .ant-form-item {
+          margin-bottom: 28px;
+        }
+        .student-form .ant-form-item-extra {
+          margin-top: 6px;
+        }
         .student-table .ant-table-thead > tr > th {
           background: #f8f9fa !important;
           font-weight: 900 !important;

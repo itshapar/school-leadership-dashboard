@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Popconfirm, Select, Spin, Switch, Tabs, message } from "antd";
-import Link from "next/link";
-import { Archive, ArrowLeft, Trash } from "@phosphor-icons/react";
+import { Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
   loadClassPrizes,
@@ -15,6 +14,7 @@ import {
 import PrizesPanel from "@/components/Admin/ClassSettings/PrizesPanel";
 import { PrintClassPinsButton, RegenerateClassPinsButton } from "@/components/Admin/PinManager";
 import { setClassParallel, upsertParallelByName, type Parallel } from "@/lib/admin/parallels";
+import BackButton from "@/components/BackButton";
 
 // Той самий фіксований список 1–12, що й у майстрі створення класу.
 const GRADE_OPTIONS = Array.from({ length: 12 }, (_, i) => {
@@ -45,7 +45,6 @@ interface Props {
   classId: string;
   classCode: string;
   className: string;
-  initialArchived: boolean;
   initialShowClassmateStars: boolean;
   initialParallelId: string | null;
   parallels: Parallel[];
@@ -56,7 +55,6 @@ export default function ClassSettingsClient({
   classId,
   classCode,
   className,
-  initialArchived,
   initialShowClassmateStars,
   initialParallelId,
   parallels,
@@ -66,7 +64,6 @@ export default function ClassSettingsClient({
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [archived, setArchived] = useState(initialArchived);
   const [showClassmateStars, setShowClassmateStars] = useState(initialShowClassmateStars);
   const [savingVisibility, setSavingVisibility] = useState(false);
   const [parallelId, setParallelId] = useState(initialParallelId);
@@ -103,22 +100,6 @@ export default function ClassSettingsClient({
   useEffect(() => {
     void refresh();
   }, [refresh]);
-
-  async function toggleArchive() {
-    setBusy(true);
-    const { error } = await supabase
-      .from("classes")
-      .update({ archived_at: archived ? null : new Date().toISOString() })
-      .eq("id", classId);
-    setBusy(false);
-    if (error) {
-      message.error("Не вдалося змінити статус архіву");
-      return;
-    }
-    setArchived((v) => !v);
-    message.success(archived ? "Клас повернуто з архіву" : "Клас заархівовано");
-    router.refresh();
-  }
 
   /**
    * Назва класу редагується вже після створення (живий фідбек): у майстрі
@@ -211,38 +192,20 @@ export default function ClassSettingsClient({
           flexWrap: "wrap",
         }}
       >
-        <Link href={`/admin/${classCode}`}>
-          <Button
-            icon={<ArrowLeft />}
-            style={{
-              background: "#000",
-              color: "#fff",
-              border: "none",
-              height: 38,
-              width: 38,
-              borderRadius: 10,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          />
-        </Link>
-        <div>
-          <h1
-            style={{
-              margin: 0,
-              fontWeight: 900,
-              fontSize: "1.6rem",
-              textTransform: "uppercase",
-              lineHeight: 1.1,
-            }}
-          >
-            Налаштування класу
-          </h1>
-          <div style={{ color: "#868e96", fontWeight: 600, fontSize: "0.9rem" }}>
-            {name}
-          </div>
-        </div>
+        <BackButton href={`/admin/${classCode}`} label="Назад до журналу" />
+        {/* Без дубля назви класу під заголовком (живий фідбек): вона й так
+            стоїть окремою карткою «Назва класу» одразу нижче. */}
+        <h1
+          style={{
+            margin: 0,
+            fontWeight: 900,
+            fontSize: "1.6rem",
+            textTransform: "uppercase",
+            lineHeight: 1.1,
+          }}
+        >
+          Налаштування класу
+        </h1>
       </div>
 
       <div
@@ -378,11 +341,11 @@ export default function ClassSettingsClient({
           <Switch checked={showClassmateStars} loading={savingVisibility} onChange={toggleClassmateStars} />
         </div>
         <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 8 }}>
-          Увімкнено: у списку класу кожен учень бачить, скільки зірок мають
-          однокласники, тобто змагається з ними. Вимкнено: бачить лише імена,
-          а власний результат порівнює сам із собою. Історію "за що" це не
-          відкриває в жодному разі, її бачить тільки сам учень через власний
-          PIN.
+          Чи бачать учні зірки одне одного у списку класу. Увімкнено: біля
+          кожного імені стоїть його кількість зірок, клас перетворюється на
+          змагання. Вимкнено: у списку лише імена, свої зірки учень бачить
+          тільки в себе. За що саме нараховано, не видно в жодному разі: цю
+          історію учень відкриває лише про себе, за власним PIN.
         </div>
       </div>
 
@@ -450,13 +413,13 @@ export default function ClassSettingsClient({
         <div>
           <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Небезпечна зона</div>
           <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2 }}>
-            Архів ховає клас зі списку, не видаляючи дані. Видалення остаточне.
+            Видалення остаточне: разом із класом зникають усі учні, уроки,
+            зірки й нагороди.
           </div>
         </div>
+        {/* Архів прибрано повністю (живий фідбек): функція не знадобилась
+            жодного разу, а «сховати клас» плутали з «видалити». */}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Button icon={<Archive />} loading={busy} onClick={toggleArchive} className="btn-secondary">
-            {archived ? "Повернути з архіву" : "Архівувати"}
-          </Button>
           <Popconfirm
             title="Видалити клас назавжди?"
             description="Усі учні, уроки, бали й нагороди цього класу буде видалено безповоротно."

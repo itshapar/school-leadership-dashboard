@@ -14,6 +14,7 @@ import {
   type EntryType,
 } from "@/lib/admin/classConfig";
 import StarIcon from "@/components/StarIcon";
+import BackButton from "@/components/BackButton";
 
 /**
  * «Швидкий урок»: створити урок і одразу проставити бали всьому класу.
@@ -177,9 +178,7 @@ export default function AddLessonPage() {
   return (
     <div className="page-container" style={{ maxWidth: "600px" }}>
       <div style={{ marginBottom: "8px" }}>
-        <Link href={`/admin/${classParam}`} style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
-          ← Журнал
-        </Link>
+        <BackButton href={`/admin/${classParam}`} label="Назад до журналу" />
       </div>
 
       <div className="page-header">

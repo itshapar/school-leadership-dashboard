@@ -3,6 +3,7 @@ import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
 import { assertClassOwnership } from "@/lib/admin/classOwnership";
 import { normalizeFullName, validateFullName } from "@/lib/students/fullName";
+import { uuidLike } from "@/lib/validation/uuid";
 
 /**
  * CRUD учня.
@@ -25,19 +26,19 @@ const FullNameField = z
   });
 
 const PatchStudentSchema = z.object({
-  id: z.string().uuid(),
+  id: uuidLike,
   full_name: FullNameField.optional(),
   nickname: z.string().max(60).optional().nullable(),
   avatar_emoji: z.string().max(16).optional(),
-  group_id: z.string().uuid().nullable().optional(),
+  group_id: uuidLike.nullable().optional(),
 });
 
 const PostStudentSchema = z.object({
   full_name: FullNameField,
   nickname: z.string().max(60).optional().nullable(),
   avatar_emoji: z.string().min(1).max(16),
-  class_id: z.string().uuid(),
-  group_id: z.string().uuid().nullable().optional(),
+  class_id: uuidLike,
+  group_id: uuidLike.nullable().optional(),
 });
 
 export async function PATCH(request: Request) {

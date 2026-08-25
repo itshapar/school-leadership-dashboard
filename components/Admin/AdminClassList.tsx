@@ -28,7 +28,6 @@ export interface AdminClassCard {
   formatted_code: string;
   parallel_id: string | null;
   is_demo: boolean;
-  archived: boolean;
   studentCount: number;
   lessonCount: number;
   totalStars: number;
@@ -153,9 +152,6 @@ function ClassCard({ cls }: { cls: AdminClassCard }) {
               <Tag color="purple" style={{ fontWeight: 800, margin: 0 }}>
                 🧪 ДЕМО
               </Tag>
-            )}
-            {cls.archived && (
-              <Tag style={{ fontWeight: 800, margin: 0 }}>Архів</Tag>
             )}
           </div>
 

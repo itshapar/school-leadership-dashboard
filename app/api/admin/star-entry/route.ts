@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
 import { assertClassOwnership } from "@/lib/admin/classOwnership";
+import { uuidLike } from "@/lib/validation/uuid";
 
 /**
  * Автозбереження клітинки журналу «учень × урок».
@@ -17,10 +18,10 @@ import { assertClassOwnership } from "@/lib/admin/classOwnership";
  */
 
 const StarEntrySchema = z.object({
-  student_id: z.string().uuid(),
-  lesson_id: z.string().uuid(),
-  class_id: z.string().uuid(),
-  entry_type_id: z.string().uuid(),
+  student_id: uuidLike,
+  lesson_id: uuidLike,
+  class_id: uuidLike,
+  entry_type_id: uuidLike,
   amount: z.number().int().min(-100).max(100),
 });
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Modal, Tooltip, message } from "antd";
-import { CheckCircle, Copy, QrCode } from "@phosphor-icons/react";
+import { Copy, QrCode } from "@phosphor-icons/react";
 import { QRCodeSVG } from "qrcode.react";
 
 /**
@@ -47,7 +47,7 @@ export default function ClassQrButton({
       </Tooltip>
 
       <Modal
-        title={<div style={{ fontWeight: 900 }}>QR-код класу</div>}
+        title={<div style={{ fontWeight: 900, textTransform: "uppercase" }}>QR-код класу</div>}
         open={open}
         onCancel={() => setOpen(false)}
         width={380}
@@ -55,12 +55,11 @@ export default function ClassQrButton({
         // нечитабельним, не лише затемненим (9.13, живий фідбек) — самого
         // напівпрозорого чорного фону замало, текст/бали й далі проглядались.
         styles={{ mask: { backdropFilter: "blur(12px)" } }}
+        // Кнопки «Готово» немає (живий фідбек): модалку закриває хрестик,
+        // окрема кнопка лише накладалась на «Копіювати посилання».
         footer={[
           <Button key="copy" icon={<Copy />} onClick={copyLink} className="btn-secondary">
             Копіювати посилання
-          </Button>,
-          <Button key="done" type="primary" icon={<CheckCircle />} onClick={() => setOpen(false)} className="btn-primary">
-            Готово
           </Button>,
         ]}
       >
@@ -76,17 +75,24 @@ export default function ClassQrButton({
           >
             {link && <QRCodeSVG value={link} size={220} />}
           </div>
-          <p
+          {/* Посилання клікабельне й підкреслене (живий фідбек): раніше це
+              був звичайний текст, який доводилось виділяти мишею. */}
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
+              display: "block",
               marginTop: 16,
               wordBreak: "break-all",
-              color: "var(--color-text-muted)",
+              color: "#000000",
               fontSize: "0.85rem",
               fontWeight: 600,
+              textDecoration: "underline",
             }}
           >
             {link}
-          </p>
+          </a>
           <p style={{ color: "var(--color-text-muted)", fontSize: "0.8rem" }}>
             Учень сканує камерою телефону й переходить на дашборд класу, там
             попросить власний PIN, як завжди.

@@ -3,10 +3,11 @@ import { NextResponse } from "next/server";
 import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
 import { assertClassOwnership } from "@/lib/admin/classOwnership";
+import { uuidLike } from "@/lib/validation/uuid";
 
 const PostLessonSchema = z
   .object({
-    class_id: z.string().uuid(),
+    class_id: uuidLike,
     date: z.string().date().optional(),
     // Серія уроків (Етап 9.2): за розкладом днів тижня, а не по одному вручну.
     dates: z.array(z.string().date()).min(1).max(200).optional(),

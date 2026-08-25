@@ -46,7 +46,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
             // Той самий зелений, що й підсумок "За урок" у журналі
             // (ManagementTable) і всюди в інтерфейсі — живий фідбек,
             // єдиний зелений на весь сайт замість кількох відтінків.
-            colorPrimary: "#52C51A",
+            colorPrimary: "#20C31A",
             colorPrimaryHover: "#429e15",
           },
         },

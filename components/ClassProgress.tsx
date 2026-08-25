@@ -47,11 +47,11 @@ export default function ClassProgressBars({
               <span>
                 {prize.emoji} {prize.name}
               </span>
-              <span style={{ color: reached ? "#52C41A" : "inherit" }}>{percent}%</span>
+              <span style={{ color: reached ? "#20C31A" : "inherit" }}>{percent}%</span>
             </div>
             <Progress
               percent={percent}
-              strokeColor={reached ? "#52C41A" : "#000000"}
+              strokeColor={reached ? "#20C31A" : "#000000"}
               trailColor="#e9ecef"
               strokeWidth={20}
               showInfo={false}

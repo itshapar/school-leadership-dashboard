@@ -40,7 +40,6 @@ export default async function ClassSettingsPage({ params }: Props) {
         classId={cls.id}
         classCode={cls.public_code}
         className={cls.name}
-        initialArchived={Boolean(cls.archived_at)}
         initialShowClassmateStars={Boolean(visibility?.show_classmate_stars)}
         initialParallelId={visibility?.parallel_id ?? null}
         parallels={parallels}

@@ -24,7 +24,7 @@ export default async function AdminPage() {
   const [{ data: classes }, parallels] = await Promise.all([
     supabase
       .from("classes")
-      .select("id, name, public_code, parallel_id, is_demo, archived_at")
+      .select("id, name, public_code, parallel_id, is_demo")
       // Постійний публічний демо-клас (Етап 9, /demo) технічно належить
       // цьому акаунту, але вчитель не має його бачити у своєму списку —
       // це не його дані, лише носій для публічної демонстрації.
@@ -97,7 +97,6 @@ export default async function AdminPage() {
     formatted_code: formatClassCode(cls.public_code),
     parallel_id: cls.parallel_id,
     is_demo: cls.is_demo ?? false,
-    archived: Boolean(cls.archived_at),
     studentCount: studentCounts.get(cls.id) ?? 0,
     lessonCount: lessonCounts.get(cls.id) ?? 0,
     totalStars: starTotals.get(cls.id) ?? 0,

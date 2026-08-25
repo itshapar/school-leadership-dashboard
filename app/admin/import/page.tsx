@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Select, Spin } from "antd";
-import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import StudentImport from "@/components/Admin/StudentImport";
+import BackButton from "@/components/BackButton";
 
 /**
  * Сторінка імпорту учнів із файлу.
@@ -43,9 +43,7 @@ export default function ImportPage() {
   return (
     <div className="page-container" style={{ maxWidth: "760px" }}>
       <div style={{ marginBottom: "8px" }}>
-        <Link href="/admin" style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
-          ← Адмін
-        </Link>
+        <BackButton href="/admin" label="Назад до кабінету" />
       </div>
 
       <div className="page-header">

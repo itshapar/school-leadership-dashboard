@@ -190,14 +190,14 @@ export default function PersonalDashboardClient({
               <div key={p.id}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontWeight: 800, fontSize: "0.95rem" }}>
                   <span>{titleText}</span>
-                  <span style={{ color: isGiven ? "#52C51A" : "inherit" }}>
+                  <span style={{ color: isGiven ? "#20C31A" : "inherit" }}>
                     {isGiven || hasThreshold ? "100%" : `${pct}%`}
                   </span>
                 </div>
                 <Progress 
                   percent={pct} 
                   showInfo={false} 
-                  strokeColor={isGiven ? "#52C51A" : (hasThreshold ? "#fcc419" : "#000000")}
+                  strokeColor={isGiven ? "#20C31A" : (hasThreshold ? "#fcc419" : "#000000")}
                   strokeWidth={12}
                   className="heavy-progress"
                 />

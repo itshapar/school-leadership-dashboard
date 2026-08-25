@@ -1,11 +1,10 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import ManagementTable from "@/components/Admin/ManagementTable";
 import AdminClassToolbar from "@/components/Admin/AdminClassToolbar";
-import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import { resolveOwnedClass } from "@/lib/admin/resolveClass";
 import { loadManagementJournalData } from "@/lib/admin/managementJournalData";
+import BackButton from "@/components/BackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -45,24 +44,7 @@ export default async function AdminClassPage({ params }: Props) {
         zIndex: 100
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <Link
-            href="/admin"
-            style={{
-              background: "#000000",
-              color: "#ffffff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "38px",
-              height: "38px",
-              borderRadius: "10px",
-              textDecoration: "none",
-              fontSize: "1.1rem",
-              boxShadow: "3px 3px 0px rgba(0,0,0,0.2)"
-            }}
-          >
-            <ArrowLeft weight="bold" />
-          </Link>
+          <BackButton href="/admin" label="Назад до кабінету" />
           <div style={{ width: "2px", height: "24px", background: "#e9ecef" }} />
           <h1 style={{ fontSize: "1.5rem", fontWeight: 900, margin: 0, textTransform: "uppercase", lineHeight: 1.2 }}>
             {cls.name}

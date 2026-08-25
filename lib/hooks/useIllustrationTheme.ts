@@ -59,7 +59,7 @@ const useIllustrationTheme = () => {
         token: {
           fontFamily: 'Montserrat, sans-serif',
           colorText: '#2C2C2C',
-          colorPrimary: '#52C41A',
+          colorPrimary: '#20C31A',
           colorSuccess: '#51CF66',
           colorWarning: '#FFD93D',
           colorError: '#FA5252',

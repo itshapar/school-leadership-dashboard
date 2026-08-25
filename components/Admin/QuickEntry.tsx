@@ -125,22 +125,33 @@ export default function QuickEntry({
     }
   };
 
-  const typeOptions = entryTypes.map((t) => ({
-    value: t.id,
-    label: `${entryTypeLabel(t)} · ${t.sign > 0 ? "+" : "−"}`,
-  }));
+  /**
+   * Тільки позажурнальні типи (живий фідбек): «Урок» — це той тип, яким
+   * заповнюється сам журнал, у поп-апі разових нарахувань йому нема чого
+   * робити. Лишаються бонус і штраф (і будь-які інші не прив'язані до
+   * уроку типи, якщо вчитель їх колись заведе).
+   */
+  const typeOptions = entryTypes
+    .filter((t) => !t.is_lesson_bound)
+    .map((t) => ({
+      value: t.id,
+      label: `${entryTypeLabel(t)} · ${t.sign > 0 ? "+" : "−"}`,
+    }));
 
   return (
     <>
       <Tooltip title="НАРАХУВАННЯ">
+        {/* Чорна, як і решта кнопок тулбара (живий фідбек): жовта заливка
+            з зеленою тінню виділяла дію, яку вчитель робить не так часто,
+            щоб вона кричала на весь тулбар. */}
         <Button
           onClick={openModal}
           size="middle"
           icon={<Star weight="fill" />}
           style={{
-            background: "#fff9db",
-            color: "var(--color-star, #f59f00)",
-            border: "2px solid var(--color-star, #f59f00)",
+            background: "#000",
+            color: "#fff",
+            border: "2px solid #000",
             fontWeight: 800,
             borderRadius: "12px",
             height: "42px",
@@ -149,7 +160,7 @@ export default function QuickEntry({
             alignItems: "center",
             justifyContent: "center",
             fontSize: "1.2rem",
-            boxShadow: "3px 3px 0px #52C51A",
+            boxShadow: "3px 3px 0px #000",
           }}
         />
       </Tooltip>
@@ -167,7 +178,7 @@ export default function QuickEntry({
             type="primary"
             onClick={() => form.submit()}
             loading={loading}
-            disabled={configLoading || entryTypes.length === 0}
+            disabled={configLoading || typeOptions.length === 0}
             className="btn-primary"
           >
             Зберегти

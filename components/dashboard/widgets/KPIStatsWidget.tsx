@@ -16,7 +16,7 @@ export default function KPIStatsWidget({ kpi }: any) {
         <div style={{ 
           fontSize: "0.9rem", 
           fontWeight: 600, 
-          color: isUp ? "#52C51A" : "#fa5252",
+          color: isUp ? "#20C31A" : "#fa5252",
           marginTop: "8px",
           display: "flex",
           alignItems: "center",
