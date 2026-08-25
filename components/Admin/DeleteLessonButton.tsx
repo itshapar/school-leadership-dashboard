@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Modal, Select, message, Tooltip } from "antd";
-import { Trash } from "@phosphor-icons/react";
+import { CalendarSlash, Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import dayjs from "dayjs";
@@ -70,7 +70,7 @@ export default function DeleteLessonButton({
             fetchLessons();
           }}
           size="middle"
-          icon={<Trash />}
+          icon={<CalendarSlash />}
           style={{
             fontWeight: 800,
             borderRadius: "12px",

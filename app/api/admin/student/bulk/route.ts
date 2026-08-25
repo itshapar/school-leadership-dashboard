@@ -109,10 +109,25 @@ export async function POST(request: Request) {
     );
   }
 
+  // PIN одразу всім щойно доданим (живий фідбек): інакше клас, зібраний
+  // майстром чи імпортом, лишався без жодного PIN, і вчитель мусив окремо
+  // йти в «Перегенерувати PIN-и». Робимо це лише для НОВИХ рядків, тож
+  // наявні PIN-и однокласників не збиваються.
+  const created = data ?? [];
+  const pinResults = await Promise.all(
+    created.map((student) =>
+      supabaseForRls.rpc("reset_student_pin", { p_student_id: student.id })
+    )
+  );
+  const pinFailures = pinResults.filter((r) => r.error).length;
+  if (pinFailures > 0) {
+    console.error(`Supabase error (initial pins): ${pinFailures} з ${created.length}`);
+  }
+
   return NextResponse.json({
     ok: true,
-    inserted: data?.length ?? 0,
+    inserted: created.length,
     skipped: valid.length - toInsert.length,
-    students: data ?? [],
+    students: created,
   });
 }

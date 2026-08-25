@@ -48,7 +48,7 @@ export default function AdminClassToolbar({
         onSuccess={() => router.refresh()}
       />
 
-      <Tooltip title="ІСТОРІЯ">
+      <Tooltip title="БОНУСИ ТА ШТРАФИ">
         <Link href={`/admin/${classCode}/bonus`}>
           <Button
             size="middle"

@@ -11,6 +11,7 @@ import BackButton from "@/components/BackButton";
 interface StudentData {
   id: string;
   full_name: string;
+  nickname: string | null;
   avatar_emoji: string;
   className: string;
   classCode: string;
@@ -109,16 +110,39 @@ export default function TotalDashboardClient({
       title: "УЧЕНЬ",
       key: "student",
       sorter: (a: StudentData, b: StudentData) => a.full_name.localeCompare(b.full_name),
+      // Ім'я веде на дашборд учня очима вчителя, а не в журнал класу
+      // (живий фідбек): із рейтингу цікавий саме конкретний учень.
       render: (record: StudentData) => (
-        <Link href={`/admin/${record.classCode}`} style={{ textDecoration: "none", color: "inherit" }}>
-          <div className="student-profile-link" style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
-            <span style={{ fontSize: "1.5rem" }}>{record.avatar_emoji}</span>
-            <span style={{ fontWeight: 900, fontSize: "1rem" }} className="student-name-text">
-              {record.full_name}
-            </span>
-          </div>
+        <Link
+          href={`/admin/student/${record.id}?from=total`}
+          className="student-profile-link"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            textDecoration: "none",
+            color: "inherit",
+          }}
+        >
+          <span style={{ fontSize: "1.5rem" }}>{record.avatar_emoji}</span>
+          <span style={{ fontWeight: 800, fontSize: "1rem" }} className="student-name-text">
+            {record.full_name}
+          </span>
         </Link>
       ),
+    },
+    {
+      title: "НІКНЕЙМ",
+      dataIndex: "nickname",
+      key: "nickname",
+      sorter: (a: StudentData, b: StudentData) =>
+        (a.nickname ?? "").localeCompare(b.nickname ?? ""),
+      render: (nick: string | null) =>
+        nick ? (
+          <span style={{ fontWeight: 600 }}>{nick}</span>
+        ) : (
+          <span style={{ color: "#adb5bd" }}>—</span>
+        ),
     },
     {
       title: "КЛАС",
@@ -238,9 +262,14 @@ export default function TotalDashboardClient({
         .admin-total-table .ant-table-row:hover .ant-table-cell {
           background: #fdfaf5 !important;
         }
+        /* Підкреслення чорною лінією, не синій текст (живий фідбек):
+           синій тут єдине місце, де він узагалі лишався. */
         .student-profile-link:hover .student-name-text {
-          color: #1890ff;
+          color: #000000;
           text-decoration: underline;
+          text-decoration-color: #000000;
+          text-decoration-thickness: 2px;
+          text-underline-offset: 3px;
         }
       `}</style>
     </div>

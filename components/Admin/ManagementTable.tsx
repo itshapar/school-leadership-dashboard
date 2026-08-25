@@ -225,9 +225,18 @@ export default function ManagementTable({
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ fontSize: "1.4rem", flexShrink: 0 }}>{record.avatar_emoji}</span>
           <div style={{ lineHeight: "1.2" }}>
-            {/* 800, не 900 (живий фідбек): у стовпці ПІБ на кожному рядку,
-                найважчою вагою він перекрикував самі бали. */}
-            <div style={{ fontWeight: 800, fontSize: "1rem" }}>{record.full_name}</div>
+            {/* Ім'я веде на дашборд учня очима вчителя (живий фідбек).
+                800, не 900: у стовпці ПІБ на кожному рядку, найважчою
+                вагою він перекрикував самі бали. */}
+            <Link
+              href={`/admin/student/${record.id}`}
+              className="student-profile-link"
+              style={{ color: "inherit", textDecoration: "none" }}
+            >
+              <div style={{ fontWeight: 800, fontSize: "1rem" }} className="student-name-text">
+                {record.full_name}
+              </div>
+            </Link>
             {record.nickname && (
               <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontWeight: 600 }}>
                 {record.nickname}

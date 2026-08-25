@@ -130,6 +130,18 @@ export async function POST(request: Request) {
     );
   }
 
+  // PIN одразу при створенні (живий фідбек): без нього новий учень просто
+  // не може зайти, а вчитель бачив у списку прочерк і мусив окремо тиснути
+  // «скинути PIN». reset_student_pin не SECURITY DEFINER, тож працює під
+  // RLS того самого вчителя. Помилку генерації не робимо фатальною: учень
+  // уже створений, PIN завжди можна перевипустити з таблиці.
+  const { error: pinError } = await supabaseForRls.rpc("reset_student_pin", {
+    p_student_id: data.id,
+  });
+  if (pinError) {
+    console.error("Supabase error (initial pin):", pinError);
+  }
+
   return NextResponse.json({ ok: true, student: data });
 }
 

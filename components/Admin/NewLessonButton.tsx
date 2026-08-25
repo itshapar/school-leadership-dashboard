@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Modal, DatePicker, message, Tooltip, Radio } from "antd";
-import { Plus } from "@phosphor-icons/react";
+import { CalendarPlus } from "@phosphor-icons/react";
 import dayjs from "dayjs";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
@@ -55,7 +55,7 @@ export default function NewLessonButton({
         <Button
           onClick={() => setOpen(true)}
           size="middle"
-          icon={<Plus />}
+          icon={<CalendarPlus />}
           style={{
             fontWeight: 800,
             borderRadius: "12px",

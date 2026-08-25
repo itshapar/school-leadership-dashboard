@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -15,7 +15,7 @@ import {
   message,
 } from "antd";
 import { CheckCircleFilled } from "@ant-design/icons";
-import { ArrowLeft, ArrowRight, CheckCircle, Plus } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, Plus } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
   loadClassPrizes,
@@ -113,6 +113,9 @@ export default function OnboardingWizard() {
   const [creating, setCreating] = useState(false);
   const [classForm] = Form.useForm<{ name: string }>();
 
+  /** Клас щойно створено в цій сесії майстра — див. ефект автопереходу. */
+  const justCreatedRef = useRef(false);
+
   const stepIndex = useCallback((key: WizardStepKey) => {
     const i = WIZARD_STEPS.findIndex((s) => s.key === key);
     // "Бали" й "Коди" більше не кроки майстра — найближчий видимий крок: призи.
@@ -183,8 +186,17 @@ export default function OnboardingWizard() {
 
   // Після завантаження прогресу стаємо на потрібний крок: явно вказаний
   // у URL — або перший невиконаний.
+  //
+  // justCreatedRef (живий фідбек): одразу після створення класу цей ефект
+  // спрацьовував ПЕРШИМ разом із першим же progress і перекидав майстра на
+  // progress.nextStep, тобто на «Учні», перестрибуючи «Уроки». Крок після
+  // створення обирає сам createClass, тож перший запуск ефекту пропускаємо.
   useEffect(() => {
     if (!progress) return;
+    if (justCreatedRef.current) {
+      justCreatedRef.current = false;
+      return;
+    }
     setCurrent(stepIndex(stepParam ?? progress.nextStep));
     // stepParam читаємо один раз при завантаженні прогресу: далі крок
     // перемикає сам вчитель, і смикати його з URL було б стрибками.
@@ -255,6 +267,7 @@ export default function OnboardingWizard() {
     // на першому кроці встигав блимнути зелений блок «Клас створено», і
     // лише потім майстер стрибав на «Уроки». Сам блок лишається — він
     // доречний, коли вчитель повертається на крок «Клас» назад.
+    justCreatedRef.current = true;
     setCls(data as ClassRow);
     await refresh(data.id);
     setCurrent(stepIndex("lessons"));
@@ -416,7 +429,7 @@ export default function OnboardingWizard() {
           <div>
             <StepHeader
               title="Додайте учнів"
-              hint="Рядками або файлом. У будь-якому разі система покаже прев'ю «прізвище | ім'я» на підтвердження."
+              hint="Один учень на рядок або файлом, спершу прізвище, потім ім'я. Більше нічого вносити не треба: система покаже прев'ю «прізвище | ім'я» на підтвердження."
             />
 
             {students.length > 0 && (
@@ -533,11 +546,10 @@ export default function OnboardingWizard() {
             ) : (
               <Button
                 type="primary"
-                icon={<CheckCircle />}
                 onClick={() => router.push(`/admin/${cls.public_code}`)}
                 className="btn-primary"
               >
-                Готово, до журналу
+                Перейти до журналу
               </Button>
             )}
           </div>

@@ -17,7 +17,7 @@ export default async function TotalDashboardPage() {
     // тож видалені учні й видалені класи лишалися у видачі.
     supabase
       .from("students")
-      .select("id, full_name, avatar_emoji, class_id")
+      .select("id, full_name, nickname, avatar_emoji, class_id")
       .is("deleted_at", null),
     supabase
       .from("classes")
@@ -91,6 +91,7 @@ export default async function TotalDashboardPage() {
     .map((st) => ({
       id: st.id,
       full_name: st.full_name,
+      nickname: st.nickname ?? null,
       avatar_emoji: st.avatar_emoji,
       className: classMap[st.class_id],
       classCode: codeMap[st.class_id] ?? st.class_id,

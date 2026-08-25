@@ -89,9 +89,10 @@ export default async function DashboardPage({
         </div>
 
         <div className="dashboard-filters">
+          {/* Підписи рядків «Паралель»/«Клас» прибрано (живий фідбек): і так
+              видно, що перший рядок — паралелі, другий — класи. */}
           {parallels.length > 0 && (
             <div className="filter-row">
-              <span className="filter-row-label">Паралель</span>
               <div className="class-filter">
                 <Link href="/dashboard" className={`filter-btn ${!parallelId && !classId ? 'active' : ''}`}>
                   Усі паралелі
@@ -109,7 +110,6 @@ export default async function DashboardPage({
             </div>
           )}
           <div className="filter-row">
-            <span className="filter-row-label">Клас</span>
             <div className="class-filter">
               <Link
                 href={parallelId ? `/dashboard?parallelId=${parallelId}` : "/dashboard"}

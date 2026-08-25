@@ -430,6 +430,68 @@ button, input, select, textarea {
   padding: 0 !important;
 }
 
+/* Вікна підтвердження (Popconfirm) — у тій самій мові, що й решта
+   інтерфейсу (живий фідбек): без жовтої іконки-оклику, з чорною рамкою й
+   помітною квадратною тінню замість м'якої розмитої, кнопки капсом і
+   жирним, без сірих обводок. Стосується видалення учня, нагороди, уроку
+   й класу. */
+/* Контейнер поп-апу в цій версії antd — .ant-popover-container (в старших
+   був .ant-popover-inner), тримаємо обидва, щоб не зламалось на апдейті. */
+.ant-popover .ant-popover-container,
+.ant-popover .ant-popover-inner {
+  background: #ffffff !important;
+  border: 3px solid #000000 !important;
+  border-radius: 12px !important;
+  box-shadow: 5px 5px 0px #000000 !important;
+  padding: 16px !important;
+}
+
+.ant-popconfirm .ant-popconfirm-message-icon {
+  display: none !important;
+}
+
+.ant-popconfirm .ant-popconfirm-title {
+  font-weight: 900 !important;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+
+.ant-popconfirm .ant-popconfirm-description {
+  font-weight: 600 !important;
+}
+
+/* Кнопки поп-апу підтвердження: чорна «так», біла з чорною обводкою «ні».
+   Виняток — кнопки, яким явно призначили наш клас (.btn-danger-outline
+   тощо): у них своя роль і свій колір, їх не чіпаємо. */
+.ant-popconfirm-buttons .ant-btn:not(.btn-primary):not(.btn-secondary):not(.btn-danger-outline) {
+  height: 38px !important;
+  border-radius: 10px !important;
+  text-transform: uppercase !important;
+  font-weight: 800 !important;
+  border: 3px solid #000000 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+}
+
+/* Той самий :not-ланцюжок, що й у правила вище: без нього воно виграє за
+   специфічністю, і кнопка «так» лишалась білою. */
+.ant-popconfirm-buttons .ant-btn-primary:not(.btn-primary):not(.btn-secondary):not(.btn-danger-outline),
+.ant-popconfirm-buttons .ant-btn-dangerous:not(.btn-primary):not(.btn-secondary):not(.btn-danger-outline) {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+/* Ім'я учня як посилання на його дашборд (журнал, рейтинг): підкреслення
+   чорною лінією на ховері, без зміни кольору тексту. */
+.student-profile-link:hover .student-name-text {
+  text-decoration: underline;
+  text-decoration-color: #000000;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
 /* Кнопка «назад» (живий фідбек): усюди однакова — чорна, біла стрілка,
    чорна обводка й та сама тінь-натискання, що й у решти кнопок. Живе
    класом, а не інлайн-стилями на кожній сторінці, бо раніше кожен екран

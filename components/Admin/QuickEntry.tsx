@@ -147,7 +147,7 @@ export default function QuickEntry({
         <Button
           onClick={openModal}
           size="middle"
-          icon={<Star weight="fill" />}
+          icon={<Star weight="bold" />}
           style={{
             background: "#fff",
             color: "#000",

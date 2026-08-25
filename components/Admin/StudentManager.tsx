@@ -189,7 +189,10 @@ export default function StudentManager({
     {
       title: "PIN",
       key: "pin",
-      width: 130,
+      // 190, не 130 (живий фідбек): при «Показати PIN-и» колонка з ••••
+      // розсовувалась під шість цифр і тягнула за собою всю таблицю.
+      // Фіксована ширина під найширший стан, тож нічого не стрибає.
+      width: 190,
       align: "center" as const,
       render: (_value: unknown, record: Student) => (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
@@ -198,6 +201,10 @@ export default function StudentManager({
               fontFamily: "monospace",
               fontWeight: 800,
               letterSpacing: "0.08em",
+              // Ширина під шість цифр незалежно від стану: інакше сама
+              // цифрова частина стрибає при перемиканні «показати/сховати».
+              minWidth: 86,
+              textAlign: "right",
               color: pins[record.id] ? "var(--color-text)" : "#adb5bd",
             }}
           >

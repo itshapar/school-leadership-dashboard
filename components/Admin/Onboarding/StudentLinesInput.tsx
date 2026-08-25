@@ -7,7 +7,6 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import {
   FULL_NAME_PLACEHOLDER,
-  MINIMIZATION_HINT,
   buildNamePreview,
   swapNameOrder,
 } from "@/lib/students/fullName";
@@ -131,9 +130,12 @@ export default function StudentLinesInput({
         placeholder={`${FULL_NAME_PLACEHOLDER}\nПетренко Олександр\nКовальчук Марія`}
         style={{ fontFamily: "inherit", fontSize: "0.95rem" }}
       />
+      {/* Одна підказка замість двох (живий фідбек): раніше поруч висіли
+          «один учень на рядок» і окреме нагадування про мінімізацію даних,
+          які говорили про одне й те саме. */}
       <div style={{ color: "#868e96", fontSize: "0.82rem", margin: "8px 0 16px", lineHeight: 1.55 }}>
-        ⓘ Один учень на рядок, спершу прізвище.
-        <br />ⓘ {MINIMIZATION_HINT}
+        Один учень на рядок: спершу прізвище, потім ім&apos;я. Нічого більше
+        вносити не потрібно.
       </div>
 
       {suspicious.length > 0 && (

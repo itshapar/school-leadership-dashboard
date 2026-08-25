@@ -1,7 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
-import { ChartLineUp, Ranking, User } from "@phosphor-icons/react/dist/ssr";
+import { ChartLineUp, Ranking } from "@phosphor-icons/react/dist/ssr";
 import { formatClassCode } from "@/lib/classCodes";
 import { loadParallels } from "@/lib/admin/parallels";
 import { getOnboardingProgressBatch } from "@/lib/admin/onboarding";
@@ -122,11 +122,9 @@ export default async function AdminPage() {
             className="admin-action-btn admin-btn-white"
             style={{ display: "inline-flex", alignItems: "center", gap: "8px", minWidth: "auto" }}
           >
-            {/* Виняток із загального bold (живий фідбек): для іконки
-                вчителя fill читається краще. 1.45em — той самий розмір, що
-                й у CSS-правилі для іконок в antd-кнопках із текстом: це
-                посилання-кнопка, під те правило воно не підпадає. */}
-            <User weight="fill" style={{ fontSize: "1.45em" }} /> Профіль вчителя
+            {/* Без іконки (живий фідбек): жодна з іконок «вчителя» тут не
+                лягала, а текст сам по собі однозначний. */}
+            Профіль вчителя
           </Link>
         </div>
       </div>
