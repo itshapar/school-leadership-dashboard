@@ -7,7 +7,17 @@ import { Button, Input, Popconfirm, Select, Switch, message } from "antd";
 import { ArrowCounterClockwise, ArrowRight, Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { setClassParallel, upsertParallelByName, type Parallel } from "@/lib/admin/parallels";
-import { formatSemesterRange, type Semester } from "@/lib/admin/semesters";
+import {
+  isPeriodAvailable,
+  isPeriodStarted,
+  nextPeriod,
+  periodOpensLabel,
+  listYearStarts,
+  periodCode as buildPeriodCode,
+  periodFullLabel,
+  periodRangeLabel,
+  type PeriodCode,
+} from "@/lib/admin/periods";
 import BackButton from "@/components/BackButton";
 
 // Той самий фіксований список 1–12, що й у майстрі створення класу.
@@ -37,10 +47,11 @@ interface Props {
   className: string;
   initialShowClassmateStars: boolean;
   initialParallelId: string | null;
-  initialSemesterId: string | null;
+  initialPeriod: PeriodCode;
+  /** Найраніший період, доступний вчителю (див. firstAvailablePeriod). */
+  firstPeriod: PeriodCode;
   archived: boolean;
   parallels: Parallel[];
-  semesters: Semester[];
 }
 
 export default function ClassSettingsClient({
@@ -49,10 +60,10 @@ export default function ClassSettingsClient({
   className,
   initialShowClassmateStars,
   initialParallelId,
-  initialSemesterId,
+  initialPeriod,
+  firstPeriod,
   archived,
   parallels,
-  semesters,
 }: Props) {
   const supabase = getSupabaseClient();
   const router = useRouter();
@@ -63,30 +74,38 @@ export default function ClassSettingsClient({
   const [savingParallel, setSavingParallel] = useState(false);
   const [name, setName] = useState(className);
   const [savingName, setSavingName] = useState(false);
-  const [semesterId, setSemesterId] = useState(initialSemesterId);
-  const [savingSemester, setSavingSemester] = useState(false);
+  const [period, setPeriod] = useState<PeriodCode>(initialPeriod);
+  const [savingPeriod, setSavingPeriod] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const semester = semesters.find((s) => s.id === semesterId) ?? null;
+  // Періоди, у які клас можна перекласти вручну: усі доступні вчителю, тобто
+  // ті, що вже настали. Майбутніх у списку немає — це той самий календар, що
+  // й у табах кабінету, і та сама перевірка, що в БД.
+  const periodOptions = listYearStarts(firstPeriod)
+    .flatMap((y) => ([1, 2] as const).map((n) => buildPeriodCode(y, n)))
+    .filter((code) => isPeriodAvailable(code, firstPeriod))
+    .sort()
+    .reverse();
+
+  const nextOpen = isPeriodStarted(nextPeriod(period));
 
   /**
-   * Семестр класу можна змінити вручну: клас, створений посеред року, часто
-   * треба покласти в наступний семестр, а не в поточний. Це просте
-   * перепризначення, воно НЕ переносить учнів і не обнуляє бали, для цього
-   * є окремий майстер переходу.
+   * Період класу можна виправити вручну: клас завели не в тому семестрі, таке
+   * буває. Це просте перепризначення, воно НЕ переносить учнів і не обнуляє
+   * бали, для цього є окремий майстер переходу.
    */
-  async function changeSemester(next: string | null) {
-    setSavingSemester(true);
+  async function changePeriod(next: PeriodCode) {
+    setSavingPeriod(true);
     const { error } = await supabase
       .from("classes")
-      .update({ semester_id: next })
+      .update({ period_code: next })
       .eq("id", classId);
-    setSavingSemester(false);
+    setSavingPeriod(false);
     if (error) {
       message.error("Не вдалося змінити семестр");
       return;
     }
-    setSemesterId(next);
+    setPeriod(next);
     message.success("Семестр класу змінено");
     router.refresh();
   }
@@ -379,20 +398,19 @@ export default function ClassSettingsClient({
         <div>
           <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Семестр</div>
           <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2, maxWidth: 520 }}>
-            {semester
-              ? `Період програми нагород: ${formatSemesterRange(semester)}. Бали й нагороди класу рахуються тільки в цих межах.`
-              : "Клас поза будь-яким семестром. Оберіть період, у якому він працює."}
+            {`Період програми нагород: ${periodRangeLabel(period)}. Бали й нагороди класу рахуються тільки в цих межах.`}
           </div>
         </div>
         <Select
           style={{ width: 240 }}
-          allowClear
-          loading={savingSemester}
-          disabled={savingSemester}
-          placeholder="Оберіть семестр"
-          value={semesterId ?? undefined}
-          onChange={(v) => changeSemester(v ?? null)}
-          options={semesters.map((s) => ({ value: s.id, label: s.name }))}
+          loading={savingPeriod}
+          disabled={savingPeriod}
+          value={period}
+          onChange={changePeriod}
+          options={periodOptions.map((code) => ({
+            value: code,
+            label: periodFullLabel(code),
+          }))}
         />
       </div>
 
@@ -413,18 +431,26 @@ export default function ClassSettingsClient({
           }}
         >
           <div>
-            <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Новий семестр</div>
+            <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>
+              Наступний семестр: {periodFullLabel(nextPeriod(period))}
+            </div>
             <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2, maxWidth: 520 }}>
-              Коли семестр завершується, клас переходить у наступний: учні,
-              нікнейми, аватарки, PIN-и й код класу переїжджають, а бали, уроки
-              та видані призи лишаються в архіві цього семестру.
+              {nextOpen
+                ? "Клас перейде в наступний семестр: учні, нікнейми, аватарки, PIN-и й код класу переїжджають, а бали, уроки та видані призи лишаються в архіві цього семестру."
+                : `${periodOpensLabel(nextPeriod(period))}. Семестр настає за календарем, до того часу переходити нікуди.`}
             </div>
           </div>
-          <Link href={`/admin/${classCode}/rollover`}>
-            <Button className="btn-primary" icon={<ArrowRight />}>
+          {nextOpen ? (
+            <Link href={`/admin/${classCode}/rollover`}>
+              <Button className="btn-primary" icon={<ArrowRight />}>
+                Перейти в новий семестр
+              </Button>
+            </Link>
+          ) : (
+            <Button className="btn-primary" icon={<ArrowRight />} disabled>
               Перейти в новий семестр
             </Button>
-          </Link>
+          )}
         </div>
       )}
 

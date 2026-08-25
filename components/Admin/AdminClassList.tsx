@@ -7,24 +7,29 @@ import { TEACHER_LIMITS } from "@/lib/admin/classConfig";
 import type { OnboardingStepKey } from "@/lib/admin/onboarding";
 import type { Parallel } from "@/lib/admin/parallels";
 import {
-  formatSemesterRange,
-  groupBySchoolYear,
-  schoolYearOf,
-  semesterChipLabel,
-  semesterStatus,
-  type Semester,
-} from "@/lib/admin/semesters";
+  currentPeriod,
+  isPeriodAvailable,
+  listYearStarts,
+  periodCode,
+  periodLabel,
+  periodOpensLabel,
+  periodRangeLabel,
+  periodStatus,
+  schoolYearLabel,
+  yearStartOf,
+  type PeriodCode,
+} from "@/lib/admin/periods";
 import StarIcon from "@/components/StarIcon";
 
 /**
- * Кабінет: вибір періоду згори, під дивайдером — усе, що до цього періоду
+ * Кабінет: два ряди табів згори, під дивайдером — усе, що до обраного періоду
  * належить (рейтинг, дашборд, паралелі, класи).
  *
- * Ієрархія навмисно двоступенева (живий фідбек): навчальний рік випадайкою,
- * семестри цього року — перемикачами під нею, тими самими, що й паралелі
- * нижче. Плаский список усіх семестрів підряд розмивав картинку: «I семестр
- * 2025/2026» і «II семестр 2026/2027» стояли поруч як рівні, хоча це різні
- * роки. Рік — це те, що обирають рідко, семестр — те, що перемикають.
+ * Ряд перший — навчальний рік, ряд другий — семестри цього року. Це не
+ * налаштування, а календар: періоди вбудовані, вчитель їх не створює й не
+ * редагує (див. lib/admin/periods.ts). Таб вимкнений, поки період не настав,
+ * тож наступний рік видно наперед, але зайти в нього можна лише тоді, коли
+ * він почнеться.
  *
  * Дивайдер тут не декорація, а межа сенсу: усе нижче нього показує рівно той
  * період, який обрано вище.
@@ -35,7 +40,6 @@ import StarIcon from "@/components/StarIcon";
  */
 
 const ALL = "__all__";
-const NO_SEMESTER = "__none__";
 
 export interface AdminClassCard {
   id: string;
@@ -43,7 +47,7 @@ export interface AdminClassCard {
   public_code: string;
   formatted_code: string;
   parallel_id: string | null;
-  semester_id: string | null;
+  period_code: PeriodCode;
   archived: boolean;
   is_demo: boolean;
   studentCount: number;
@@ -58,14 +62,13 @@ export interface AdminClassCard {
 export default function AdminClassList({
   classes,
   parallels,
-  semesters,
-  currentSemesterId,
+  firstPeriod,
   children,
 }: {
   classes: AdminClassCard[];
   parallels: Parallel[];
-  semesters: Semester[];
-  currentSemesterId: string | null;
+  /** Найраніший період, доступний цьому вчителю (див. firstAvailablePeriod). */
+  firstPeriod: PeriodCode;
   /**
    * Рейтинг учнів і загальний дашборд: приходять зі сторінки готовими, щоб
    * лишитись серверними, але рендеряться ПІД дивайдером, уже всередині
@@ -76,44 +79,43 @@ export default function AdminClassList({
   const atClassLimit =
     classes.filter((c) => !c.archived).length >= TEACHER_LIMITS.classes;
 
-  // Класи без семестру бувають в одному випадку: семестр видалили, а класи в
-  // ньому лишились (FK ставить semester_id у NULL). Показуємо їх окремим
-  // пунктом року, щоб вони не зникли з кабінету назовсім.
-  const hasOrphans = classes.some((c) => !c.semester_id);
+  const today = currentPeriod();
 
-  const years = useMemo(() => groupBySchoolYear(semesters), [semesters]);
+  // За замовчуванням відкриваємо поточний семестр, це те, над чим учитель
+  // працює зараз. Виняток — коли в ньому ще немає жодного класу: тоді
+  // показуємо останній період, де класи є, щоб кабінет не зустрічав людину
+  // порожнім екраном одразу після зміни семестру.
+  const initialPeriod = useMemo(() => {
+    if (classes.some((c) => c.period_code === today)) return today;
+    const latest = classes
+      .map((c) => c.period_code)
+      .filter((code) => code <= today)
+      .sort()
+      .pop();
+    return latest ?? today;
+  }, [classes, today]);
 
-  const currentSemester = semesters.find((s) => s.id === currentSemesterId) ?? null;
-
-  const [year, setYear] = useState<string>(
-    currentSemester ? schoolYearOf(currentSemester) : years[0]?.year ?? NO_SEMESTER
-  );
-  const [semesterFilter, setSemesterFilter] = useState<string>(currentSemesterId ?? ALL);
+  const [period, setPeriod] = useState<PeriodCode>(initialPeriod);
   const [parallelFilter, setParallelFilter] = useState<string>(ALL);
 
-  const yearSemesters = years.find((y) => y.year === year)?.semesters ?? [];
+  const yearStarts = useMemo(() => listYearStarts(firstPeriod), [firstPeriod]);
+  const selectedYear = yearStartOf(period);
 
-  // Один семестр у році — перемикати нема чого, він і є весь рік.
-  const effectiveSemesterId =
-    year === NO_SEMESTER
-      ? NO_SEMESTER
-      : yearSemesters.length === 1
-      ? yearSemesters[0].id
-      : yearSemesters.some((s) => s.id === semesterFilter)
-      ? semesterFilter
-      : ALL;
+  const bySemester = useMemo(
+    () => classes.filter((c) => c.period_code === period),
+    [classes, period]
+  );
 
-  const selectedSemester =
-    yearSemesters.find((s) => s.id === effectiveSemesterId) ?? null;
-
-  const bySemester = useMemo(() => {
-    if (effectiveSemesterId === NO_SEMESTER) return classes.filter((c) => !c.semester_id);
-    if (effectiveSemesterId === ALL) {
-      const ids = new Set(yearSemesters.map((s) => s.id));
-      return classes.filter((c) => c.semester_id && ids.has(c.semester_id));
-    }
-    return classes.filter((c) => c.semester_id === effectiveSemesterId);
-  }, [classes, effectiveSemesterId, yearSemesters]);
+  /** Перемикання року веде в найпізніший ДОСТУПНИЙ семестр цього року. */
+  function selectYear(yearStart: number) {
+    const candidates = ([1, 2] as const)
+      .map((n) => periodCode(yearStart, n))
+      .filter((code) => isPeriodAvailable(code, firstPeriod));
+    const next = candidates.pop();
+    if (!next) return;
+    setPeriod(next);
+    setParallelFilter(ALL);
+  }
 
   // Паралель — легкий тег без CRUD-екрана (lib/admin/parallels.ts): рядок
   // лишається в таблиці, навіть коли жоден клас на неї вже не посилається.
@@ -131,103 +133,60 @@ export default function AdminClassList({
       ? bySemester
       : bySemester.filter((c) => c.parallel_id === parallelFilter);
 
-  const yearOptions = [
-    ...years.map((y) => ({ value: y.year, label: `${y.year} навчальний рік` })),
-    ...(hasOrphans ? [{ value: NO_SEMESTER, label: "Без семестру" }] : []),
-  ];
-
   return (
     <>
-      {yearOptions.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              flexWrap: "wrap",
-              marginBottom: yearSemesters.length > 1 ? 12 : 0,
-            }}
-          >
-            <span
-              style={{
-                fontWeight: 800,
-                fontSize: "0.75rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "#868e96",
-              }}
+      {/* ── Ряд 1: навчальний рік ── */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+        {yearStarts.map((y) => {
+          const available = ([1, 2] as const).some((n) =>
+            isPeriodAvailable(periodCode(y, n), firstPeriod)
+          );
+          return (
+            <button
+              key={y}
+              type="button"
+              disabled={!available}
+              onClick={() => selectYear(y)}
+              title={available ? undefined : periodOpensLabel(periodCode(y, 1))}
+              style={tabStyle(y === selectedYear, !available)}
             >
-              Навчальний рік
-            </span>
-            <Select
-              className="year-select"
-              value={year}
-              onChange={(next) => {
-                setYear(next);
-                setSemesterFilter(ALL);
+              {schoolYearLabel(y)}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Ряд 2: семестри обраного року ── */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        {([1, 2] as const).map((n) => {
+          const code = periodCode(selectedYear, n);
+          const available = isPeriodAvailable(code, firstPeriod);
+          return (
+            <button
+              key={code}
+              type="button"
+              disabled={!available}
+              onClick={() => {
+                setPeriod(code);
                 setParallelFilter(ALL);
               }}
-              options={yearOptions}
-              style={{ minWidth: 240 }}
-            />
-            <Link
-              href="/admin/semesters"
-              style={{
-                marginLeft: "auto",
-                fontWeight: 600,
-                fontSize: "0.82rem",
-                color: "#495057",
-                textDecoration: "underline",
-              }}
+              title={available ? undefined : periodOpensLabel(code)}
+              style={tabStyle(code === period, !available)}
             >
-              Керувати семестрами
-            </Link>
-          </div>
+              {periodLabel(code)}
+            </button>
+          );
+        })}
+      </div>
 
-          {yearSemesters.length > 1 && (
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setSemesterFilter(ALL);
-                  setParallelFilter(ALL);
-                }}
-                style={chipStyle(effectiveSemesterId === ALL)}
-              >
-                Увесь рік
-              </button>
-              {yearSemesters.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => {
-                    setSemesterFilter(s.id);
-                    setParallelFilter(ALL);
-                  }}
-                  style={chipStyle(effectiveSemesterId === s.id)}
-                >
-                  {semesterChipLabel(s.name)}
-                </button>
-              ))}
-            </div>
-          )}
+      <div style={{ color: "#868e96", fontWeight: 600, fontSize: "0.8rem", margin: "10px 0 0" }}>
+        {periodRangeLabel(period)}
+        {periodStatus(period) === "past" && ", семестр завершено"}
+        {periodStatus(period) === "current" && ", триває зараз"}
+      </div>
 
-          {selectedSemester && (
-            <div style={{ color: "#868e96", fontWeight: 600, fontSize: "0.8rem", marginTop: 10 }}>
-              {formatSemesterRange(selectedSemester)}
-              {semesterStatus(selectedSemester) === "past" && ", семестр завершено"}
-              {semesterStatus(selectedSemester) === "future" && ", семестр ще не почався"}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Дивайдер малюємо лише разом із блоком періоду: без нього це була б
-          просто риска нізвідки над рейтингом. */}
-      {yearOptions.length > 0 && (
-        <div style={{ height: 3, background: "#000", borderRadius: 2, margin: "0 0 24px" }} />
-      )}
+      {/* Дивайдер — межа сенсу: усе нижче показує рівно обраний період. */}
+      <div style={{ height: 3, background: "#000", borderRadius: 2, margin: "20px 0 24px" }} />
 
       {children}
 
@@ -270,25 +229,6 @@ export default function AdminClassList({
         </div>
       )}
 
-      {/* Випадайка року мусить читатись як рідня чипам під нею: та сама чорна
-          обводка, та сама зміщена тінь, та сама пігулка. Інакше сірий бордер
-          antd за замовчуванням виглядає чужим елементом просто над чипами. */}
-      <style jsx global>{`
-        .year-select .ant-select-selector {
-          border: 2px solid #000000 !important;
-          box-shadow: 2px 2px 0px #000000 !important;
-          border-radius: 20px !important;
-          height: 40px !important;
-          padding: 0 16px !important;
-        }
-        .year-select .ant-select-selection-item {
-          line-height: 36px !important;
-          font-weight: 800 !important;
-        }
-        .year-select .ant-select-arrow {
-          color: #000000 !important;
-        }
-      `}</style>
     </>
   );
 }
@@ -298,6 +238,27 @@ export default function AdminClassList({
  * помаранчевий контур обраного чіпа був єдиним місцем, де колір зірки
  * працював як обводка, і сіра обводка неактивних випадала з решти кнопок.
  */
+/**
+ * Таб періоду. Той самий каркас, що й у чипів паралелей, бо це та сама дія —
+ * перемикання зрізу. Вимкнений стан без сірої заливки (правило кнопок у
+ * globals.css): обводка лишається чорною, «недоступність» показує прозорість
+ * і відсутність тіні, інакше таб читався б як зламаний, а не як «ще не час».
+ */
+function tabStyle(active: boolean, disabled: boolean): React.CSSProperties {
+  return {
+    padding: "8px 18px",
+    borderRadius: "20px",
+    background: active ? "#000" : "#ffffff",
+    color: active ? "#fff" : "#000000",
+    fontWeight: 800,
+    fontSize: "0.9rem",
+    border: "2px solid #000000",
+    boxShadow: disabled ? "none" : "2px 2px 0px #000000",
+    opacity: disabled ? 0.35 : 1,
+    cursor: disabled ? "not-allowed" : "pointer",
+  };
+}
+
 function chipStyle(active: boolean): React.CSSProperties {
   return {
     padding: "8px 16px",

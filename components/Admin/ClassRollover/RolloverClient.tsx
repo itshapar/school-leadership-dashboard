@@ -6,11 +6,14 @@ import { ArrowRight } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { upsertParallelByName } from "@/lib/admin/parallels";
 import {
-  nextClassName,
-  nextParallelName,
-  type Semester,
-} from "@/lib/admin/semesters";
-import SemesterPicker from "@/components/Admin/SemesterPicker";
+  isPeriodStarted,
+  nextPeriod,
+  periodFullLabel,
+  periodOpensLabel,
+  periodRangeLabel,
+  type PeriodCode,
+} from "@/lib/admin/periods";
+import { nextClassName, nextParallelName } from "@/lib/admin/classNames";
 import BackButton from "@/components/BackButton";
 
 // Той самий фіксований список 1–12, що в майстрі створення класу.
@@ -30,11 +33,10 @@ interface Props {
   classId: string;
   classCode: string;
   className: string;
-  currentSemesterId: string | null;
-  currentSemesterName: string | null;
+  /** Період, у якому клас живе зараз. Ціль переходу з нього й виводиться. */
+  periodCode: PeriodCode;
   parallelName: string | null;
   students: RolloverStudent[];
-  semesters: Semester[];
 }
 
 /**
@@ -53,35 +55,18 @@ export default function RolloverClient({
   classId,
   classCode,
   className,
-  currentSemesterId,
-  currentSemesterName,
+  periodCode,
   parallelName,
   students,
-  semesters,
 }: Props) {
   const supabase = getSupabaseClient();
 
-  // Семестр, у якому клас живе просто зараз, зі списку цілей прибираємо:
-  // перенести клас сам у себе неможливо за змістом, а саме він за датами
-  // зазвичай і є «поточним», тож без цього фільтра майстер підставляв його
-  // першим (живий фідбек).
-  const targets = useMemo(
-    () => semesters.filter((s) => s.id !== currentSemesterId),
-    [semesters, currentSemesterId]
-  );
-
-  // Ціль за замовчуванням: найраніший семестр, який починається ПІСЛЯ
-  // поточного. Якщо такого ще немає, вчитель створює його тут же, у формі.
-  const suggestedTarget = useMemo(() => {
-    const current = semesters.find((s) => s.id === currentSemesterId) ?? null;
-    const next = targets
-      .filter((s) => !current || s.starts_on > current.starts_on)
-      .sort((a, b) => a.starts_on.localeCompare(b.starts_on));
-    return next[0]?.id ?? null;
-  }, [semesters, targets, currentSemesterId]);
-
-  const [semesterList, setSemesterList] = useState(targets);
-  const [semesterId, setSemesterId] = useState<string | null>(suggestedTarget);
+  // Ціль не обирають: наступний період після поточного, і він один.
+  // Календар вбудований, тож «куди» тут не питання, питання лише «коли»:
+  // поки період не настав, перехід недоступний (це саме те правило, яке
+  // додатково стоїть у roll_over_class, міграція 039).
+  const target = nextPeriod(periodCode);
+  const targetOpen = isPeriodStarted(target);
 
   const [name, setName] = useState(nextClassName(className) ?? "");
   const [grade, setGrade] = useState<string | undefined>(
@@ -93,11 +78,10 @@ export default function RolloverClient({
   const [copyConfig, setCopyConfig] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const targetSemester = semesterList.find((s) => s.id === semesterId) ?? null;
-  const canSubmit = Boolean(semesterId) && name.trim().length > 0 && !submitting;
+  const canSubmit = targetOpen && name.trim().length > 0 && !submitting;
 
   async function onSubmit() {
-    if (!semesterId) return;
+    if (!targetOpen) return;
     setSubmitting(true);
 
     // Паралель, як і в майстрі створення класу, заводиться на льоту за назвою.
@@ -114,7 +98,7 @@ export default function RolloverClient({
 
     const { data, error } = await supabase.rpc("roll_over_class", {
       p_source_class_id: classId,
-      p_semester_id: semesterId,
+      p_period_code: target,
       p_name: name.trim(),
       p_parallel_id: parallelId,
       p_student_ids: selected,
@@ -152,193 +136,227 @@ export default function RolloverClient({
         </h1>
       </div>
       <p style={{ color: "#868e96", fontWeight: 600, fontSize: "0.85rem", margin: "0 0 24px" }}>
-        Клас {className}
-        {currentSemesterName ? ` із семестру «${currentSemesterName}»` : ""} почне наступний
-        семестр з нуля. Учні, їхні нікнейми, аватарки й PIN-и переїдуть, бали,
-        уроки та видані призи залишаться в архіві.
+        Клас {className} із періоду «{periodFullLabel(periodCode)}» почне
+        наступний семестр з нуля. Учні, їхні нікнейми, аватарки й PIN-и
+        переїдуть, бали, уроки та видані призи залишаться в архіві.
       </p>
 
       {/* ───────────── Семестр ───────────── */}
-      <Card title="Куди переносимо" hint="Семестр, у якому клас працюватиме далі.">
-        <SemesterPicker
-          semesters={semesterList}
-          value={semesterId}
-          onChange={setSemesterId}
-          onCreated={(created) => setSemesterList((prev) => [created, ...prev])}
-        />
-      </Card>
-
-      {/* ───────────── Клас ───────────── */}
-      <Card
-        title="Клас у новому семестрі"
-        hint="Назву підставлено на клас старше, змініть, якщо у вас інакше."
-      >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-          <Select
-            style={{ width: 160 }}
-            allowClear
-            placeholder="Клас (1–12)"
-            value={grade}
-            onChange={setGrade}
-            options={GRADE_OPTIONS}
-          />
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="8-А"
-            maxLength={60}
-            style={{ width: 220 }}
-          />
-          <span style={{ color: "#868e96", fontWeight: 600, fontSize: "0.82rem", display: "inline-flex", alignItems: "center", gap: 8 }}>
-            {className} <ArrowRight weight="bold" /> {name.trim() || "?"}
+      <Card title="Куди переносимо" hint="Наступний семестр за календарем, обирати нічого не треба.">
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <span
+            style={{
+              padding: "8px 18px",
+              borderRadius: 20,
+              background: targetOpen ? "#000" : "#fff",
+              color: targetOpen ? "#fff" : "#000",
+              border: "2px solid #000",
+              boxShadow: targetOpen ? "2px 2px 0px #000" : "none",
+              opacity: targetOpen ? 1 : 0.35,
+              fontWeight: 800,
+              fontSize: "0.9rem",
+            }}
+          >
+            {periodFullLabel(target)}
+          </span>
+          <span style={{ color: "#868e96", fontWeight: 600, fontSize: "0.82rem" }}>
+            {targetOpen ? periodRangeLabel(target) : periodOpensLabel(target)}
           </span>
         </div>
-      </Card>
 
-      {/* ───────────── Учні ───────────── */}
-      <Card
-        title={`Учні: ${selected.length} з ${students.length}`}
-        hint="Зніміть галочку з тих, хто вже не вчиться в цьому класі."
-      >
-        {students.length === 0 ? (
-          <div style={{ color: "#868e96", fontWeight: 600, fontSize: "0.85rem" }}>
-            У класі немає учнів. Перенести можна й порожній клас, учнів додасте потім.
+        {!targetOpen && (
+          <div
+            style={{
+              marginTop: 14,
+              padding: "12px 16px",
+              background: "#f8f9fa",
+              border: "2px solid #dee2e6",
+              borderRadius: 10,
+              color: "#495057",
+              fontWeight: 600,
+              fontSize: "0.8rem",
+              lineHeight: 1.5,
+            }}
+          >
+            Семестр ще не почався, тож перенести клас поки не можна. Поверніться
+            сюди, коли він настане: до того часу клас працює як звичайно.
           </div>
-        ) : (
-          <>
-            <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-              <Button
-                className="btn-ghost"
-                size="small"
-                onClick={() => setSelected(students.map((s) => s.id))}
-                disabled={selected.length === students.length}
-              >
-                Обрати всіх
-              </Button>
-              <Button
-                className="btn-ghost"
-                size="small"
-                onClick={() => setSelected([])}
-                disabled={selected.length === 0}
-              >
-                Зняти всіх
-              </Button>
-            </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-                gap: 8,
-              }}
-            >
-              {students.map((s) => {
-                const checked = selected.includes(s.id);
-                return (
-                  <label
-                    key={s.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      padding: "8px 12px",
-                      borderRadius: 10,
-                      border: `2px solid ${checked ? "#000" : "#dee2e6"}`,
-                      background: checked ? "#fff" : "#f8f9fa",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Checkbox
-                      checked={checked}
-                      onChange={(e) =>
-                        setSelected((prev) =>
-                          e.target.checked ? [...prev, s.id] : prev.filter((id) => id !== s.id)
-                        )
-                      }
-                    />
-                    <span style={{ fontSize: "1.1rem" }}>{s.avatar_emoji}</span>
-                    <span style={{ fontWeight: 600, fontSize: "0.85rem", lineHeight: 1.2 }}>
-                      {s.full_name}
-                      {s.nickname && (
-                        <span style={{ color: "#868e96", display: "block", fontSize: "0.75rem" }}>
-                          {s.nickname}
-                        </span>
-                      )}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </>
         )}
       </Card>
 
-      {/* ───────────── Що переносимо ───────────── */}
-      <Card title="Що переносимо" hint="Усе, крім балів, уроків і виданих призів.">
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {/* Опис — окремим рядком під чекбоксом, а не всередині його label
-              (живий фідбек): antd вирівнює квадратик по всьому вмісту label,
-              тож із багаторядковим описом галочка з'їжджала на другий рядок,
-              навпроти опису замість заголовка. */}
-          <div>
-            <Checkbox checked={copyPins} onChange={(e) => setCopyPins(e.target.checked)}>
-              <span style={{ fontWeight: 600 }}>PIN-и учнів</span>
-            </Checkbox>
-            <div style={{ color: "#868e96", fontSize: "0.8rem", marginLeft: 24, lineHeight: 1.5 }}>
-              Для дітей не змінюється нічого: той самий код класу, той самий PIN.
-              Якщо зняти, PIN-и доведеться згенерувати й роздати наново.
+      {targetOpen && (
+        <>
+        {/* ───────────── Клас ───────────── */}
+        <Card
+          title="Клас у новому семестрі"
+          hint="Назву підставлено на клас старше, змініть, якщо у вас інакше."
+        >
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+            <Select
+              style={{ width: 160 }}
+              allowClear
+              placeholder="Клас (1–12)"
+              value={grade}
+              onChange={setGrade}
+              options={GRADE_OPTIONS}
+            />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="8-А"
+              maxLength={60}
+              style={{ width: 220 }}
+            />
+            <span style={{ color: "#868e96", fontWeight: 600, fontSize: "0.82rem", display: "inline-flex", alignItems: "center", gap: 8 }}>
+              {className} <ArrowRight weight="bold" /> {name.trim() || "?"}
+            </span>
+          </div>
+        </Card>
+
+        {/* ───────────── Учні ───────────── */}
+        <Card
+          title={`Учні: ${selected.length} з ${students.length}`}
+          hint="Зніміть галочку з тих, хто вже не вчиться в цьому класі."
+        >
+          {students.length === 0 ? (
+            <div style={{ color: "#868e96", fontWeight: 600, fontSize: "0.85rem" }}>
+              У класі немає учнів. Перенести можна й порожній клас, учнів додасте потім.
+            </div>
+          ) : (
+            <>
+              <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+                <Button
+                  className="btn-ghost"
+                  size="small"
+                  onClick={() => setSelected(students.map((s) => s.id))}
+                  disabled={selected.length === students.length}
+                >
+                  Обрати всіх
+                </Button>
+                <Button
+                  className="btn-ghost"
+                  size="small"
+                  onClick={() => setSelected([])}
+                  disabled={selected.length === 0}
+                >
+                  Зняти всіх
+                </Button>
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                  gap: 8,
+                }}
+              >
+                {students.map((s) => {
+                  const checked = selected.includes(s.id);
+                  return (
+                    <label
+                      key={s.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "8px 12px",
+                        borderRadius: 10,
+                        border: `2px solid ${checked ? "#000" : "#dee2e6"}`,
+                        background: checked ? "#fff" : "#f8f9fa",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onChange={(e) =>
+                          setSelected((prev) =>
+                            e.target.checked ? [...prev, s.id] : prev.filter((id) => id !== s.id)
+                          )
+                        }
+                      />
+                      <span style={{ fontSize: "1.1rem" }}>{s.avatar_emoji}</span>
+                      <span style={{ fontWeight: 600, fontSize: "0.85rem", lineHeight: 1.2 }}>
+                        {s.full_name}
+                        {s.nickname && (
+                          <span style={{ color: "#868e96", display: "block", fontSize: "0.75rem" }}>
+                            {s.nickname}
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </Card>
+
+        {/* ───────────── Що переносимо ───────────── */}
+        <Card title="Що переносимо" hint="Усе, крім балів, уроків і виданих призів.">
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {/* Опис — окремим рядком під чекбоксом, а не всередині його label
+                (живий фідбек): antd вирівнює квадратик по всьому вмісту label,
+                тож із багаторядковим описом галочка з'їжджала на другий рядок,
+                навпроти опису замість заголовка. */}
+            <div>
+              <Checkbox checked={copyPins} onChange={(e) => setCopyPins(e.target.checked)}>
+                <span style={{ fontWeight: 600 }}>PIN-и учнів</span>
+              </Checkbox>
+              <div style={{ color: "#868e96", fontSize: "0.8rem", marginLeft: 24, lineHeight: 1.5 }}>
+                Для дітей не змінюється нічого: той самий код класу, той самий PIN.
+                Якщо зняти, PIN-и доведеться згенерувати й роздати наново.
+              </div>
+            </div>
+            <div>
+              <Checkbox checked={copyConfig} onChange={(e) => setCopyConfig(e.target.checked)}>
+                <span style={{ fontWeight: 600 }}>Нагороди, типи балів і групи</span>
+              </Checkbox>
+              <div style={{ color: "#868e96", fontSize: "0.8rem", marginLeft: 24, lineHeight: 1.5 }}>
+                Якщо зняти, новий клас отримає стандартну систему балів без нагород,
+                як щойно створений.
+              </div>
             </div>
           </div>
-          <div>
-            <Checkbox checked={copyConfig} onChange={(e) => setCopyConfig(e.target.checked)}>
-              <span style={{ fontWeight: 600 }}>Нагороди, типи балів і групи</span>
-            </Checkbox>
-            <div style={{ color: "#868e96", fontSize: "0.8rem", marginLeft: 24, lineHeight: 1.5 }}>
-              Якщо зняти, новий клас отримає стандартну систему балів без нагород,
-              як щойно створений.
-            </div>
+
+          <div
+            style={{
+              marginTop: 16,
+              padding: "12px 16px",
+              background: "#f8f9fa",
+              border: "2px solid #dee2e6",
+              borderRadius: 10,
+              color: "#495057",
+              fontWeight: 600,
+              fontSize: "0.8rem",
+              lineHeight: 1.5,
+            }}
+          >
+            Клас {className} після переходу стане архівом: його можна відкрити й
+            подивитися, але нараховувати бали чи видавати призи в ньому вже не
+            вийде. Код класу переїде на новий клас, тож старий дашборд відкриється
+            за новим кодом з його налаштувань.
           </div>
-        </div>
+        </Card>
+        </>
+      )}
 
-        <div
-          style={{
-            marginTop: 16,
-            padding: "12px 16px",
-            background: "#f8f9fa",
-            border: "2px solid #dee2e6",
-            borderRadius: 10,
-            color: "#495057",
-            fontWeight: 600,
-            fontSize: "0.8rem",
-            lineHeight: 1.5,
-          }}
-        >
-          Клас {className} після переходу стане архівом: його можна відкрити й
-          подивитися, але нараховувати бали чи видавати призи в ньому вже не
-          вийде. Код класу переїде на новий клас, тож старий дашборд відкриється
-          за новим кодом з його налаштувань.
+      {targetOpen && (
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
+          <Popconfirm
+            title="Перенести клас у новий семестр?"
+            description={`${className} стане ${name.trim() || "?"} у періоді «${periodFullLabel(target)}». Учнів переїде: ${selected.length}.`}
+            okText="Перенести"
+            cancelText="Скасувати"
+            okButtonProps={{ className: "btn-primary" }}
+            cancelButtonProps={{ className: "btn-secondary" }}
+            onConfirm={onSubmit}
+            disabled={!canSubmit}
+          >
+            <Button className="btn-primary" size="large" loading={submitting} disabled={!canSubmit}>
+              Перенести клас
+            </Button>
+          </Popconfirm>
         </div>
-      </Card>
-
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
-        <Popconfirm
-          title="Перенести клас у новий семестр?"
-          description={
-            targetSemester
-              ? `${className} стане ${name.trim() || "?"} у семестрі «${targetSemester.name}». Учнів переїде: ${selected.length}.`
-              : "Оберіть семестр"
-          }
-          okText="Перенести"
-          cancelText="Скасувати"
-          okButtonProps={{ className: "btn-primary" }}
-          cancelButtonProps={{ className: "btn-secondary" }}
-          onConfirm={onSubmit}
-          disabled={!canSubmit}
-        >
-          <Button className="btn-primary" size="large" loading={submitting} disabled={!canSubmit}>
-            Перенести клас
-          </Button>
-        </Popconfirm>
-      </div>
+      )}
     </div>
   );
 }
