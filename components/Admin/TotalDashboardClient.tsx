@@ -25,7 +25,7 @@ function chipStyle(active: boolean): React.CSSProperties {
     borderRadius: "20px",
     background: active ? "#000" : "#ffffff",
     color: active ? "#fff" : "#495057",
-    fontWeight: 700,
+    fontWeight: 600,
     fontSize: "0.9rem",
     border: active ? "2px solid #000" : "2px solid #dee2e6",
     boxShadow: active ? "2px 2px 0px var(--color-star, #f59f00)" : "none",
@@ -107,7 +107,7 @@ export default function TotalDashboardClient({
         <Link href={`/admin/${record.classCode}`} style={{ textDecoration: "none", color: "inherit" }}>
           <div className="student-profile-link" style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
             <span style={{ fontSize: "1.5rem" }}>{record.avatar_emoji}</span>
-            <span style={{ fontWeight: 850, fontSize: "1rem" }} className="student-name-text">
+            <span style={{ fontWeight: 900, fontSize: "1rem" }} className="student-name-text">
               {record.full_name}
             </span>
           </div>

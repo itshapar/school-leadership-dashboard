@@ -91,11 +91,11 @@ export default function TermsGate() {
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         <Checkbox checked={accepted} onChange={(e) => setAccepted(e.target.checked)}>
           Я приймаю{" "}
-          <Link href="/terms" target="_blank" style={{ fontWeight: 700 }}>
+          <Link href="/terms" target="_blank" style={{ fontWeight: 600 }}>
             умови використання
           </Link>{" "}
           та{" "}
-          <Link href="/privacy" target="_blank" style={{ fontWeight: 700 }}>
+          <Link href="/privacy" target="_blank" style={{ fontWeight: 600 }}>
             політику приватності
           </Link>
         </Checkbox>

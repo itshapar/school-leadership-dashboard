@@ -176,7 +176,7 @@ export default function QuickEntry({
         <Form form={form} layout="vertical" onFinish={handleFinish} style={{ marginTop: "24px" }}>
           <Form.Item
             name="entry_type_id"
-            label={<span style={{ fontWeight: 700 }}>Тип нарахування</span>}
+            label={<span style={{ fontWeight: 600 }}>Тип нарахування</span>}
             rules={[{ required: true, message: "Оберіть тип" }]}
           >
             <Select
@@ -193,7 +193,7 @@ export default function QuickEntry({
 
           <Form.Item
             name="target"
-            label={<span style={{ fontWeight: 700 }}>Кому призначити?</span>}
+            label={<span style={{ fontWeight: 600 }}>Кому призначити?</span>}
             initialValue="student"
           >
             <Radio.Group
@@ -214,7 +214,7 @@ export default function QuickEntry({
                 return (
                   <Form.Item
                     name="studentId"
-                    label={<span style={{ fontWeight: 700 }}>Учень</span>}
+                    label={<span style={{ fontWeight: 600 }}>Учень</span>}
                     rules={[{ required: true, message: "Оберіть учня" }]}
                   >
                     <Select
@@ -237,7 +237,7 @@ export default function QuickEntry({
 
           <Form.Item
             name="amount"
-            label={<span style={{ fontWeight: 700 }}>Скільки зірок</span>}
+            label={<span style={{ fontWeight: 600 }}>Скільки зірок</span>}
             rules={[{ required: true, message: "Вкажіть кількість" }]}
             extra={
               <span style={{ color: "#868e96", fontSize: "0.8rem" }}>

@@ -125,7 +125,7 @@ export default function PersonalDashboardClient({
             <div
               style={{
                 fontSize: "3.5rem",
-                fontWeight: 950,
+                fontWeight: 900,
                 color: "var(--color-star)",
                 lineHeight: 1,
                 display: "flex",
@@ -140,7 +140,7 @@ export default function PersonalDashboardClient({
           <div>
             <div style={{
               fontSize: "3.5rem",
-              fontWeight: 950,
+              fontWeight: 900,
               lineHeight: 1,
               color: "#adb5bd"
             }}>
@@ -167,7 +167,7 @@ export default function PersonalDashboardClient({
         }}
       >
         <LockOutlined style={{ fontSize: "1.3rem", flexShrink: 0 }} />
-        <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--color-text-muted)" }}>
+        <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--color-text-muted)" }}>
           Цю сторінку бачиш лише ти та вчитель. Однокласники доступу до неї не мають.
         </div>
       </div>
@@ -242,12 +242,12 @@ export default function PersonalDashboardClient({
                       </div>
                     </div>
                     
-                    <div style={{ fontSize: "1rem", fontWeight: 700 }}>
+                    <div style={{ fontSize: "1rem", fontWeight: 600 }}>
                       {entryTitle(entry)}
                     </div>
                   </div>
                   <div style={{
-                    fontWeight: 950,
+                    fontWeight: 900,
                     fontSize: "1.2rem",
                     color: entry.amount < 0 ? "#E03131" : "var(--color-star)",
                     display: "flex",

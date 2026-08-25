@@ -153,14 +153,14 @@ export default function EntryHistoryClient({
         if (row.batchId) {
           const name = row.groupId ? groupNameById.get(row.groupId) : null;
           return (
-            <Tag color="purple" style={{ fontWeight: 700 }}>
+            <Tag color="purple" style={{ fontWeight: 600 }}>
               {name ? `Група «${name}»` : "Група"} · {row.memberCount} учнів
             </Tag>
           );
         }
         if (!row.studentName) {
           return (
-            <Tag color="blue" style={{ fontWeight: 700 }}>
+            <Tag color="blue" style={{ fontWeight: 600 }}>
               Увесь клас
             </Tag>
           );
@@ -181,7 +181,7 @@ export default function EntryHistoryClient({
         const type = typeById.get(row.entryTypeId);
         if (!type) return <span style={{ color: "#adb5bd" }}>—</span>;
         return (
-          <span style={{ fontWeight: 700, color: type.color ?? undefined }}>
+          <span style={{ fontWeight: 600, color: type.color ?? undefined }}>
             {entryTypeLabel(type)}
             {type.deleted_at && (
               <span style={{ color: "#adb5bd", fontWeight: 600 }}> (сховано)</span>

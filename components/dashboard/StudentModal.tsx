@@ -57,7 +57,7 @@ export default function StudentModal({ student, onClose }: any) {
           <h2 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 900 }}>
             {student.student.nickname || student.student.full_name}
           </h2>
-          <div style={{ color: "#868e96", fontWeight: 700, marginTop: "4px" }}>
+          <div style={{ color: "#868e96", fontWeight: 600, marginTop: "4px" }}>
             {student.student.full_name}
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function StudentModal({ student, onClose }: any) {
               {earnedRewards.length > 0 ? earnedRewards.map(r => (
                 <div key={r.stars} style={{
                   padding: "8px 12px", background: "#f1f3f5", borderRadius: "8px", border: "2px solid #000",
-                  display: "flex", alignItems: "center", gap: "8px", fontWeight: 700
+                  display: "flex", alignItems: "center", gap: "8px", fontWeight: 600
                 }}>
                   <span style={{ fontSize: "1.2rem" }}>{r.emoji}</span> {r.name}
                 </div>

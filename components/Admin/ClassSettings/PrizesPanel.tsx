@@ -147,7 +147,7 @@ export default function PrizesPanel({
       title: "Нагорода",
       key: "name",
       render: (_v: unknown, row: Row) => (
-        <span style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
           <span style={{ fontSize: "1.3rem" }}>{row.emoji}</span>
           {row.name}
         </span>
@@ -199,7 +199,7 @@ export default function PrizesPanel({
             вміщався в рядок і виштовхував кнопку на новий рядок, тоді як
             коротший лишався в один рядок. Тепер довгий текст переноситься
             сам, а кнопка (flexShrink:0) завжди лишається праворуч. */}
-        <span style={{ color: "#868e96", fontSize: "0.85rem", fontWeight: 700, flex: "1 1 auto", minWidth: 0 }}>
+        <span style={{ color: "#868e96", fontSize: "0.85rem", fontWeight: 600, flex: "1 1 auto", minWidth: 0 }}>
           {isIndividual
             ? "Учень отримує нагороду, коли набирає потрібну кількість власних зірок"
             : "Нагороду отримує весь клас, коли зірки класу сягають потрібної кількості"}
@@ -243,7 +243,7 @@ export default function PrizesPanel({
         <Form form={form} layout="vertical" onFinish={onFinish} style={{ marginTop: 20 }}>
           <Form.Item
             name="name"
-            label={<span style={{ fontWeight: 700 }}>Назва</span>}
+            label={<span style={{ fontWeight: 600 }}>Назва</span>}
             rules={[
               { required: true, message: "Введіть назву" },
               { max: 80, message: "Максимум 80 символів" },
@@ -254,7 +254,7 @@ export default function PrizesPanel({
 
           <Form.Item
             name="emoji"
-            label={<span style={{ fontWeight: 700 }}>Емодзі</span>}
+            label={<span style={{ fontWeight: 600 }}>Емодзі</span>}
             rules={[{ max: 16, message: "Занадто довго" }]}
           >
             <Input size="large" style={{ fontSize: "1.4rem", width: 120 }} />
@@ -263,7 +263,7 @@ export default function PrizesPanel({
           <Form.Item
             name="threshold"
             label={
-              <span style={{ fontWeight: 700 }}>
+              <span style={{ fontWeight: 600 }}>
                 {isIndividual ? "Скільки зірок потрібно учню" : "Скільки зірок потрібно класу"}
               </span>
             }

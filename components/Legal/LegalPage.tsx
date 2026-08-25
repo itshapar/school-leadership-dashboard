@@ -30,7 +30,7 @@ export default function LegalPage({
   return (
     <div className="page-container" style={{ maxWidth: 780, paddingBottom: 64 }}>
       <div style={{ marginBottom: 20 }}>
-        <Link href="/" style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", fontWeight: 700 }}>
+        <Link href="/" style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", fontWeight: 600 }}>
           ← На головну
         </Link>
       </div>

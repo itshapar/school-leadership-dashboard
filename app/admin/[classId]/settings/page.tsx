@@ -35,7 +35,7 @@ export default async function ClassSettingsPage({ params }: Props) {
   ]);
 
   return (
-    <div style={{ background: "#f8f9fa", minHeight: "100vh" }}>
+    <div style={{ background: "var(--bg-primary)", minHeight: "100vh" }}>
       <ClassSettingsClient
         classId={cls.id}
         classCode={cls.public_code}

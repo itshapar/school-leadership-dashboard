@@ -82,7 +82,7 @@ export default function ClassQrButton({
               wordBreak: "break-all",
               color: "var(--color-text-muted)",
               fontSize: "0.85rem",
-              fontWeight: 700,
+              fontWeight: 600,
             }}
           >
             {link}

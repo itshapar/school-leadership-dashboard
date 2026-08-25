@@ -89,7 +89,7 @@ export default function AdminLoginPage() {
               size="large"
               loading={loading}
               block
-              style={{ background: "linear-gradient(135deg, #f5a623, #e8940f)", border: "none", fontWeight: 700 }}
+              style={{ background: "linear-gradient(135deg, #f5a623, #e8940f)", border: "none", fontWeight: 600 }}
             >
               Увійти
             </Button>

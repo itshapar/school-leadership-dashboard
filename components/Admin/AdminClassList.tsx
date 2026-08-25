@@ -110,7 +110,7 @@ export default function AdminClassList({
       </div>
 
       {atClassLimit && (
-        <div style={{ marginBottom: 12, color: "#868e96", fontWeight: 700, fontSize: "0.82rem" }}>
+        <div style={{ marginBottom: 12, color: "#868e96", fontWeight: 600, fontSize: "0.82rem" }}>
           Досягнуто ліміт: {TEACHER_LIMITS.classes} класів на акаунт.
         </div>
       )}
@@ -134,7 +134,7 @@ function chipStyle(active: boolean): React.CSSProperties {
     borderRadius: "20px",
     background: active ? "#000" : "#ffffff",
     color: active ? "#fff" : "#495057",
-    fontWeight: 700,
+    fontWeight: 600,
     fontSize: "0.9rem",
     border: active ? "2px solid #000" : "2px solid #dee2e6",
     boxShadow: active ? "2px 2px 0px var(--color-star, #f59f00)" : "none",

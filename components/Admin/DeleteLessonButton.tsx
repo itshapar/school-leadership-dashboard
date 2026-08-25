@@ -116,7 +116,7 @@ export default function DeleteLessonButton({
         ]}
       >
         <div style={{ padding: "24px 0" }}>
-          <label style={{ display: "block", marginBottom: "12px", fontWeight: 700, fontSize: "1rem" }}>
+          <label style={{ display: "block", marginBottom: "12px", fontWeight: 600, fontSize: "1rem" }}>
             Оберіть дату уроку для видалення:
           </label>
           <Select
@@ -133,7 +133,7 @@ export default function DeleteLessonButton({
             ))}
           </Select>
           <p style={{ marginTop: "16px", color: "#666", fontSize: "0.85rem" }}>
-            <span style={{ color: "#E03131", fontWeight: 700 }}>УВАГА:</span> Видалення уроку автоматично видалить усі зірки, нараховані учням за цю дату.
+            <span style={{ color: "#E03131", fontWeight: 600 }}>УВАГА:</span> Видалення уроку автоматично видалить усі зірки, нараховані учням за цю дату.
           </p>
         </div>
       </Modal>

@@ -131,7 +131,7 @@ export default function GroupsPanel({ classId, groups, students, onChanged }: Pr
       title: "Група",
       key: "name",
       render: (_v: unknown, g: ClassGroup) => (
-        <span style={{ fontWeight: 700 }}>{g.name}</span>
+        <span style={{ fontWeight: 600 }}>{g.name}</span>
       ),
     },
     {
@@ -170,7 +170,7 @@ export default function GroupsPanel({ classId, groups, students, onChanged }: Pr
       title: "Учень",
       key: "student",
       render: (_v: unknown, s: StudentRow) => (
-        <span style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
           <span style={{ fontSize: "1.3rem" }}>{s.avatar_emoji}</span>
           {s.full_name}
         </span>
@@ -208,7 +208,7 @@ export default function GroupsPanel({ classId, groups, students, onChanged }: Pr
           flexWrap: "wrap",
         }}
       >
-        <span style={{ color: "#868e96", fontSize: "0.85rem", fontWeight: 700 }}>
+        <span style={{ color: "#868e96", fontSize: "0.85rem", fontWeight: 600 }}>
           Учень може бути щонайбільше в одній групі · {groups.length} /{" "}
           {CLASS_LIMITS.groups}
         </span>
@@ -275,7 +275,7 @@ export default function GroupsPanel({ classId, groups, students, onChanged }: Pr
         <Form form={form} layout="vertical" onFinish={onFinish} style={{ marginTop: 20 }}>
           <Form.Item
             name="name"
-            label={<span style={{ fontWeight: 700 }}>Назва групи</span>}
+            label={<span style={{ fontWeight: 600 }}>Назва групи</span>}
             rules={[
               { required: true, message: "Введіть назву" },
               { max: 80, message: "Максимум 80 символів" },

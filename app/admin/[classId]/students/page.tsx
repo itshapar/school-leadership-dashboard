@@ -23,7 +23,7 @@ export default async function AdminStudentsPage({ params }: Props) {
     .order("full_name");
 
   return (
-    <div style={{ background: "#f8f9fa", minHeight: "100vh" }}>
+    <div style={{ background: "var(--bg-primary)", minHeight: "100vh" }}>
       <StudentManager
         classId={resolvedClassId}
         initialStudents={students ?? []}

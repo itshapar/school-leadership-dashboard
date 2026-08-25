@@ -28,7 +28,7 @@ export default function EntryNoteField({
   return (
     <Form.Item
       name={name}
-      label={<span style={{ fontWeight: 700 }}>{label}</span>}
+      label={<span style={{ fontWeight: 600 }}>{label}</span>}
       extra={
         <span style={{ color: "#868e96", fontSize: "0.8rem" }}>
           ⓘ {NOTE_PRIVACY_HINT}

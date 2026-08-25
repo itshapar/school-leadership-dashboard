@@ -147,7 +147,7 @@ export default function StudentImport({
       key: "n",
       width: 50,
       render: (_v: unknown, _r: NamePreviewRow, i: number) => (
-        <span style={{ color: "#adb5bd", fontWeight: 700 }}>{i + 1}</span>
+        <span style={{ color: "#adb5bd", fontWeight: 600 }}>{i + 1}</span>
       ),
     },
     {
@@ -310,11 +310,11 @@ export default function StudentImport({
 
           <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
             {suspiciousCount > 0 && (
-              <Button icon={<ArrowsLeftRight />} onClick={() => swapAll(true)} style={{ fontWeight: 700 }}>
+              <Button icon={<ArrowsLeftRight />} onClick={() => swapAll(true)} style={{ fontWeight: 600 }}>
                 Поміняти в позначених
               </Button>
             )}
-            <Button icon={<ArrowsLeftRight />} onClick={() => swapAll(false)} style={{ fontWeight: 700 }}>
+            <Button icon={<ArrowsLeftRight />} onClick={() => swapAll(false)} style={{ fontWeight: 600 }}>
               Поміняти у всіх
             </Button>
           </div>

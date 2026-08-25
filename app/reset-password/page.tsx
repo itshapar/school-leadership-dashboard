@@ -116,7 +116,7 @@ export default function ResetPasswordPage() {
                   style={{
                     background: "linear-gradient(135deg, #f5a623, #e8940f)",
                     border: "none",
-                    fontWeight: 700,
+                    fontWeight: 600,
                   }}
                 >
                   Зберегти пароль

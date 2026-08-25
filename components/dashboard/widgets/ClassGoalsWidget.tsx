@@ -131,7 +131,7 @@ export default function ClassGoalsWidget({
         textAlign: "center",
         color: "#868e96",
         fontSize: "0.85rem",
-        fontWeight: 700,
+        fontWeight: 600,
         width: "100%",
         display: "flex",
         alignItems: "center",
@@ -175,7 +175,7 @@ export default function ClassGoalsWidget({
               {prizes.map((prize, i) => renderChart(prize, CHART_COLORS[i % CHART_COLORS.length]))}
             </div>
             {hiddenCount > 0 && (
-              <div style={{ fontSize: "0.75rem", color: "#868e96", fontWeight: 700 }}>
+              <div style={{ fontSize: "0.75rem", color: "#868e96", fontWeight: 600 }}>
                 та ще {hiddenCount} на сторінці класу
               </div>
             )}

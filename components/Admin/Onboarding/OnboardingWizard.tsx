@@ -356,7 +356,7 @@ export default function OnboardingWizard() {
             ) : (
               <Form form={classForm} layout="vertical" onFinish={createClass}>
                 <Form.Item
-                  label={<span style={{ fontWeight: 700 }}>Паралель</span>}
+                  label={<span style={{ fontWeight: 600 }}>Паралель</span>}
                   required
                   validateStatus={parallelTouched && !parallelId ? "error" : undefined}
                   help={parallelTouched && !parallelId ? "Оберіть паралель" : undefined}
@@ -374,7 +374,7 @@ export default function OnboardingWizard() {
 
                 <Form.Item
                   name="name"
-                  label={<span style={{ fontWeight: 700 }}>Назва класу</span>}
+                  label={<span style={{ fontWeight: 600 }}>Назва класу</span>}
                   rules={[
                     { required: true, message: "Введіть назву" },
                     { max: 60, message: "Занадто довга назва" },
@@ -437,7 +437,7 @@ export default function OnboardingWizard() {
               items={[
                 {
                   key: "lines",
-                  label: <span style={{ fontWeight: 700 }}>Рядками</span>,
+                  label: <span style={{ fontWeight: 600 }}>Рядками</span>,
                   children: (
                     <StudentLinesInput
                       classId={cls.id}
@@ -447,7 +447,7 @@ export default function OnboardingWizard() {
                 },
                 {
                   key: "file",
-                  label: <span style={{ fontWeight: 700 }}>CSV / XLSX</span>,
+                  label: <span style={{ fontWeight: 600 }}>CSV / XLSX</span>,
                   children: (
                     <StudentImport
                       classId={cls.id}
@@ -472,7 +472,7 @@ export default function OnboardingWizard() {
               items={[
                 {
                   key: "individual",
-                  label: <span style={{ fontWeight: 700 }}>Індивідуальні</span>,
+                  label: <span style={{ fontWeight: 600 }}>Індивідуальні</span>,
                   children: (
                     <PrizesPanel
                       classId={cls.id}
@@ -484,7 +484,7 @@ export default function OnboardingWizard() {
                 },
                 {
                   key: "class",
-                  label: <span style={{ fontWeight: 700 }}>Класові</span>,
+                  label: <span style={{ fontWeight: 600 }}>Класові</span>,
                   children: (
                     <PrizesPanel
                       classId={cls.id}

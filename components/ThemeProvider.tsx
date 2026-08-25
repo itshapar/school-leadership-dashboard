@@ -53,10 +53,12 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
       }}
     >
       {/* Phosphor: усі іконки в інтерфейсі — bold, одним місцем замість
-          weight="bold" на кожному використанні (живий фідбек). size:"1em"
-          явно — без цього деякі SVG рендерились 0×0 (невидимі), бо власний
-          дефолт бібліотеки на розмір не завжди підхоплювався. */}
-      <IconContext.Provider value={{ weight: "bold", size: "1em" }}>
+          weight="bold" на кожному використанні (живий фідбек). size:"1.15em"
+          — трохи більше за текст навколо, інакше в кнопках з текстом іконка
+          губилась поруч із капсом. Без явного size деякі SVG взагалі
+          рендерились 0×0 (невидимі) — власний дефолт бібліотеки на розмір
+          не завжди підхоплювався. */}
+      <IconContext.Provider value={{ weight: "bold", size: "1.15em" }}>
         <App>{children}</App>
       </IconContext.Provider>
     </ConfigProvider>

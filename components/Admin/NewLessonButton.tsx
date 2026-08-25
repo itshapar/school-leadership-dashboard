@@ -112,7 +112,7 @@ export default function NewLessonButton({
 
           {mode === "single" ? (
             <>
-              <label style={{ display: "block", marginBottom: "12px", fontWeight: 700, fontSize: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "12px", fontWeight: 600, fontSize: "1rem" }}>
                 Оберіть дату уроку:
               </label>
               <DatePicker

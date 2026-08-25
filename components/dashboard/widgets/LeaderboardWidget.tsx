@@ -27,7 +27,7 @@ export default function LeaderboardWidget({ leaderboard, isGlobal, onStudentClic
                   {item.student.nickname || item.student.full_name}
                 </div>
                 {item.student.nickname && (
-                  <div style={{ fontSize: "0.8rem", color: "#868e96", fontWeight: 700 }}>
+                  <div style={{ fontSize: "0.8rem", color: "#868e96", fontWeight: 600 }}>
                     {item.student.full_name}
                   </div>
                 )}

@@ -89,7 +89,7 @@ export default function LessonSeriesForm({
 
   return (
     <div>
-      <label style={{ display: "block", marginBottom: "8px", fontWeight: 700, fontSize: "0.95rem" }}>
+      <label style={{ display: "block", marginBottom: "8px", fontWeight: 600, fontSize: "0.95rem" }}>
         Дні тижня:
       </label>
       <Checkbox.Group
@@ -99,7 +99,7 @@ export default function LessonSeriesForm({
         style={{ marginBottom: 16 }}
       />
 
-      <label style={{ display: "block", marginBottom: "8px", fontWeight: 700, fontSize: "0.95rem" }}>
+      <label style={{ display: "block", marginBottom: "8px", fontWeight: 600, fontSize: "0.95rem" }}>
         Період:
       </label>
       <RangePicker

@@ -205,17 +205,17 @@ export default function ManagementTable({
 
   const columns = [
     {
-      title: <div style={{ fontWeight: 950, color: "#000" }}>#</div>,
+      title: <div style={{ fontWeight: 900, color: "#000" }}>#</div>,
       key: "index",
       width: 50,
       render: (_value: unknown, _record: Student, index: number) => (
-        <span style={{ color: "#adb5bd", fontWeight: 700 }}>{index + 1}</span>
+        <span style={{ color: "#adb5bd", fontWeight: 600 }}>{index + 1}</span>
       ),
       fixed: "left" as const,
       align: "center" as const,
     },
     {
-      title: <div style={{ fontWeight: 950, color: "#000" }}>УЧЕНЬ</div>,
+      title: <div style={{ fontWeight: 900, color: "#000" }}>УЧЕНЬ</div>,
       key: "student",
       fixed: "left" as const,
       width: 220,
@@ -223,9 +223,9 @@ export default function ManagementTable({
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ fontSize: "1.4rem", flexShrink: 0 }}>{record.avatar_emoji}</span>
           <div style={{ lineHeight: "1.2" }}>
-            <div style={{ fontWeight: 850, fontSize: "1rem" }}>{record.full_name}</div>
+            <div style={{ fontWeight: 900, fontSize: "1rem" }}>{record.full_name}</div>
             {record.nickname && (
-              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontWeight: 700 }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontWeight: 600 }}>
                 {record.nickname}
               </span>
             )}
@@ -352,7 +352,7 @@ export default function ManagementTable({
               <span>
                 Клітинки журналу заблоковані. Створіть тип із позначкою «прив'язаний
                 до уроку» в{" "}
-                <Link href={`/admin/${classId}/settings`} style={{ fontWeight: 700 }}>
+                <Link href={`/admin/${classId}/settings`} style={{ fontWeight: 600 }}>
                   налаштуваннях класу
                 </Link>
                 .
@@ -377,13 +377,13 @@ export default function ManagementTable({
               <Table.Summary fixed="bottom">
                 <Table.Summary.Row style={{ background: "#f8f9fa" }}>
                   <Table.Summary.Cell index={0} className="sticky-summary-cell">
-                    <div style={{ textAlign: "center", fontWeight: 950, color: "#adb5bd" }}>Σ</div>
+                    <div style={{ textAlign: "center", fontWeight: 900, color: "#adb5bd" }}>Σ</div>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={1} className="sticky-summary-cell">
-                    <div style={{ fontWeight: 950, textTransform: "uppercase", fontSize: "0.8rem", color: "#495057" }}>За урок:</div>
+                    <div style={{ fontWeight: 900, textTransform: "uppercase", fontSize: "0.8rem", color: "#495057" }}>За урок:</div>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={2} className="sticky-summary-cell">
-                    <div style={{ textAlign: "center", fontWeight: 950, color: "#adb5bd" }}>-</div>
+                    <div style={{ textAlign: "center", fontWeight: 900, color: "#adb5bd" }}>-</div>
                   </Table.Summary.Cell>
                   {/* Prize columns (empty sum) */}
                   {prizes.map((_, i) => (
@@ -400,7 +400,7 @@ export default function ManagementTable({
                       <Table.Summary.Cell key={lesson.id} index={3 + prizes.length + i} className="sticky-summary-cell">
                         <div style={{
                           textAlign: "center",
-                          fontWeight: 950,
+                          fontWeight: 900,
                           fontSize: "1.1rem",
                           color: lessonTotal > 0 ? "#52C51A" : "#adb5bd",
                           textShadow: lessonTotal > 0 ? "0 0 10px rgba(43,138,62,0.1)" : "none"

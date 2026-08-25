@@ -199,7 +199,7 @@ export default function AddLessonPage() {
           description={
             <span>
               Створіть його в{" "}
-              <Link href={`/admin/${classParam}/settings`} style={{ fontWeight: 700 }}>
+              <Link href={`/admin/${classParam}/settings`} style={{ fontWeight: 600 }}>
                 налаштуваннях класу
               </Link>
               .
@@ -235,7 +235,7 @@ export default function AddLessonPage() {
       </div>
 
       <div className="star-card">
-        <div style={{ fontWeight: 700, marginBottom: "16px" }}>🌟 Зірки за урок</div>
+        <div style={{ fontWeight: 600, marginBottom: "16px" }}>🌟 Зірки за урок</div>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {students.map((s) => {
             const displayName = s.nickname || s.full_name;
@@ -252,7 +252,7 @@ export default function AddLessonPage() {
                 }}
               >
                 <span style={{ fontSize: "1.4rem" }}>{s.avatar_emoji}</span>
-                <span style={{ flex: 1, fontSize: "0.9rem", fontWeight: 500 }}>{displayName}</span>
+                <span style={{ flex: 1, fontSize: "0.9rem", fontWeight: 600 }}>{displayName}</span>
                 <Select
                   value={starValues[s.id] ?? 2}
                   onChange={(v) => setStarValues((prev) => ({ ...prev, [s.id]: v }))}
@@ -276,7 +276,7 @@ export default function AddLessonPage() {
             marginTop: "20px",
             background: "#000",
             border: "none",
-            fontWeight: 700,
+            fontWeight: 600,
           }}
         >
           💾 Зберегти урок

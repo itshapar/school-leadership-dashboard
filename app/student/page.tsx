@@ -84,7 +84,7 @@ export default function StudentLoginPage() {
                 size="large"
                 placeholder="XXXXX-XXXXX"
                 autoComplete="off"
-                style={{ textTransform: "uppercase", textAlign: "center", fontWeight: 700 }}
+                style={{ textTransform: "uppercase", textAlign: "center", fontWeight: 600 }}
               />
             </Form.Item>
             <Form.Item
@@ -113,7 +113,7 @@ export default function StudentLoginPage() {
               style={{
                 background: "linear-gradient(135deg, #f5a623, #e8940f)",
                 border: "none",
-                fontWeight: 700,
+                fontWeight: 600,
               }}
             >
               Увійти

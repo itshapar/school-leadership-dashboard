@@ -37,14 +37,14 @@ export default function DemoStudentList({ students }: { students: DemoStudent[] 
                     border: "2px solid #000",
                     borderRadius: "8px",
                     fontSize: "0.9rem",
-                    fontWeight: 700,
+                    fontWeight: 600,
                   }}
                 >
                   <span>
                     {h.type_icon ?? ""} {h.type_name ?? "Запис"}
-                    {h.note && <span style={{ color: "#868e96", fontWeight: 500 }}> · {h.note}</span>}
+                    {h.note && <span style={{ color: "#868e96", fontWeight: 600 }}> · {h.note}</span>}
                     {h.lesson_date && (
-                      <Tag style={{ marginLeft: 8, fontWeight: 700 }}>{h.lesson_date}</Tag>
+                      <Tag style={{ marginLeft: 8, fontWeight: 600 }}>{h.lesson_date}</Tag>
                     )}
                   </span>
                   <span style={{ color: h.amount < 0 ? "#E03131" : "var(--color-star)" }}>

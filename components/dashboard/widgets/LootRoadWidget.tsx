@@ -107,7 +107,7 @@ export default function LootRoadWidget({ leaderboard, classInfo }: any) {
               </div>
 
               {/* Progress percent */}
-              <div style={{ fontSize: "0.65rem", color: "#868e96", fontWeight: 700, marginTop: "2px" }}>
+              <div style={{ fontSize: "0.65rem", color: "#868e96", fontWeight: 600, marginTop: "2px" }}>
                 {percentReached}%
               </div>
             </div>

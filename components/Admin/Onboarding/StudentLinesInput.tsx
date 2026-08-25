@@ -89,7 +89,7 @@ export default function StudentLinesInput({
       key: "n",
       width: 50,
       render: (_v: unknown, _r: unknown, i: number) => (
-        <span style={{ color: "#adb5bd", fontWeight: 700 }}>{i + 1}</span>
+        <span style={{ color: "#adb5bd", fontWeight: 600 }}>{i + 1}</span>
       ),
     },
     {

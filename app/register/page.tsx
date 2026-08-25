@@ -148,7 +148,7 @@ export default function RegisterPage() {
                       strokeColor={strength.color}
                       size="small"
                     />
-                    <div style={{ fontSize: "0.78rem", fontWeight: 700, color: strength.color, marginTop: 2 }}>
+                    <div style={{ fontSize: "0.78rem", fontWeight: 600, color: strength.color, marginTop: 2 }}>
                       {strength.label}
                     </div>
                   </div>
@@ -169,11 +169,11 @@ export default function RegisterPage() {
                   <Checkbox checked={accepted} onChange={(e) => setAccepted(e.target.checked)}>
                     <span style={{ fontSize: "0.88rem" }}>
                       Я приймаю{" "}
-                      <Link href="/terms" target="_blank" style={{ fontWeight: 700 }}>
+                      <Link href="/terms" target="_blank" style={{ fontWeight: 600 }}>
                         умови використання
                       </Link>{" "}
                       та{" "}
-                      <Link href="/privacy" target="_blank" style={{ fontWeight: 700 }}>
+                      <Link href="/privacy" target="_blank" style={{ fontWeight: 600 }}>
                         політику приватності
                       </Link>
                     </span>
@@ -195,7 +195,7 @@ export default function RegisterPage() {
                       ? "linear-gradient(135deg, #f5a623, #e8940f)"
                       : undefined,
                     border: "none",
-                    fontWeight: 700,
+                    fontWeight: 600,
                   }}
                 >
                   Зареєструватися

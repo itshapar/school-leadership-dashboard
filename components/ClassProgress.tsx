@@ -18,7 +18,7 @@ export default function ClassProgressBars({
 }) {
   if (prizes.length === 0) {
     return (
-      <div style={{ color: "var(--color-text-muted)", fontWeight: 700, fontSize: "0.9rem" }}>
+      <div style={{ color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.9rem" }}>
         Нагороди класу ще не налаштовані.
       </div>
     );
@@ -61,7 +61,7 @@ export default function ClassProgressBars({
                 color: "var(--color-text-muted)",
                 fontSize: "0.85rem",
                 marginTop: "4px",
-                fontWeight: 700,
+                fontWeight: 600,
                 display: "flex",
                 justifyContent: "space-between",
               }}

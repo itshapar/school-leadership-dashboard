@@ -63,7 +63,7 @@ export default function StudentEditForm({
       <Button 
         icon={<ArrowLeftOutlined />} 
         onClick={() => router.back()}
-        style={{ marginBottom: "20px", fontWeight: 700 }}
+        style={{ marginBottom: "20px", fontWeight: 600 }}
       >
         Назад
       </Button>

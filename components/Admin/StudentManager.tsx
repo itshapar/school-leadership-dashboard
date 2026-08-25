@@ -179,7 +179,7 @@ export default function StudentManager({
       title: FULL_NAME_LABEL,
       dataIndex: "full_name",
       key: "full_name",
-      render: (name: string) => <div style={{ fontWeight: 700 }}>{name}</div>,
+      render: (name: string) => <div style={{ fontWeight: 600 }}>{name}</div>,
     },
     {
       title: "Нікнейм",
@@ -336,7 +336,7 @@ export default function StudentManager({
       >
         <Form form={form} layout="vertical" onFinish={handleFinish} style={{ marginTop: "20px" }}>
           <Form.Item
-            label={<span style={{ fontWeight: 700 }}>{FULL_NAME_LABEL}</span>}
+            label={<span style={{ fontWeight: 600 }}>{FULL_NAME_LABEL}</span>}
             name="full_name"
             rules={[fullNameRule]}
             extra={
@@ -347,7 +347,7 @@ export default function StudentManager({
             validateStatus={orderWarning.suspicious ? "warning" : undefined}
             help={
               orderWarning.suspicious ? (
-                <span style={{ color: "#f08c00", fontWeight: 700 }}>
+                <span style={{ color: "#f08c00", fontWeight: 600 }}>
                   {orderWarning.reason}. Публічна сторінка показує друге слово,
                   перевірте порядок.
                 </span>
@@ -358,7 +358,7 @@ export default function StudentManager({
           </Form.Item>
 
           <Form.Item
-            label={<span style={{ fontWeight: 700 }}>Нікнейм (необов&apos;язково)</span>}
+            label={<span style={{ fontWeight: 600 }}>Нікнейм (необов&apos;язково)</span>}
             name="nickname"
             extra={
               <span style={{ color: "#868e96", fontSize: "0.8rem" }}>
@@ -370,7 +370,7 @@ export default function StudentManager({
           </Form.Item>
 
           <Form.Item
-            label={<span style={{ fontWeight: 700 }}>Емодзі (аватар)</span>}
+            label={<span style={{ fontWeight: 600 }}>Емодзі (аватар)</span>}
             name="avatar_emoji"
             rules={[{ required: true, message: "Оберіть емодзі" }]}
           >

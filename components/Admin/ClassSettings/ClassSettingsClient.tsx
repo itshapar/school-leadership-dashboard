@@ -209,7 +209,7 @@ export default function ClassSettingsClient({
           >
             Налаштування класу
           </h1>
-          <div style={{ color: "#868e96", fontWeight: 700, fontSize: "0.9rem" }}>
+          <div style={{ color: "#868e96", fontWeight: 600, fontSize: "0.9rem" }}>
             {className}
           </div>
         </div>

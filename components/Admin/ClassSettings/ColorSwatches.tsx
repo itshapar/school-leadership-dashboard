@@ -60,7 +60,7 @@ export default function ColorSwatches({
           borderRadius: 8,
           border: value ? "2px solid #dee2e6" : "3px solid #000",
           background: "#fff",
-          fontWeight: 700,
+          fontWeight: 600,
           fontSize: "0.78rem",
           cursor: "pointer",
         }}

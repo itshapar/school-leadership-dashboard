@@ -38,7 +38,7 @@ const chipStyle = (active: boolean): React.CSSProperties => ({
   borderRadius: "20px",
   background: active ? "#000" : "#ffffff",
   color: active ? "#fff" : "#495057",
-  fontWeight: 700,
+  fontWeight: 600,
   fontSize: "0.85rem",
   border: active ? "2px solid #000" : "2px solid #dee2e6",
   boxShadow: active ? "2px 2px 0px var(--color-star, #f59f00)" : "none",
@@ -121,11 +121,11 @@ export default function ClassRosterList({
         >
           <div style={{ fontSize: "1.8rem" }}>{student.avatar_emoji}</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 850, fontSize: "0.95rem", color: "#000000" }}>
+            <div style={{ fontWeight: 900, fontSize: "0.95rem", color: "#000000" }}>
               {student.display_name}
             </div>
             {student.full_name && (
-              <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", fontWeight: 700 }}>
+              <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", fontWeight: 600 }}>
                 {student.full_name}
               </div>
             )}

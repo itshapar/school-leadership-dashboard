@@ -31,7 +31,7 @@ export default async function AdminClassPage({ params }: Props) {
   const journalInitial = await loadManagementJournalData(supabase, classId);
 
   return (
-    <div style={{ padding: "0", minHeight: "100vh", background: "#f8f9fa" }}>
+    <div style={{ padding: "0", minHeight: "100vh", background: "var(--bg-primary)" }}>
       {/* Top Header Bar */}
       <div style={{ 
         background: "#ffffff", 

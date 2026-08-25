@@ -148,7 +148,7 @@ export default async function ClassPage({ params }: Props) {
       <div className="page-header">
         <h1 style={{ fontSize: "2.8rem", fontWeight: 900, margin: 0 }}>{overview.name}</h1>
         {isTeacherPreview && (
-          <div style={{ color: "var(--color-text-muted)", fontWeight: 700, fontSize: "0.85rem" }}>
+          <div style={{ color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.85rem" }}>
             Попередній перегляд: так це бачать учні після входу за PIN
           </div>
         )}
@@ -169,7 +169,7 @@ export default async function ClassPage({ params }: Props) {
         <div
           style={{
             fontSize: "5rem",
-            fontWeight: 950,
+            fontWeight: 900,
             color: "var(--color-star)",
             lineHeight: 1,
             letterSpacing: "-2px",
@@ -225,7 +225,7 @@ export default async function ClassPage({ params }: Props) {
             <div
               style={{
                 fontSize: "1.5rem",
-                fontWeight: 950,
+                fontWeight: 900,
                 color: classBonus < 0 ? "#E03131" : "var(--color-star)",
                 padding: "4px 12px",
                 background: "#fff",
@@ -248,7 +248,7 @@ export default async function ClassPage({ params }: Props) {
                 style={{
                   fontSize: "0.95rem",
                   color: "var(--color-text)",
-                  fontWeight: 700,
+                  fontWeight: 600,
                   display: "flex",
                   justifyContent: "space-between",
                   padding: "8px 12px",

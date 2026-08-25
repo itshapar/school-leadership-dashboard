@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
  */
 export default function OnboardingPage() {
   return (
-    <div style={{ background: "#f8f9fa", minHeight: "100vh" }}>
+    <div style={{ background: "var(--bg-primary)", minHeight: "100vh" }}>
       <Suspense
         fallback={
           <div style={{ padding: 80, textAlign: "center" }}>

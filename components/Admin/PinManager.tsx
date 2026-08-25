@@ -75,7 +75,7 @@ function renderPinsInto(
     .map(
       (p) =>
         `<div style="border:1px dashed #999;padding:10px 8px;text-align:center;page-break-inside:avoid;">` +
-          `<div style="font-weight:700;font-size:13px;line-height:1.2;">${nameById.get(p.student_id) ?? p.student_id}</div>` +
+          `<div style="font-weight:600;font-size:13px;line-height:1.2;">${nameById.get(p.student_id) ?? p.student_id}</div>` +
           `<div style="font-family:monospace;font-size:24px;font-weight:800;letter-spacing:0.2em;margin-top:2px;">${p.pin}</div>` +
         `</div>`
     )
