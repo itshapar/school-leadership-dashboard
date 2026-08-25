@@ -130,6 +130,7 @@ export default function NewLessonButton({
           ) : (
             <LessonSeriesForm
               classId={classId}
+              submitAlign="end"
               onCreated={() => {
                 setOpen(false);
                 onSuccess();

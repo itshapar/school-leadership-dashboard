@@ -141,16 +141,16 @@ export default function QuickEntry({
   return (
     <>
       <Tooltip title="НАРАХУВАННЯ">
-        {/* Чорна, як і решта кнопок тулбара (живий фідбек): жовта заливка
-            з зеленою тінню виділяла дію, яку вчитель робить не так часто,
-            щоб вона кричала на весь тулбар. */}
+        {/* Біла з чорною обводкою й чорною іконкою (живий фідбек): жовта
+            заливка з зеленою тінню виділяла дію, яку вчитель робить не так
+            часто, щоб вона кричала на весь тулбар. */}
         <Button
           onClick={openModal}
           size="middle"
           icon={<Star weight="fill" />}
           style={{
-            background: "#000",
-            color: "#fff",
+            background: "#fff",
+            color: "#000",
             border: "2px solid #000",
             fontWeight: 800,
             borderRadius: "12px",
@@ -251,11 +251,6 @@ export default function QuickEntry({
             name="amount"
             label={<span style={{ fontWeight: 600 }}>Скільки зірок</span>}
             rules={[{ required: true, message: "Вкажіть кількість" }]}
-            extra={
-              <span style={{ color: "#868e96", fontSize: "0.8rem" }}>
-                Знак («+» чи «−») визначає сам тип нарахування.
-              </span>
-            }
           >
             <InputNumber min={1} max={100} size="middle" addonAfter={<StarIcon />} style={{ width: "100%" }} />
           </Form.Item>

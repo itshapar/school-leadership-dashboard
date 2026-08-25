@@ -20,16 +20,21 @@ interface StudentData {
 
 const ALL = "__all__";
 
+/**
+ * Чіп фільтра. Обводка й тінь чорні в обох станах (живий фідбек):
+ * помаранчевий контур обраного чіпа був єдиним місцем, де колір зірки
+ * працював як обводка, і сіра обводка неактивних випадала з решти кнопок.
+ */
 function chipStyle(active: boolean): React.CSSProperties {
   return {
     padding: "8px 16px",
     borderRadius: "20px",
     background: active ? "#000" : "#ffffff",
-    color: active ? "#fff" : "#495057",
+    color: active ? "#fff" : "#000000",
     fontWeight: 600,
     fontSize: "0.9rem",
-    border: active ? "2px solid #000" : "2px solid #dee2e6",
-    boxShadow: active ? "2px 2px 0px var(--color-star, #f59f00)" : "none",
+    border: "2px solid #000000",
+    boxShadow: "2px 2px 0px #000000",
     cursor: "pointer",
   };
 }
@@ -151,6 +156,19 @@ export default function TotalDashboardClient({
 
   return (
     <div className="page-container" style={{ maxWidth: "900px" }}>
+
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "20px",
+        marginBottom: "24px"
+      }}>
+        <BackButton href="/admin" label="Назад до кабінету" />
+        <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 900, textTransform: "uppercase" }}>
+          Рейтинг учнів
+        </h1>
+      </div>
+
       {sortedParallels.length > 0 && (
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
           <button
@@ -173,18 +191,6 @@ export default function TotalDashboardClient({
         </div>
       )}
 
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "20px",
-        marginBottom: "32px"
-      }}>
-        <BackButton href="/admin" label="Назад до кабінету" />
-        <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 900, textTransform: "uppercase" }}>
-          Рейтинг усіх учнів
-        </h1>
-      </div>
-
       <div style={{ marginBottom: "24px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
         <Input
           prefix={<MagnifyingGlass style={{ color: "#adb5bd" }} />}
@@ -196,7 +202,9 @@ export default function TotalDashboardClient({
             minWidth: "200px",
             height: "50px",
             borderRadius: "12px",
-            border: "2px solid #eee",
+            // Чорна обводка (живий фідбек): зі світло-сірою рамкою поле
+            // пошуку зливалось із кремовим фоном сторінки.
+            border: "2px solid #000000",
             fontSize: "1rem",
             fontWeight: 600
           }}

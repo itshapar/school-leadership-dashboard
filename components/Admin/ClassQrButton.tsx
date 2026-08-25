@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button, Modal, Tooltip, message } from "antd";
 import { Copy, QrCode } from "@phosphor-icons/react";
 import { QRCodeSVG } from "qrcode.react";
+import Link from "next/link";
 
 /**
  * QR-код на дашборд класу (Етап 9.9, живий фідбек): вчитель виводить
@@ -93,9 +94,17 @@ export default function ClassQrButton({
           >
             {link}
           </a>
-          <p style={{ color: "var(--color-text-muted)", fontSize: "0.8rem" }}>
-            Учень сканує камерою телефону й переходить на дашборд класу, там
-            попросить власний PIN, як завжди.
+          <p style={{ color: "var(--color-text-muted)", fontSize: "0.8rem", lineHeight: 1.6 }}>
+            Учень сканує цей QR-код камерою телефону й потрапляє на дашборд
+            класу. Далі сторінка попросить його власний PIN, взяти його можна
+            у{" "}
+            <Link
+              href={`/admin/${classCode}/students`}
+              style={{ color: "#000", fontWeight: 700, textDecoration: "underline" }}
+            >
+              списку учнів
+            </Link>
+            .
           </p>
         </div>
       </Modal>

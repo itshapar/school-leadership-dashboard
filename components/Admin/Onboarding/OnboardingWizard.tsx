@@ -250,6 +250,15 @@ export default function OnboardingWizard() {
 
     setCreating(false);
     message.success("Клас створено");
+
+    // Крок перемикаємо ОДРАЗУ, ще до router.replace (живий фідбек): інакше
+    // на першому кроці встигав блимнути зелений блок «Клас створено», і
+    // лише потім майстер стрибав на «Уроки». Сам блок лишається — він
+    // доречний, коли вчитель повертається на крок «Клас» назад.
+    setCls(data as ClassRow);
+    await refresh(data.id);
+    setCurrent(stepIndex("lessons"));
+
     // Кладемо classId в URL: майстер стає відновлюваним по посиланню.
     router.replace(`/admin/onboarding?classId=${data.id}&step=lessons`);
   }
@@ -282,12 +291,12 @@ export default function OnboardingWizard() {
         style={{ marginBottom: 28 }}
         items={WIZARD_STEPS.map((s, i) => {
           // "Уроки" не входить у прогрес lib/admin/onboarding.ts (не одна з
-          // п'яти відстежуваних сутностей) — для нього ніколи немає
-          // справжнього "виконано". Явна іконка на КОЖНОМУ кроці (не лише
-          // виконаних) — інакше antd сама домальовує "пройденим" крокам
-          // чорне (colorPrimary) коло з галочкою, що виглядає як фальшиве
-          // "виконано" для того ж кроку "Уроки" (живий фідбек).
-          const done = s.key !== "lessons" && doneMap?.[s.key];
+          // п'яти відстежуваних сутностей), тож "виконано" для нього
+          // рахуємо тут: є хоч один урок у класі (живий фідбек). Явна
+          // іконка на КОЖНОМУ кроці (не лише виконаних) — інакше antd
+          // сама домальовує "пройденим" крокам чорне (colorPrimary) коло
+          // з галочкою, що виглядає як фальшиве "виконано".
+          const done = s.key === "lessons" ? lessonsCount > 0 : doneMap?.[s.key];
           return {
             title: s.title,
             disabled: !cls && s.key !== "class",

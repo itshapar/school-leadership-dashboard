@@ -192,10 +192,9 @@ button, input, select, textarea {
   transition: transform 0.1s ease;
 }
 
-.star-card:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0px var(--color-border);
-}
+/* Ховер-ефекту в карток немає (живий фідбек): картка класу «підстрибувала»
+   під курсором, і кнопки «Журнал»/«Дашборд» усередині неї від цього
+   зміщувались. Лишається тільки ефект натискання нижче. */
 
 /* Prize card */
 .prize-card {
@@ -415,6 +414,22 @@ button, input, select, textarea {
   color: var(--color-text);
 }
 
+/* Єдина геометрія кнопок (живий фідбек): висота 38px і скруглення 10px
+   скрізь, де є antd-кнопка — і з текстом, і лише з іконкою. Раніше кожен
+   екран задавав своє інлайн-стилем: 32 в таблицях, 38 у шапках, 42 в
+   тулбарі журналу, а скруглення гуляло між 8, 10 і 12. !important —
+   бо перебиваємо саме ті інлайн-стилі. */
+.ant-btn {
+  height: 38px !important;
+  border-radius: 10px !important;
+}
+
+.ant-btn.ant-btn-icon-only {
+  width: 38px !important;
+  min-width: 38px !important;
+  padding: 0 !important;
+}
+
 /* Кнопка «назад» (живий фідбек): усюди однакова — чорна, біла стрілка,
    чорна обводка й та сама тінь-натискання, що й у решти кнопок. Живе
    класом, а не інлайн-стилями на кожній сторінці, бо раніше кожен екран
@@ -423,8 +438,8 @@ button, input, select, textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
   border-radius: 10px;
   background: #000000;
@@ -575,11 +590,6 @@ button, input, select, textarea {
     font-size: 0.85rem;
   }
 }
-.total-dashboard-card:hover .star-card {
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0px var(--color-border);
-}
-
 /* Той самий ефект натискання, що й у кнопок (живий фідбек): картка
    «втоплюється» на висоту тіні, а не змінює масштаб. */
 .total-dashboard-card:active .star-card {

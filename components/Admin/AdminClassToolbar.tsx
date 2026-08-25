@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Tooltip } from "antd";
-import { ChartLine, ClockCounterClockwise, Gear, Users } from "@phosphor-icons/react";
+import { ChartLine, ClockCounterClockwise, Gear, Gift, Users } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QuickEntry from "@/components/Admin/QuickEntry";
@@ -83,8 +83,24 @@ export default function AdminClassToolbar({
         </Link>
       </Tooltip>
 
-      {/* Налаштування класу замінили модалку «Нагороди»: типи нарахувань,
-          обидва види призів і групи живуть тепер на одній сторінці. */}
+      {/* Нагороди — власна сторінка (живий фідбек): вчитель ходить у них
+          частіше, ніж у решту налаштувань класу. */}
+      <Tooltip title="НАГОРОДИ">
+        <Link href={`/admin/${classCode}/prizes`}>
+          <Button
+            size="middle"
+            icon={<Gift />}
+            style={{
+              ...iconButtonStyle,
+              background: "#ffffff",
+              color: "#000",
+              border: "2px solid #000",
+              boxShadow: "3px 3px 0px #000",
+            }}
+          />
+        </Link>
+      </Tooltip>
+
       <Tooltip title="НАЛАШТУВАННЯ КЛАСУ">
         <Link href={`/admin/${classCode}/settings`}>
           <Button

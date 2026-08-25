@@ -127,16 +127,21 @@ export default function AdminClassList({
   );
 }
 
+/**
+ * Чіп фільтра. Обводка й тінь чорні в обох станах (живий фідбек):
+ * помаранчевий контур обраного чіпа був єдиним місцем, де колір зірки
+ * працював як обводка, і сіра обводка неактивних випадала з решти кнопок.
+ */
 function chipStyle(active: boolean): React.CSSProperties {
   return {
     padding: "8px 16px",
     borderRadius: "20px",
     background: active ? "#000" : "#ffffff",
-    color: active ? "#fff" : "#495057",
+    color: active ? "#fff" : "#000000",
     fontWeight: 600,
     fontSize: "0.9rem",
-    border: active ? "2px solid #000" : "2px solid #dee2e6",
-    boxShadow: active ? "2px 2px 0px var(--color-star, #f59f00)" : "none",
+    border: "2px solid #000000",
+    boxShadow: "2px 2px 0px #000000",
     cursor: "pointer",
   };
 }

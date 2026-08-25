@@ -1,7 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
-import { BookOpen, Star, User } from "@phosphor-icons/react/dist/ssr";
+import { ChartLineUp, Ranking, User } from "@phosphor-icons/react/dist/ssr";
 import { formatClassCode } from "@/lib/classCodes";
 import { loadParallels } from "@/lib/admin/parallels";
 import { getOnboardingProgressBatch } from "@/lib/admin/onboarding";
@@ -122,10 +122,11 @@ export default async function AdminPage() {
             className="admin-action-btn admin-btn-white"
             style={{ display: "inline-flex", alignItems: "center", gap: "8px", minWidth: "auto" }}
           >
-            {/* 1.45em — той самий розмір, що й у CSS-правилі для іконок в
-                antd-кнопках із текстом: це посилання-кнопка, під те правило
-                воно не підпадає, тож розмір задано тут явно. */}
-            <User weight="bold" style={{ fontSize: "1.45em" }} /> Профіль вчителя
+            {/* Виняток із загального bold (живий фідбек): для іконки
+                вчителя fill читається краще. 1.45em — той самий розмір, що
+                й у CSS-правилі для іконок в antd-кнопках із текстом: це
+                посилання-кнопка, під те правило воно не підпадає. */}
+            <User weight="fill" style={{ fontSize: "1.45em" }} /> Профіль вчителя
           </Link>
         </div>
       </div>
@@ -147,10 +148,10 @@ export default async function AdminPage() {
               alignItems: "center"
             }}>
               <div>
-                <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Рейтинг усіх учнів</div>
+                <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Рейтинг учнів</div>
                 <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>За паралеллю, класична таблиця рейтингу</div>
               </div>
-              <Star weight="fill" style={{ fontSize: "2.5rem", color: "var(--color-star)" }} />
+              <Ranking weight="bold" style={{ fontSize: "2.5rem", color: "var(--color-star)" }} />
             </div>
           </Link>
 
@@ -172,7 +173,7 @@ export default async function AdminPage() {
                 <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Загальний дашборд</div>
                 <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>За паралеллю, розширена статистика, цілі та графіки</div>
               </div>
-              <BookOpen weight="bold" style={{ fontSize: "2.5rem", color: "#000" }} />
+              <ChartLineUp weight="bold" style={{ fontSize: "2.5rem", color: "#000" }} />
             </div>
           </Link>
         </>

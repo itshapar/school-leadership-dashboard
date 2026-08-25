@@ -1,18 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Input, Popconfirm, Select, Spin, Switch, Tabs, message } from "antd";
+import { Button, Input, Popconfirm, Select, Switch, message } from "antd";
 import { Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import {
-  loadClassPrizes,
-  loadIndividualPrizes,
-  type ClassPrize,
-  type IndividualPrize,
-} from "@/lib/admin/classConfig";
-import PrizesPanel from "@/components/Admin/ClassSettings/PrizesPanel";
-import { PrintClassPinsButton, RegenerateClassPinsButton } from "@/components/Admin/PinManager";
 import { setClassParallel, upsertParallelByName, type Parallel } from "@/lib/admin/parallels";
 import BackButton from "@/components/BackButton";
 
@@ -23,23 +15,15 @@ const GRADE_OPTIONS = Array.from({ length: 12 }, (_, i) => {
 });
 
 /**
- * Налаштування класу — одне місце замість модалки «Нагороди».
+ * Налаштування класу: назва, паралель, видимість зірок однокласників і
+ * небезпечна зона.
  *
- * Система балів (типи нарахувань) тут більше НЕ редагується — Етап 9 зробив
- * її фіксованим стандартом для всіх класів (накочується автоматично при
- * створенні, див. OnboardingWizard.createClass). Замість вкладки "Типи
- * нарахувань" тут тепер код класу і PIN-и — раніше вони жили в кроці
- * майстра "Коди", який прибрали: показувати їх варто вже ПІСЛЯ створення
- * класу, а не як обов'язковий крок.
+ * Система балів (типи нарахувань) тут не редагується — Етап 9 зробив її
+ * фіксованим стандартом для всіх класів (накочується автоматично при
+ * створенні, див. OnboardingWizard.createClass). PIN-и переїхали в список
+ * учнів, нагороди — на власну сторінку /admin/[code]/prizes (живий
+ * фідбек): і те, і те шукали не тут.
  */
-
-export interface StudentRow {
-  id: string;
-  full_name: string;
-  nickname: string | null;
-  avatar_emoji: string;
-  group_id: string | null;
-}
 
 interface Props {
   classId: string;
@@ -48,7 +32,6 @@ interface Props {
   initialShowClassmateStars: boolean;
   initialParallelId: string | null;
   parallels: Parallel[];
-  initialStudents: StudentRow[];
 }
 
 export default function ClassSettingsClient({
@@ -58,12 +41,10 @@ export default function ClassSettingsClient({
   initialShowClassmateStars,
   initialParallelId,
   parallels,
-  initialStudents,
 }: Props) {
   const supabase = getSupabaseClient();
   const router = useRouter();
 
-  const [loading, setLoading] = useState(true);
   const [showClassmateStars, setShowClassmateStars] = useState(initialShowClassmateStars);
   const [savingVisibility, setSavingVisibility] = useState(false);
   const [parallelId, setParallelId] = useState(initialParallelId);
@@ -71,35 +52,6 @@ export default function ClassSettingsClient({
   const [name, setName] = useState(className);
   const [savingName, setSavingName] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [individualPrizes, setIndividualPrizes] = useState<IndividualPrize[]>([]);
-  const [classPrizes, setClassPrizes] = useState<ClassPrize[]>([]);
-  const [students, setStudents] = useState<StudentRow[]>(initialStudents);
-
-  const refresh = useCallback(async () => {
-    try {
-      const [indiv, cls, studentsRes] = await Promise.all([
-        loadIndividualPrizes(supabase, classId),
-        loadClassPrizes(supabase, classId),
-        supabase
-          .from("students")
-          .select("id, full_name, nickname, avatar_emoji, group_id")
-          .eq("class_id", classId)
-          .is("deleted_at", null)
-          .order("full_name"),
-      ]);
-      setIndividualPrizes(indiv);
-      setClassPrizes(cls);
-      setStudents((studentsRes.data ?? []) as StudentRow[]);
-    } catch {
-      message.error("Не вдалося завантажити налаштування");
-    } finally {
-      setLoading(false);
-    }
-  }, [classId, supabase]);
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
 
   /**
    * Назва класу редагується вже після створення (живий фідбек): у майстрі
@@ -283,45 +235,9 @@ export default function ClassSettingsClient({
         />
       </div>
 
-      <div
-        style={{
-          background: "#fff",
-          border: "3px solid #000",
-          boxShadow: "4px 4px 0px #000",
-          borderRadius: 12,
-          padding: "16px 20px",
-          marginBottom: 20,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>PIN-и учнів</div>
-          <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2 }}>
-            PIN-и завжди видно у списку учнів. Тут лише друк і перегенерація.
-          </div>
-        </div>
-        {!loading && students.length > 0 && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <PrintClassPinsButton
-              classId={classId}
-              publicCode={classCode}
-              className={name}
-              students={students}
-            />
-            <RegenerateClassPinsButton
-              classId={classId}
-              publicCode={classCode}
-              className={name}
-              students={students}
-            />
-          </div>
-        )}
-      </div>
-
+      {/* Блок PIN-ів прибрано (живий фідбек): друк і перегенерація живуть
+          у списку учнів, поряд із самими PIN-ами, і дублювати їх тут не
+          було потреби. */}
       <div
         style={{
           background: "#fff",
@@ -349,52 +265,9 @@ export default function ClassSettingsClient({
         </div>
       </div>
 
-      <div
-        style={{
-          background: "#fff",
-          border: "3px solid #000",
-          borderRadius: 16,
-          boxShadow: "4px 4px 0px #000",
-          padding: 20,
-        }}
-      >
-        {loading ? (
-          <div style={{ padding: 60, textAlign: "center" }}>
-            <Spin size="large" />
-          </div>
-        ) : (
-          <Tabs
-            defaultActiveKey="individual"
-            items={[
-              {
-                key: "individual",
-                label: <span style={{ fontWeight: 800 }}>Індивідуальні нагороди</span>,
-                children: (
-                  <PrizesPanel
-                    classId={classId}
-                    kind="individual"
-                    individualPrizes={individualPrizes}
-                    onChanged={refresh}
-                  />
-                ),
-              },
-              {
-                key: "class",
-                label: <span style={{ fontWeight: 800 }}>Нагороди класу</span>,
-                children: (
-                  <PrizesPanel
-                    classId={classId}
-                    kind="class"
-                    classPrizes={classPrizes}
-                    onChanged={refresh}
-                  />
-                ),
-              },
-            ]}
-          />
-        )}
-      </div>
-
+      {/* Нагороди переїхали на власну сторінку /admin/[code]/prizes
+          (живий фідбек): вчитель ходить у них частіше, ніж у решту
+          налаштувань, і шукає їх із журналу, а не тут. */}
       <div
         style={{
           marginTop: 24,

@@ -227,8 +227,23 @@ export default function PrizesPanel({
         rowKey="id"
         pagination={false}
         size="middle"
+        className="prizes-table"
         locale={{ emptyText: "Нагород ще немає" }}
       />
+
+      {/* Шапка таблиці майже зливалась із рядками (живий фідбек): темніша
+          підкладка, капс і чорна лінія знизу — так само, як в історії
+          нарахувань і журналі. */}
+      <style jsx global>{`
+        .prizes-table .ant-table-thead > tr > th {
+          background: #e9ecef !important;
+          font-weight: 900 !important;
+          text-transform: uppercase !important;
+          font-size: 0.75rem !important;
+          letter-spacing: 0.5px !important;
+          border-bottom: 3px solid #000 !important;
+        }
+      `}</style>
 
       <Modal
         title={

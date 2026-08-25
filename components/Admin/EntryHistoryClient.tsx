@@ -257,15 +257,30 @@ export default function EntryHistoryClient({
 
   return (
     <div className="page-container" style={{ maxWidth: "1000px" }}>
-      <div style={{ marginBottom: "24px" }}>
+      {/* Заголовок стоїть у рядку з кнопкою «назад», як на решті екранів
+          кабінету (живий фідбек): по центру й з емодзі він виглядав як
+          чужа сторінка, а кнопка «назад» губилась над ним. */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          marginBottom: 24,
+          flexWrap: "wrap",
+        }}
+      >
         <BackButton href={`/admin/${classCode}`} label="Назад до журналу" />
-      </div>
-
-      <div className="page-header" style={{ marginBottom: "32px", textAlign: "center" }}>
-        <h1 style={{ fontSize: "2.2rem", fontWeight: 900 }}>🕒 Історія {className}</h1>
-        <p className="subtitle" style={{ fontSize: "1.1rem" }}>
-          Нарахування поза журналом уроків
-        </p>
+        <h1
+          style={{
+            margin: 0,
+            fontSize: "1.6rem",
+            fontWeight: 900,
+            textTransform: "uppercase",
+            lineHeight: 1.1,
+          }}
+        >
+          Бонуси та штрафи: {className}
+        </h1>
       </div>
 
       <div className="star-card" style={{ padding: "0", overflow: "hidden", borderRadius: "16px" }}>

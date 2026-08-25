@@ -39,9 +39,17 @@ function datesInRange(start: dayjs.Dayjs, end: dayjs.Dayjs, weekdays: number[]):
 export default function LessonSeriesForm({
   classId,
   onCreated,
+  /**
+   * У поп-апі «Новий урок» ця кнопка працює як commit-кнопка модалки, тож
+   * має стояти праворуч, у тому ж ряду, де «Скасувати»/«Додати урок» у
+   * режимі одного уроку (живий фідбек). У майстрі створення класу форма
+   * живе просто на сторінці, там лівий край доречний.
+   */
+  submitAlign = "start",
 }: {
   classId: string;
   onCreated?: (inserted: number) => void;
+  submitAlign?: "start" | "end";
 }) {
   const [range, setRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [weekdays, setWeekdays] = useState<number[]>([]);
@@ -108,7 +116,17 @@ export default function LessonSeriesForm({
         style={{ width: "100%", borderRadius: "8px" }}
       />
 
-      <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+      <div
+        style={{
+          marginTop: 16,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+          flexDirection: submitAlign === "end" ? "row-reverse" : "row",
+          justifyContent: submitAlign === "end" ? "flex-start" : undefined,
+        }}
+      >
         {/* Без іконки (живий фідбек): це та сама commit-кнопка поп-апу, що
             й «Додати урок» у режимі одного уроку. */}
         <Button

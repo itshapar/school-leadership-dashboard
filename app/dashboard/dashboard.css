@@ -110,11 +110,13 @@
   box-shadow: none;
 }
 
+/* Тінь обраного чіпа чорна, не помаранчева (живий фідбек): помаранчевий
+   контур лишався єдиним місцем, де колір зірки працював як обводка. */
 .filter-btn.active {
   background: #000;
   color: #fff;
   border-color: #000;
-  box-shadow: 2px 2px 0px var(--color-star, #f59f00);
+  box-shadow: 2px 2px 0px #000;
 }
 
 .filter-btn.active:hover {
