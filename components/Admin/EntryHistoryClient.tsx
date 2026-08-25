@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Button, Popconfirm, Space, Table, Tag, message } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
+import { ArrowLeft, Trash } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
@@ -240,11 +240,11 @@ export default function EntryHistoryClient({
           cancelText="Ні"
         >
           <Button
-            type="text"
             danger
-            icon={<DeleteOutlined />}
+            icon={<Trash />}
             loading={deleting === row.key}
-            style={{ fontSize: "1.2rem" }}
+            className="btn-danger-outline"
+            style={{ padding: "4px 12px" }}
           />
         </Popconfirm>
       ),
@@ -260,17 +260,17 @@ export default function EntryHistoryClient({
             display: "inline-flex",
             alignItems: "center",
             gap: "8px",
-            color: "var(--color-text)",
+            color: "#fff",
             fontSize: "1rem",
             fontWeight: 800,
             padding: "8px 16px",
-            border: "2px solid var(--color-border)",
+            border: "2px solid #000",
             borderRadius: "10px",
             textDecoration: "none",
-            background: "#fff",
+            background: "#000",
           }}
         >
-          ← Назад до журналу
+          <ArrowLeft /> Назад до журналу
         </Link>
       </div>
 

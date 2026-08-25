@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button, Form, Input, Modal, message } from "antd";
+import { EnvelopeSimple, Lock, Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 
@@ -105,7 +106,7 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
           >
             <Input size="large" autoComplete="email" />
           </Form.Item>
-          <Button htmlType="submit" loading={savingEmail} className="btn-secondary">
+          <Button icon={<EnvelopeSimple />} htmlType="submit" loading={savingEmail} className="btn-secondary">
             Змінити email
           </Button>
         </Form>
@@ -142,7 +143,7 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
           >
             <Input.Password size="large" autoComplete="new-password" />
           </Form.Item>
-          <Button htmlType="submit" loading={savingPassword} className="btn-secondary">
+          <Button icon={<Lock />} htmlType="submit" loading={savingPassword} className="btn-secondary">
             Змінити пароль
           </Button>
         </Form>
@@ -152,7 +153,7 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
         style={{
           background: "#fff",
           border: "3px solid #000",
-          boxShadow: "4px 4px 0px #e03131",
+          boxShadow: "4px 4px 0px #000",
           borderRadius: 12,
           padding: "16px 20px",
         }}
@@ -161,7 +162,7 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
         <div style={{ color: "#868e96", fontSize: "0.85rem", marginTop: 4, marginBottom: 12 }}>
           Видалить акаунт, усі класи, учнів, бали й нагороди безповоротно.
         </div>
-        <Button danger onClick={() => setOpen(true)} className="btn-danger-outline">
+        <Button danger icon={<Trash />} onClick={() => setOpen(true)} className="btn-danger-outline">
           Видалити акаунт
         </Button>
       </div>

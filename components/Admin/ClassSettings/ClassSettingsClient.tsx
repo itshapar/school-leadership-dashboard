@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Popconfirm, Select, Spin, Switch, Tabs, message } from "antd";
 import Link from "next/link";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Archive, ArrowLeft, Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
   loadClassPrizes,
@@ -183,7 +183,7 @@ export default function ClassSettingsClient({
       >
         <Link href={`/admin/${classCode}`}>
           <Button
-            icon={<ArrowLeftOutlined />}
+            icon={<ArrowLeft />}
             style={{
               background: "#000",
               color: "#fff",
@@ -364,7 +364,7 @@ export default function ClassSettingsClient({
           marginTop: 24,
           background: "#fff",
           border: "3px solid #000",
-          boxShadow: "4px 4px 0px #e03131",
+          boxShadow: "4px 4px 0px #000",
           borderRadius: 12,
           padding: "16px 20px",
           display: "flex",
@@ -381,7 +381,7 @@ export default function ClassSettingsClient({
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Button loading={busy} onClick={toggleArchive} className="btn-secondary">
+          <Button icon={<Archive />} loading={busy} onClick={toggleArchive} className="btn-secondary">
             {archived ? "Повернути з архіву" : "Архівувати"}
           </Button>
           <Popconfirm
@@ -393,7 +393,7 @@ export default function ClassSettingsClient({
             cancelButtonProps={{ className: "btn-secondary" }}
             cancelText="Скасувати"
           >
-            <Button danger loading={busy} className="btn-danger-outline">
+            <Button danger icon={<Trash />} loading={busy} className="btn-danger-outline">
               Видалити назавжди
             </Button>
           </Popconfirm>

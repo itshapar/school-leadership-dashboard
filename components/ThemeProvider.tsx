@@ -1,6 +1,7 @@
 "use client";
 
 import { App, ConfigProvider } from "antd";
+import { IconContext } from "@phosphor-icons/react";
 
 /**
  * Клієнтська обгортка над antd ConfigProvider — сам ConfigProvider
@@ -51,7 +52,13 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         },
       }}
     >
-      <App>{children}</App>
+      {/* Phosphor: усі іконки в інтерфейсі — bold, одним місцем замість
+          weight="bold" на кожному використанні (живий фідбек). size:"1em"
+          явно — без цього деякі SVG рендерились 0×0 (невидимі), бо власний
+          дефолт бібліотеки на розмір не завжди підхоплювався. */}
+      <IconContext.Provider value={{ weight: "bold", size: "1em" }}>
+        <App>{children}</App>
+      </IconContext.Provider>
     </ConfigProvider>
   );
 }

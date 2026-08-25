@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/Admin/ProfileForm";
 
@@ -34,7 +34,7 @@ export default async function ProfilePage() {
               color: "#fff",
             }}
           >
-            <ArrowLeftOutlined />
+            <ArrowLeft weight="bold" />
           </span>
         </Link>
         <h1 style={{ fontSize: "1.8rem", fontWeight: 900, margin: 0 }}>

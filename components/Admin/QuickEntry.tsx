@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button, Modal, Form, Select, InputNumber, message, Tooltip, Radio } from "antd";
-import { StarFilled } from "@ant-design/icons";
+import { Star } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import EntryNoteField from "@/components/Admin/EntryNoteField";
@@ -135,7 +135,7 @@ export default function QuickEntry({
         <Button
           onClick={openModal}
           size="middle"
-          icon={<StarFilled />}
+          icon={<Star weight="fill" />}
           style={{
             background: "#fff9db",
             color: "var(--color-star, #f59f00)",

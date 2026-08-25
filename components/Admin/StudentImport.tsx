@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Alert, Button, Checkbox, Table, Tag, message } from "antd";
-import { SwapOutlined, UploadOutlined } from "@ant-design/icons";
+import { ArrowsLeftRight, UploadSimple } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import DataBasisReminder from "@/components/Admin/DataBasisReminder";
@@ -202,7 +202,7 @@ export default function StudentImport({
         }
         if (swapped.has(row.index)) {
           return (
-            <Tag color="blue" style={{ margin: 0 }}>
+            <Tag color="#000" style={{ margin: 0 }}>
               поміняно місцями
             </Tag>
           );
@@ -310,11 +310,11 @@ export default function StudentImport({
 
           <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
             {suspiciousCount > 0 && (
-              <Button icon={<SwapOutlined />} onClick={() => swapAll(true)} style={{ fontWeight: 700 }}>
+              <Button icon={<ArrowsLeftRight />} onClick={() => swapAll(true)} style={{ fontWeight: 700 }}>
                 Поміняти в позначених
               </Button>
             )}
-            <Button icon={<SwapOutlined />} onClick={() => swapAll(false)} style={{ fontWeight: 700 }}>
+            <Button icon={<ArrowsLeftRight />} onClick={() => swapAll(false)} style={{ fontWeight: 700 }}>
               Поміняти у всіх
             </Button>
           </div>
@@ -341,7 +341,7 @@ export default function StudentImport({
             </Button>
             <Button
               type="primary"
-              icon={<UploadOutlined />}
+              icon={<UploadSimple />}
               loading={busy}
               onClick={commit}
               style={{ background: "#000", fontWeight: 800, borderRadius: 10 }}

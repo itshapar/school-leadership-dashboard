@@ -14,7 +14,8 @@ import {
   Tabs,
   message,
 } from "antd";
-import { ArrowLeftOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { CheckCircleFilled } from "@ant-design/icons";
+import { ArrowLeft, ArrowRight, CheckCircle, Plus } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
   loadClassPrizes,
@@ -269,7 +270,7 @@ export default function OnboardingWizard() {
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
         <Link href="/admin">
           <Button
-            icon={<ArrowLeftOutlined />}
+            icon={<ArrowLeft />}
             style={{
               background: "#000",
               color: "#fff",
@@ -384,6 +385,7 @@ export default function OnboardingWizard() {
 
                 <Button
                   type="primary"
+                  icon={<Plus />}
                   htmlType="submit"
                   loading={creating}
                   className="btn-primary"
@@ -512,6 +514,7 @@ export default function OnboardingWizard() {
           }}
         >
           <Button
+            icon={<ArrowLeft />}
             disabled={current === 0}
             onClick={() => goTo(current - 1)}
             className="btn-secondary"
@@ -523,6 +526,7 @@ export default function OnboardingWizard() {
             {current < WIZARD_STEPS.length - 1 ? (
               <Button
                 type="primary"
+                icon={<ArrowRight />}
                 onClick={() => {
                   void refresh(cls.id);
                   goTo(current + 1);
@@ -534,6 +538,7 @@ export default function OnboardingWizard() {
             ) : (
               <Button
                 type="primary"
+                icon={<CheckCircle />}
                 onClick={() => router.push(`/admin/${cls.public_code}`)}
                 className="btn-primary"
               >

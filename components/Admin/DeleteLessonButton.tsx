@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Modal, Select, Space, message, Popconfirm, Tooltip } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
+import { Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import dayjs from "dayjs";
@@ -70,7 +70,7 @@ export default function DeleteLessonButton({
             fetchLessons();
           }}
           size="middle"
-          icon={<DeleteOutlined />}
+          icon={<Trash />}
           style={{
             fontWeight: 800,
             borderRadius: "12px",
@@ -91,7 +91,7 @@ export default function DeleteLessonButton({
       <Modal
         title={
           <Space>
-            <DeleteOutlined style={{ color: "#E03131" }} /> Видалити урок
+            <Trash style={{ color: "#E03131" }} /> Видалити урок
           </Space>
         }
         open={open}
@@ -109,7 +109,7 @@ export default function DeleteLessonButton({
             cancelText="Ні"
             okButtonProps={{ danger: true, loading }}
           >
-            <Button danger disabled={!selectedLessonId} loading={loading} className="btn-danger-outline">
+            <Button danger icon={<Trash />} disabled={!selectedLessonId} loading={loading} className="btn-danger-outline">
               Видалити
             </Button>
           </Popconfirm>

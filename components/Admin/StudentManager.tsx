@@ -2,13 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Table, Button, Modal, Form, Input, Space, message, Popconfirm } from "antd";
-import {
-  UserOutlined,
-  SmileOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  ArrowLeftOutlined,
-} from "@ant-design/icons";
+import { ArrowLeft, Eye, EyeSlash, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
@@ -225,7 +219,7 @@ export default function StudentManager({
       render: (_value: unknown, record: Student) => (
         <Space>
           <Button
-            icon={<EditOutlined />}
+            icon={<PencilSimple />}
             onClick={() => handleEdit(record)}
             style={{ borderRadius: "8px", border: "2px solid #000" }}
           />
@@ -236,7 +230,7 @@ export default function StudentManager({
             okText="Так"
             cancelText="Ні"
           >
-            <Button danger icon={<DeleteOutlined />} className="btn-danger-outline" style={{ padding: "4px 12px" }} />
+            <Button danger icon={<Trash />} className="btn-danger-outline" style={{ padding: "4px 12px" }} />
           </Popconfirm>
         </Space>
       ),
@@ -249,7 +243,7 @@ export default function StudentManager({
         <Space size="large">
           <Link href={`/admin/${publicCode || classId}`}>
             <Button
-              icon={<ArrowLeftOutlined />}
+              icon={<ArrowLeft />}
               style={{
                 background: "#000",
                 color: "#fff",
@@ -270,6 +264,7 @@ export default function StudentManager({
 
         <Space wrap>
           <Button
+            icon={pinsVisible ? <EyeSlash /> : <Eye />}
             onClick={() => setPinsVisible((v) => !v)}
             className="btn-secondary"
             style={{
@@ -277,7 +272,7 @@ export default function StudentManager({
               // Фіксована ширина (замість auto): "ПОКАЗАТИ PIN-И" і
               // "СХОВАТИ PIN-И" мають різну довжину, без цього кнопка
               // смикалась при кожному перемиканні (9.11, живий фідбек).
-              width: "168px",
+              width: "188px",
             }}
           >
             {pinsVisible ? "СХОВАТИ PIN-И" : "ПОКАЗАТИ PIN-И"}
@@ -295,7 +290,7 @@ export default function StudentManager({
             students={students}
             onReset={mergePins}
           />
-          <Button type="primary" onClick={handleAdd} className="btn-primary" style={{ height: "38px" }}>
+          <Button type="primary" icon={<Plus />} onClick={handleAdd} className="btn-primary" style={{ height: "38px" }}>
             ДОДАТИ УЧНЯ
           </Button>
         </Space>
@@ -336,8 +331,8 @@ export default function StudentManager({
         okText="Зберегти"
         cancelText="Скасувати"
         confirmLoading={loading}
-        okButtonProps={{ size: "large", style: { background: "#000", fontWeight: 700 } }}
-        cancelButtonProps={{ size: "large" }}
+        okButtonProps={{ className: "btn-primary" }}
+        cancelButtonProps={{ className: "btn-secondary" }}
       >
         <Form form={form} layout="vertical" onFinish={handleFinish} style={{ marginTop: "20px" }}>
           <Form.Item
@@ -359,7 +354,7 @@ export default function StudentManager({
               ) : undefined
             }
           >
-            <Input prefix={<UserOutlined />} placeholder={FULL_NAME_PLACEHOLDER} size="large" />
+            <Input placeholder={FULL_NAME_PLACEHOLDER} size="large" />
           </Form.Item>
 
           <Form.Item
@@ -371,7 +366,7 @@ export default function StudentManager({
               </span>
             }
           >
-            <Input prefix={<SmileOutlined />} placeholder="Сашко" size="large" />
+            <Input placeholder="Сашко" size="large" />
           </Form.Item>
 
           <Form.Item

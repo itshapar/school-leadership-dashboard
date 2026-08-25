@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Modal, Tooltip, message } from "antd";
-import { QrcodeOutlined, CopyOutlined } from "@ant-design/icons";
+import { CheckCircle, Copy, QrCode } from "@phosphor-icons/react";
 import { QRCodeSVG } from "qrcode.react";
 
 /**
@@ -34,7 +34,7 @@ export default function ClassQrButton({
       <Tooltip title="QR-КОД КЛАСУ">
         <Button
           size="middle"
-          icon={<QrcodeOutlined />}
+          icon={<QrCode />}
           onClick={() => setOpen(true)}
           style={{
             ...iconButtonStyle,
@@ -56,10 +56,10 @@ export default function ClassQrButton({
         // напівпрозорого чорного фону замало, текст/бали й далі проглядались.
         styles={{ mask: { backdropFilter: "blur(12px)" } }}
         footer={[
-          <Button key="copy" icon={<CopyOutlined />} onClick={copyLink}>
+          <Button key="copy" icon={<Copy />} onClick={copyLink} className="btn-secondary">
             Копіювати посилання
           </Button>,
-          <Button key="done" type="primary" onClick={() => setOpen(false)} style={{ background: "#000" }}>
+          <Button key="done" type="primary" icon={<CheckCircle />} onClick={() => setOpen(false)} className="btn-primary">
             Готово
           </Button>,
         ]}

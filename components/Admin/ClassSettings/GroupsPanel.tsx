@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Button, Form, Input, Modal, Popconfirm, Select, Table, message } from "antd";
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import { CLASS_LIMITS, removeClassGroup, type ClassGroup } from "@/lib/admin/classConfig";
@@ -150,7 +150,7 @@ export default function GroupsPanel({ classId, groups, students, onChanged }: Pr
       align: "center" as const,
       render: (_v: unknown, g: ClassGroup) => (
         <span style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-          <Button icon={<EditOutlined />} onClick={() => openEdit(g)} style={{ borderRadius: 8 }} />
+          <Button icon={<PencilSimple />} onClick={() => openEdit(g)} style={{ borderRadius: 8, border: "2px solid #000" }} />
           <Popconfirm
             title="Видалити групу?"
             description="Учні залишаться в класі, просто без групи."
@@ -158,7 +158,7 @@ export default function GroupsPanel({ classId, groups, students, onChanged }: Pr
             okText="Так"
             cancelText="Ні"
           >
-            <Button danger icon={<DeleteOutlined />} style={{ borderRadius: 8 }} />
+            <Button danger icon={<Trash />} className="btn-danger-outline" style={{ padding: "4px 12px" }} />
           </Popconfirm>
         </span>
       ),
@@ -214,10 +214,10 @@ export default function GroupsPanel({ classId, groups, students, onChanged }: Pr
         </span>
         <Button
           type="primary"
-          icon={<PlusOutlined />}
+          icon={<Plus />}
           onClick={openCreate}
           disabled={atLimit}
-          style={{ background: "#000", borderColor: "#000", fontWeight: 800, borderRadius: 10 }}
+          className="btn-primary"
         >
           ДОДАТИ ГРУПУ
         </Button>
@@ -269,7 +269,8 @@ export default function GroupsPanel({ classId, groups, students, onChanged }: Pr
         confirmLoading={saving}
         okText="Зберегти"
         cancelText="Скасувати"
-        okButtonProps={{ style: { background: "#000", fontWeight: 700 } }}
+        okButtonProps={{ className: "btn-primary" }}
+        cancelButtonProps={{ className: "btn-secondary" }}
       >
         <Form form={form} layout="vertical" onFinish={onFinish} style={{ marginTop: 20 }}>
           <Form.Item

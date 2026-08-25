@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import ManagementTable from "@/components/Admin/ManagementTable";
 import AdminClassToolbar from "@/components/Admin/AdminClassToolbar";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import { resolveOwnedClass } from "@/lib/admin/resolveClass";
 import { loadManagementJournalData } from "@/lib/admin/managementJournalData";
 
@@ -61,7 +61,7 @@ export default async function AdminClassPage({ params }: Props) {
               boxShadow: "3px 3px 0px rgba(0,0,0,0.2)"
             }}
           >
-            <ArrowLeftOutlined />
+            <ArrowLeft weight="bold" />
           </Link>
           <div style={{ width: "2px", height: "24px", background: "#e9ecef" }} />
           <h1 style={{ fontSize: "1.5rem", fontWeight: 900, margin: 0, textTransform: "uppercase", lineHeight: 1.2 }}>

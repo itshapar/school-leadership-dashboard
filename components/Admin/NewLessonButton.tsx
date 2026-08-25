@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Modal, DatePicker, Space, message, Tooltip, Radio } from "antd";
-import { CalendarOutlined, PlusOutlined } from "@ant-design/icons";
+import { Calendar, Plus } from "@phosphor-icons/react";
 import dayjs from "dayjs";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
@@ -55,7 +55,7 @@ export default function NewLessonButton({
         <Button
           onClick={() => setOpen(true)}
           size="middle"
-          icon={<PlusOutlined />}
+          icon={<Plus />}
           style={{
             fontWeight: 800,
             borderRadius: "12px",
@@ -76,7 +76,7 @@ export default function NewLessonButton({
       <Modal
         title={
           <Space>
-            <CalendarOutlined /> Додати урок
+            <Calendar /> Додати урок
           </Space>
         }
         open={open}

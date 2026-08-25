@@ -4,7 +4,7 @@ import { getDashboardData } from "@/lib/analytics";
 import { loadParallels } from "@/lib/admin/parallels";
 import BentoGrid from "@/components/dashboard/BentoGrid";
 import Link from "next/link";
-import { ArrowLeftOutlined, StarFilled } from "@ant-design/icons";
+import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import "./dashboard.css";
 
 export const dynamic = "force-dynamic";
@@ -96,7 +96,7 @@ export default async function DashboardPage({
               textShadow: "none"
             }}
           >
-            <ArrowLeftOutlined />
+            <ArrowLeft weight="bold" />
           </Link>
           <h1 style={{ margin: 0, textTransform: "uppercase", fontSize: "2.2rem", fontWeight: 900, letterSpacing: "-1px" }}>
             ЗАГАЛЬНИЙ ДАШБОРД
@@ -150,7 +150,7 @@ export default async function DashboardPage({
         <div style={kpiCardStyle}>
           <div style={kpiLabelStyle}>Всього Зірок</div>
           <div style={{ ...kpiValueStyle, color: "#f59f00", display: "flex", alignItems: "center", gap: "6px" }}>
-            {data.kpi.totalClassStars} <StarFilled style={{ color: "var(--color-star, #f59f00)", fontSize: "1.5rem" }} />
+            {data.kpi.totalClassStars}
           </div>
         </div>
         <div style={kpiCardStyle}>

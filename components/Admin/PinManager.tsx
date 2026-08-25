@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Modal, Popconfirm, message, Alert } from "antd";
-import { KeyOutlined } from "@ant-design/icons";
+import { ArrowsClockwise, CheckCircle, Key, Printer } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
 /**
@@ -138,7 +138,7 @@ export function ResetPinButton({
       okText="Скинути"
       cancelText="Ні"
     >
-      <Button icon={<KeyOutlined />} loading={loading} size="small" style={{ borderRadius: "8px" }} />
+      <Button icon={<Key />} loading={loading} size="small" style={{ borderRadius: "8px" }} />
     </Popconfirm>
   );
 }
@@ -189,7 +189,7 @@ export function PrintClassPinsButton({
   }
 
   return (
-    <Button loading={loading} onClick={handleClick} className="btn-secondary" style={{ height: "38px" }}>
+    <Button icon={<Printer />} loading={loading} onClick={handleClick} className="btn-secondary" style={{ height: "38px" }}>
       РОЗДРУКУВАТИ PIN-И КЛАСУ
     </Button>
   );
@@ -241,7 +241,7 @@ export function RegenerateClassPinsButton({
         okText="Перегенерувати"
         cancelText="Ні"
       >
-        <Button loading={loading} className="btn-secondary" style={{ height: "38px" }}>
+        <Button icon={<ArrowsClockwise />} loading={loading} className="btn-secondary" style={{ height: "38px" }}>
           ПЕРЕГЕНЕРУВАТИ PIN-И
         </Button>
       </Popconfirm>
@@ -253,12 +253,13 @@ export function RegenerateClassPinsButton({
         footer={[
           <Button
             key="print"
+            icon={<Printer />}
             className="btn-secondary"
             onClick={() => pins && printPins(className, pins, nameById)}
           >
             Друк
           </Button>,
-          <Button key="done" type="primary" onClick={() => setPins(null)} className="btn-primary">
+          <Button key="done" type="primary" icon={<CheckCircle />} onClick={() => setPins(null)} className="btn-primary">
             Готово
           </Button>,
         ]}

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Alert, Button, Input, Table, Tag, message } from "antd";
-import { SwapOutlined } from "@ant-design/icons";
+import { ArrowsLeftRight, Plus } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import {
@@ -144,7 +144,7 @@ export default function StudentLinesInput({
           message={`Схоже, у ${suspicious.length} рядках спершу йде ім'я`}
           description="Публічна сторінка показує друге слово як ім'я учня, інший порядок покаже стороннім прізвища."
           action={
-            <Button size="small" icon={<SwapOutlined />} onClick={swapSuspicious}>
+            <Button size="small" icon={<ArrowsLeftRight />} onClick={swapSuspicious}>
               Поміняти місцями
             </Button>
           }
@@ -167,6 +167,7 @@ export default function StudentLinesInput({
         <>
           <Button
             type="primary"
+            icon={<Plus />}
             loading={busy}
             disabled={invalid.length > 0}
             onClick={submit}

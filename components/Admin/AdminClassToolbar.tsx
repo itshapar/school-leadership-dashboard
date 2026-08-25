@@ -1,12 +1,7 @@
 "use client";
 
 import { Button, Tooltip } from "antd";
-import {
-  HistoryOutlined,
-  LineChartOutlined,
-  SettingOutlined,
-  TeamOutlined,
-} from "@ant-design/icons";
+import { ChartLine, ClockCounterClockwise, Gear, Users } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QuickEntry from "@/components/Admin/QuickEntry";
@@ -57,7 +52,7 @@ export default function AdminClassToolbar({
         <Link href={`/admin/${classCode}/bonus`}>
           <Button
             size="middle"
-            icon={<HistoryOutlined />}
+            icon={<ClockCounterClockwise />}
             style={{
               ...iconButtonStyle,
               background: "#ffffff",
@@ -76,7 +71,7 @@ export default function AdminClassToolbar({
         <Link href={`/admin/${classCode}/students`}>
           <Button
             size="middle"
-            icon={<TeamOutlined />}
+            icon={<Users />}
             style={{
               ...iconButtonStyle,
               background: "#ffffff",
@@ -94,7 +89,7 @@ export default function AdminClassToolbar({
         <Link href={`/admin/${classCode}/settings`}>
           <Button
             size="middle"
-            icon={<SettingOutlined />}
+            icon={<Gear />}
             style={{
               ...iconButtonStyle,
               background: "#ffffff",
@@ -110,7 +105,7 @@ export default function AdminClassToolbar({
         <Link href={`/class/${classCode}`} target="_blank">
           <Button
             size="middle"
-            icon={<LineChartOutlined />}
+            icon={<ChartLine />}
             style={{
               ...iconButtonStyle,
               background: "#000",

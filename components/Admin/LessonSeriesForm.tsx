@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Button, Checkbox, DatePicker, message } from "antd";
+import { CalendarPlus } from "@phosphor-icons/react";
 import dayjs from "dayjs";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
@@ -111,6 +112,7 @@ export default function LessonSeriesForm({
       <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <Button
           type="primary"
+          icon={<CalendarPlus />}
           onClick={submit}
           loading={loading}
           disabled={seriesDates.length === 0}

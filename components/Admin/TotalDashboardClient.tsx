@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Table, Input, Tag } from "antd";
-import { StarFilled, SearchOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { StarFilled } from "@ant-design/icons";
+import { ArrowLeft, MagnifyingGlass } from "@phosphor-icons/react";
 import Link from "next/link";
 import type { Parallel } from "@/lib/admin/parallels";
 
@@ -119,7 +120,7 @@ export default function TotalDashboardClient({
       key: "className",
       sorter: (a: StudentData, b: StudentData) => a.className.localeCompare(b.className),
       render: (text: string) => (
-        <Tag color="blue" style={{ borderRadius: "6px", fontWeight: 800, textTransform: "uppercase" }}>
+        <Tag color="#000" style={{ borderRadius: "6px", fontWeight: 800, textTransform: "uppercase" }}>
           {text}
         </Tag>
       ),
@@ -191,7 +192,7 @@ export default function TotalDashboardClient({
             textShadow: "none"
           }}
         >
-          <ArrowLeftOutlined />
+          <ArrowLeft />
         </Link>
         <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 900, textTransform: "uppercase" }}>
           Рейтинг усіх учнів
@@ -200,7 +201,7 @@ export default function TotalDashboardClient({
 
       <div style={{ marginBottom: "24px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
         <Input
-          prefix={<SearchOutlined style={{ color: "#adb5bd" }} />}
+          prefix={<MagnifyingGlass style={{ color: "#adb5bd" }} />}
           placeholder="Пошук учня або класу..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Form, Input, InputNumber, Modal, Popconfirm, Table, message } from "antd";
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
   CLASS_LIMITS,
@@ -168,7 +168,7 @@ export default function PrizesPanel({
       align: "center" as const,
       render: (_v: unknown, row: Row) => (
         <span style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-          <Button icon={<EditOutlined />} onClick={() => openEdit(row)} style={{ borderRadius: 8, border: "2px solid #000" }} />
+          <Button icon={<PencilSimple />} onClick={() => openEdit(row)} style={{ borderRadius: 8, border: "2px solid #000" }} />
           <Popconfirm
             title="Видалити нагороду?"
             description="Якщо нагороду вже видавали, її буде сховано, а історія збережеться."
@@ -176,7 +176,7 @@ export default function PrizesPanel({
             okText="Так"
             cancelText="Ні"
           >
-            <Button danger icon={<DeleteOutlined />} className="btn-danger-outline" style={{ padding: "4px 12px" }} />
+            <Button danger icon={<Trash />} className="btn-danger-outline" style={{ padding: "4px 12px" }} />
           </Popconfirm>
         </span>
       ),
@@ -206,6 +206,7 @@ export default function PrizesPanel({
         </span>
         <Button
           type="primary"
+          icon={<Plus />}
           onClick={openCreate}
           disabled={atLimit}
           className="btn-primary"
