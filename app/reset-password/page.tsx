@@ -5,10 +5,23 @@ import { Form, Input, Button, Alert, Spin } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import AuthShell from "@/components/AuthShell";
 
 /**
- * Встановлення нового пароля після переходу за листом
- * (лист → /auth/callback?next=/reset-password → сесія вже в cookie).
+ * Встановлення нового пароля після переходу за листом.
+ *
+ * Лист із Supabase може привести сюди трьома різними способами, і саме це
+ * ламало потік раніше (живий фідбек: «натискаю Reset Password і нічого не
+ * відбувається»). Раніше лист вів на серверний /auth/callback, який умів
+ * лише `?code=`; коли Supabase віддавав токен інакше, код не знаходився,
+ * і людину мовчки викидало назад на сторінку входу. Тепер сторінка
+ * розбирає всі три формати сама, у браузері:
+ *
+ *   1. `?code=...`        — PKCE, обмінюємо на сесію (verifier лежить у
+ *                           цьому ж браузері, тому це має робити клієнт);
+ *   2. `?token_hash=&type=recovery` — новий формат листів, verifyOtp;
+ *   3. `#access_token=...&refresh_token=...` — implicit-формат, токени
+ *      приходять у ХЕШІ, який узагалі не долітає до сервера.
  *
  * Після зміни пароля гасимо ВСІ ІНШІ сесії (scope: 'others') — якщо пароль
  * скидали через компрометацію, чужі сесії не переживуть зміну.
@@ -17,6 +30,7 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 export default function ResetPasswordPage() {
   const [checking, setChecking] = useState(true);
   const [hasSession, setHasSession] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -24,16 +38,56 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     let mounted = true;
+
     (async () => {
       const supabase = getSupabaseClient();
+      const url = new URL(window.location.href);
+      const params = url.searchParams;
+      const hash = new URLSearchParams(url.hash.replace(/^#/, ""));
+
+      // Supabase кладе причину відмови і в query, і в хеш — залежно від формату.
+      const errorDescription =
+        params.get("error_description") ?? hash.get("error_description");
+
+      try {
+        if (errorDescription) {
+          setLinkError(errorDescription);
+        } else if (params.get("code")) {
+          const { error } = await supabase.auth.exchangeCodeForSession(params.get("code")!);
+          if (error) setLinkError(error.message);
+        } else if (params.get("token_hash")) {
+          const { error } = await supabase.auth.verifyOtp({
+            type: "recovery",
+            token_hash: params.get("token_hash")!,
+          });
+          if (error) setLinkError(error.message);
+        } else if (hash.get("access_token") && hash.get("refresh_token")) {
+          const { error } = await supabase.auth.setSession({
+            access_token: hash.get("access_token")!,
+            refresh_token: hash.get("refresh_token")!,
+          });
+          if (error) setLinkError(error.message);
+        }
+      } catch {
+        setLinkError("Посилання не вдалося опрацювати");
+      }
+
+      // Токени з адреси прибираємо: далі вони не потрібні, а в історії
+      // браузера їм робити нічого.
+      if (url.search || url.hash) {
+        window.history.replaceState({}, "", "/reset-password");
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
       if (mounted) {
         setHasSession(!!user);
         setChecking(false);
       }
     })();
+
     return () => {
       mounted = false;
     };
@@ -54,78 +108,60 @@ export default function ResetPasswordPage() {
     await supabase.auth.signOut({ scope: "others" });
     setDone(true);
     setLoading(false);
-    setTimeout(() => router.push("/admin"), 1500);
+    setTimeout(() => {
+      window.location.href = "/admin";
+    }, 1200);
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "20px",
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "400px" }}>
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ fontSize: "3rem" }}>🔐</div>
-          <h1 style={{ fontSize: "1.6rem", fontWeight: 800, margin: "8px 0 4px" }}>
-            Новий пароль
-          </h1>
+    <AuthShell title="Новий пароль">
+      {checking ? (
+        <div style={{ textAlign: "center", padding: "24px" }}>
+          <Spin />
         </div>
-
-        <div className="star-card">
-          {checking ? (
-            <div style={{ textAlign: "center", padding: "24px" }}>
-              <Spin />
-            </div>
-          ) : done ? (
-            <Alert type="success" showIcon message="Пароль змінено. Переходимо в кабінет…" />
-          ) : !hasSession ? (
-            <Alert
-              type="warning"
-              showIcon
-              message="Посилання недійсне або протерміноване"
-              description={
-                <Link href="/forgot-password">Запросити нове посилання</Link>
-              }
-            />
-          ) : (
-            <>
-              {error && (
-                <Alert message={error} type="error" showIcon style={{ marginBottom: "16px" }} />
-              )}
-              <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
-                <Form.Item
-                  name="password"
-                  label={<span style={{ color: "var(--color-text-muted)" }}>Новий пароль</span>}
-                  rules={[
-                    { required: true, message: "Введіть новий пароль" },
-                    { min: 8, message: "Мінімум 8 символів" },
-                  ]}
-                >
-                  <Input.Password size="large" autoComplete="new-password" />
-                </Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  size="large"
-                  loading={loading}
-                  block
-                  style={{
-                    background: "linear-gradient(135deg, #f5a623, #e8940f)",
-                    border: "none",
-                    fontWeight: 600,
-                  }}
-                >
-                  Зберегти пароль
-                </Button>
-              </Form>
-            </>
+      ) : done ? (
+        <Alert type="success" showIcon message="Пароль змінено. Переходимо в кабінет…" />
+      ) : !hasSession ? (
+        <>
+          <Alert
+            type="warning"
+            showIcon
+            message="Посилання недійсне або протерміноване"
+            description={
+              linkError
+                ? `Причина: ${linkError}. Запросіть нове посилання.`
+                : "Запросіть нове посилання і відкрийте його на цьому ж пристрої."
+            }
+            style={{ marginBottom: 16 }}
+          />
+          <Link href="/forgot-password">
+            <Button block className="btn-primary">
+              Запросити нове посилання
+            </Button>
+          </Link>
+        </>
+      ) : (
+        <>
+          {error && (
+            <Alert message={error} type="error" showIcon style={{ marginBottom: "16px" }} />
           )}
-        </div>
-      </div>
-    </div>
+          <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
+            <Form.Item
+              name="password"
+              label={<span style={{ fontWeight: 600 }}>Новий пароль</span>}
+              rules={[
+                { required: true, message: "Введіть новий пароль" },
+                { min: 8, message: "Мінімум 8 символів" },
+              ]}
+            >
+              <Input.Password size="large" autoComplete="new-password" />
+            </Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading} block className="btn-primary">
+              Зберегти пароль
+            </Button>
+          </Form>
+        </>
+      )}
+    </AuthShell>
   );
 }

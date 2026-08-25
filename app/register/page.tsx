@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Form, Input, Button, Alert, Divider, Checkbox, Progress } from "antd";
+import { Form, Input, Button, Alert, Checkbox, Progress } from "antd";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { COMBINED_ACCEPT_SUBTEXT, signUpTermsMetadata } from "@/lib/legal/terms";
 import { scorePassword } from "@/lib/password";
-import StarIcon from "@/components/StarIcon";
+import AuthShell from "@/components/AuthShell";
 
 /**
  * Реєстрація вчителя: email + пароль з підтвердженням пошти, або Google.
@@ -61,46 +61,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "20px",
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "440px" }}>
-        <div style={{ textAlign: "center", marginBottom: "24px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: 0.7 }}>
-            <StarIcon size="1.3rem" />
-            <span
-              style={{
-                fontSize: "1rem",
-                fontWeight: 800,
-                background: "linear-gradient(135deg, #f5a623, #ffd700)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              StarBoard
-            </span>
-          </div>
-          <h1
-            style={{
-              fontSize: "2rem",
-              fontWeight: 900,
-              margin: "10px 0 0",
-              textTransform: "uppercase",
-              letterSpacing: "-0.5px",
-            }}
-          >
-            Реєстрація вчителя
-          </h1>
-        </div>
-
-        <div className="star-card">
+    <AuthShell title="Реєстрація вчителя" width={440}>
+      <>
           {sent ? (
             <Alert
               type="success"
@@ -169,12 +131,23 @@ export default function RegisterPage() {
                 >
                   <Checkbox checked={accepted} onChange={(e) => setAccepted(e.target.checked)}>
                     <span style={{ fontSize: "0.88rem" }}>
+                      {/* Підкреслені (живий фідбек): це посилання на
+                          документи, які людина приймає, і вони мають
+                          читатись як посилання, а не як жирний текст. */}
                       Я приймаю{" "}
-                      <Link href="/terms" target="_blank" style={{ fontWeight: 600 }}>
+                      <Link
+                        href="/terms"
+                        target="_blank"
+                        style={{ fontWeight: 700, color: "#000", textDecoration: "underline" }}
+                      >
                         умови використання
                       </Link>{" "}
                       та{" "}
-                      <Link href="/privacy" target="_blank" style={{ fontWeight: 600 }}>
+                      <Link
+                        href="/privacy"
+                        target="_blank"
+                        style={{ fontWeight: 700, color: "#000", textDecoration: "underline" }}
+                      >
                         політику приватності
                       </Link>
                     </span>
@@ -187,24 +160,14 @@ export default function RegisterPage() {
                 <Button
                   type="primary"
                   htmlType="submit"
-                  size="large"
                   loading={loading}
                   disabled={!accepted}
                   block
-                  style={{
-                    background: accepted
-                      ? "linear-gradient(135deg, #f5a623, #e8940f)"
-                      : undefined,
-                    border: "none",
-                    fontWeight: 600,
-                  }}
+                  className="btn-primary"
                 >
                   Зареєструватися
                 </Button>
               </Form>
-              <Divider plain style={{ margin: "16px 0" }}>
-                або
-              </Divider>
               {/* Google-реєстрація так само вимагає акцепту. Сам акцепт
                   зафіксує TermsGate у кабінеті: OAuth-потік не передає
                   метаданих форми. */}
@@ -228,14 +191,14 @@ export default function RegisterPage() {
             </>
           )}
 
-          <div style={{ textAlign: "center", marginTop: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
-            <Link href="/admin/login">Уже є акаунт? Увійти</Link>
-            <Link href="/demo" style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
-              Спробувати демо без реєстрації →
+          <div style={{ marginTop: "16px" }}>
+            <Link href="/admin/login">
+              <Button block className="btn-secondary">
+                Уже є акаунт? Увійти
+              </Button>
             </Link>
           </div>
-        </div>
-      </div>
-    </div>
+      </>
+    </AuthShell>
   );
 }
