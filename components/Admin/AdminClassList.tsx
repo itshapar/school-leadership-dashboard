@@ -135,6 +135,11 @@ export default function AdminClassList({
 
   return (
     <>
+      {/* Блок вибору періоду взято в дивайдери з обох боків (живий фідбек):
+          так він читається як окрема смуга керування, а не як продовження
+          шапки з кнопками «Профіль вчителя» і «Новий клас». */}
+      <div style={{ height: 3, background: "#000", borderRadius: 2, margin: "0 0 20px" }} />
+
       {/* ── Ряд 1: навчальний рік ── */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
         {yearStarts.map((y) => {
@@ -185,7 +190,8 @@ export default function AdminClassList({
         {periodStatus(period) === "current" && ", триває зараз"}
       </div>
 
-      {/* Дивайдер — межа сенсу: усе нижче показує рівно обраний період. */}
+      {/* Нижній дивайдер — межа сенсу: усе під ним показує рівно обраний
+          період. */}
       <div style={{ height: 3, background: "#000", borderRadius: 2, margin: "20px 0 24px" }} />
 
       {children}
