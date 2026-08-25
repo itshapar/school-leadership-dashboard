@@ -1,48 +1,50 @@
 /*
  * Лендінг StarBoard (/).
  *
- * Стиль успадкований від самого продукту (globals.css): кремове тло,
- * білі картки, чорна обводка 3px, квадратна тінь без розмиття, Montserrat
- * 600/800/900, капс на кнопках. Синього кольору немає ніде, це правило
- * інтерфейсу з Етапу 9.
+ * Правило номер один: лендінг має виглядати як сам продукт. Тому токени
+ * взяті не «схожі», а ті самі, що в app/globals.css і в екранах кабінету:
+ * кремове тло #FFF9F0, білі картки, чорна обводка 3px, квадратна тінь без
+ * розмиття, Montserrat 600/800/900, капс на кнопках і заголовках, зелений
+ * #20C31A, зірковий #F08C00, синього немає ніде.
  *
- * Усі анімації, CSS-кейфрейми на інлайнових SVG: жодного клієнтського JS,
- * сторінка лишається серверним компонентом. Ті, що пояснюють процес
- * (журнал, телефон учня, петля «вчитель, учень, нагорода»), крутяться в
- * циклі; ті, що просто підсвічують текст, програються один раз і
- * лишаються в кінцевому стані (animation-fill-mode: forwards), щоб секція
- * нижче згину виглядала правильно, коли до неї доскролили.
+ * Макети екранів (components/Landing/AppMock.tsx) відтворюють реальні
+ * розміри з інтерфейсу: 22px чекбокс нагороди, чіп «ВСЬОГО» на #f1f3f5 з
+ * обводкою #dee2e6, клітинки таблиці з межами 1px #eee і падінгом 12px 8px,
+ * важка смуга прогресу 18px з обводкою 3px. Джерела вказані в самому
+ * AppMock.tsx.
  *
- * Префікс lp- на всіх класах: файл імпортується в app/page.tsx і стилі
- * глобальні, тож імена не мають перетинатися з рештою застосунку.
+ * Перемикач екранів зроблено на радіо-кнопках і :checked, а не на JS:
+ * сторінка лишається серверним компонентом без жодного клієнтського
+ * скрипта, і при цьому перемикається з клавіатури стрілками, як звичайна
+ * група радіо.
+ *
+ * Усі класи з префіксом lp-, бо файл імпортується в app/page.tsx і стилі
+ * глобальні.
  */
 
 .lp-root {
   --lp-black: #000000;
   --lp-ink: #2C2C2C;
   --lp-muted: #666666;
-  --lp-cream: #FFF9F0;
+  --lp-grey: #868e96;
+  --lp-line: #dee2e6;
+  --lp-soft: #f1f3f5;
   --lp-white: #FFFFFF;
   --lp-green: #20C31A;
   --lp-green-soft: #EBFBEE;
   --lp-star: #F08C00;
-  --lp-star-soft: #FFF4E6;
-  --lp-yellow-soft: #FFF9DB;
-  --lp-pink-soft: #FFF0F6;
-  --lp-grey-soft: #F1F3F5;
+  --lp-red: #fa5252;
   --lp-hl: #FFE066;
-  --lp-red: #e03131;
 
   max-width: 1120px;
   margin: 0 auto;
   padding: 0 20px 40px;
   color: var(--lp-ink);
-  overflow-x: clip;
 }
 
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 /* Типографіка                                                         */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
 .lp-root h1,
 .lp-root h2,
@@ -54,51 +56,38 @@
   line-height: 1.05;
 }
 
-.lp-h1 {
-  font-size: clamp(2rem, 4.4vw, 3.3rem);
-}
-
-.lp-h2 {
-  font-size: clamp(1.6rem, 4vw, 2.6rem);
-}
-
-.lp-h3 {
-  font-size: 1.05rem;
-  letter-spacing: 0;
-}
+.lp-h1 { font-size: clamp(2rem, 4.4vw, 3.2rem); }
+.lp-h2 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); }
+.lp-h3 { font-size: 1rem; letter-spacing: 0; }
 
 .lp-lead {
-  font-size: clamp(1rem, 1.9vw, 1.2rem);
+  font-size: clamp(1rem, 1.6vw, 1.12rem);
   font-weight: 600;
   line-height: 1.55;
-  color: var(--lp-ink);
-  margin: 20px 0 0;
-  max-width: 44ch;
+  margin: 16px 0 0;
+  max-width: 56ch;
 }
 
-/* Маркерна підсвітка під словом. background-image замість псевдоелемента:
-   малюється всередині самого елемента, тож гарантовано лягає ПІД текст і
-   не залежить від того, чи створює батько контекст накладання. */
+/* Маркерна підсвітка. background-image, а не псевдоелемент: малюється
+   всередині самого елемента, тож завжди лягає під текст. */
 .lp-mark {
   background-image: linear-gradient(var(--lp-hl), var(--lp-hl));
   background-repeat: no-repeat;
   background-position: 0 92%;
   background-size: 0% 0.4em;
   padding: 0 3px;
-  animation: lp-hl 0.85s cubic-bezier(0.2, 0.75, 0.25, 1) 0.45s forwards;
+  animation: lp-hl 0.85s cubic-bezier(0.2, 0.75, 0.25, 1) 0.4s forwards;
 }
 
-.lp-mark-green {
-  --lp-hl: #B2F2BB;
-}
+.lp-mark-green { --lp-hl: #B2F2BB; }
 
 @keyframes lp-hl {
   to { background-size: 100% 0.4em; }
 }
 
-/* ------------------------------------------------------------------ */
-/* Кнопки                                                              */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
+/* Кнопки. Той самий каркас, що .btn-primary/.btn-secondary у globals   */
+/* ================================================================== */
 
 .lp-btn {
   display: inline-flex;
@@ -106,91 +95,67 @@
   justify-content: center;
   gap: 10px;
   padding: 0 22px;
-  height: 52px;
-  border-radius: 12px;
+  height: 50px;
+  border-radius: 10px;
   border: 3px solid var(--lp-black);
-  box-shadow: 4px 4px 0px var(--lp-black);
-  font-weight: 900;
-  font-size: 0.92rem;
+  box-shadow: 3px 3px 0px var(--lp-black);
+  font-weight: 800;
+  font-size: 0.9rem;
   text-transform: uppercase;
   text-decoration: none;
-  letter-spacing: 0.2px;
   white-space: nowrap;
   transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.12s ease;
 }
 
 .lp-btn:active {
-  transform: translate(4px, 4px);
+  transform: translate(3px, 3px);
   box-shadow: 0 0 0 var(--lp-black);
 }
 
-.lp-btn-primary {
-  background: var(--lp-black);
-  color: var(--lp-white);
-}
+.lp-btn-primary { background: var(--lp-black); color: var(--lp-white); }
+.lp-btn-primary:hover { background: #2c2c2c; color: var(--lp-white); }
 
-.lp-btn-primary:hover {
-  background: #2c2c2c;
-  color: var(--lp-white);
-}
+.lp-btn-secondary { background: var(--lp-white); color: var(--lp-black); }
+.lp-btn-secondary:hover { background: var(--lp-soft); color: var(--lp-black); }
 
-.lp-btn-secondary {
-  background: var(--lp-white);
-  color: var(--lp-black);
-}
+.lp-btn-donate { background: var(--lp-star); color: var(--lp-black); }
+.lp-btn-donate:hover { background: #ffa726; color: var(--lp-black); }
 
-.lp-btn-secondary:hover {
-  background: var(--lp-grey-soft);
-  color: var(--lp-black);
-}
-
-.lp-btn-donate {
-  background: var(--lp-star);
-  color: var(--lp-black);
-}
-
-.lp-btn-donate:hover {
-  background: #ffa726;
-  color: var(--lp-black);
-}
-
-/* Банку ще не підключено: кнопка лишається на місці й у тому самому
-   розмірі, але нікуди не веде. Прозорість і курсор чесно показують стан,
-   як і .btn-primary[disabled] в самому застосунку. */
+/* Банки ще немає: кнопка лишається на місці, але вимкнена. Прозорість і
+   зникла тінь, це та сама мова, що й .btn-primary[disabled] в застосунку. */
 .lp-btn-pending {
-  opacity: 0.55;
+  opacity: 0.35;
   cursor: not-allowed;
   box-shadow: none;
 }
 
 .lp-btn-sm {
-  height: 42px;
-  padding: 0 16px;
-  font-size: 0.78rem;
-  box-shadow: 3px 3px 0px var(--lp-black);
+  height: 40px;
+  padding: 0 14px;
+  font-size: 0.75rem;
+  border-width: 2px;
+  box-shadow: 2px 2px 0px var(--lp-black);
 }
 
-.lp-btn-sm:active {
-  transform: translate(3px, 3px);
-}
+.lp-btn-sm:active { transform: translate(2px, 2px); }
 
 .lp-btn-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 32px;
+  gap: 12px;
+  margin-top: 28px;
 }
 
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 /* Шапка                                                               */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
 .lp-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 22px 0 8px;
+  padding: 22px 0 26px;
   flex-wrap: wrap;
 }
 
@@ -198,7 +163,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: -0.5px;
@@ -208,196 +173,58 @@
 
 .lp-nav-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 /* Секції                                                              */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
-.lp-section {
-  padding: 72px 0 0;
+.lp-section { padding: 76px 0 0; }
+
+.lp-section-head {
+  max-width: 60ch;
+  margin-bottom: 32px;
 }
+
+.lp-center {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.lp-center .lp-lead {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.lp-center .lp-btn-row { justify-content: center; }
 
 .lp-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 14px;
-  border: 3px solid var(--lp-black);
-  border-radius: 999px;
-  background: var(--lp-yellow-soft);
-  box-shadow: 3px 3px 0px var(--lp-black);
-  font-size: 0.74rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-
-.lp-section-head {
-  max-width: 52ch;
-  margin-bottom: 36px;
-}
-
-.lp-section-head .lp-lead {
-  max-width: 52ch;
-}
-
-/* Дві колонки: текст і ілюстрація. */
-.lp-split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-  gap: 48px;
-  align-items: center;
-}
-
-.lp-split-visual svg {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* ------------------------------------------------------------------ */
-/* Список переваг                                                      */
-/* ------------------------------------------------------------------ */
-
-.lp-list {
-  list-style: none;
-  margin: 28px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 16px;
-}
-
-.lp-list li {
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
-}
-
-.lp-list-icon {
-  width: 34px;
-  height: 34px;
-  border: 3px solid var(--lp-black);
-  border-radius: 10px;
-  background: var(--lp-yellow-soft);
-  box-shadow: 2px 2px 0px var(--lp-black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.95rem;
-  line-height: 1;
-}
-
-.lp-list b {
-  display: block;
-  font-weight: 900;
-  font-size: 0.98rem;
-  margin-bottom: 2px;
-}
-
-.lp-list span {
-  font-weight: 600;
-  font-size: 0.94rem;
-  line-height: 1.5;
-  color: var(--lp-muted);
-}
-
-/* ------------------------------------------------------------------ */
-/* Картки налаштувань                                                  */
-/* ------------------------------------------------------------------ */
-
-.lp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-}
-
-.lp-card {
-  background: var(--lp-white);
-  border: 3px solid var(--lp-black);
-  border-radius: 16px;
-  box-shadow: 4px 4px 0px var(--lp-black);
-  padding: 22px;
-}
-
-.lp-card-icon {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 14px;
-}
-
-.lp-card h3 {
-  margin-bottom: 8px;
-}
-
-.lp-card p {
-  margin: 0;
-  font-weight: 600;
-  font-size: 0.92rem;
-  line-height: 1.5;
-  color: var(--lp-muted);
-}
-
-/* ------------------------------------------------------------------ */
-/* Безкоштовно                                                         */
-/* ------------------------------------------------------------------ */
-
-.lp-free {
-  background: var(--lp-green-soft);
-  border: 3px solid var(--lp-black);
+  padding: 7px 16px;
+  border: 2px solid var(--lp-black);
   border-radius: 20px;
-  box-shadow: 6px 6px 0px var(--lp-black);
-  padding: clamp(28px, 4vw, 48px);
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 40px;
-  align-items: center;
+  background: var(--lp-white);
+  box-shadow: 2px 2px 0px var(--lp-black);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
-.lp-price {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  font-weight: 900;
-  line-height: 1;
-}
+/* ================================================================== */
+/* Перший екран: відео                                                 */
+/* ================================================================== */
 
-.lp-price-num {
-  font-size: clamp(4rem, 11vw, 7rem);
-  letter-spacing: -4px;
-}
-
-.lp-price-cur {
-  font-size: clamp(1.4rem, 3vw, 2rem);
-}
-
-.lp-checklist {
-  list-style: none;
-  margin: 20px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 12px;
-}
-
-.lp-checklist li {
-  display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
-  gap: 12px;
-  align-items: center;
-  font-weight: 600;
-  font-size: 0.95rem;
-  line-height: 1.45;
-}
-
-/* ------------------------------------------------------------------ */
-/* Відео                                                               */
-/* ------------------------------------------------------------------ */
+.lp-hero { padding-top: 8px; }
 
 .lp-video-frame {
   position: relative;
+  margin-top: 36px;
   border: 3px solid var(--lp-black);
   border-radius: 18px;
   box-shadow: 6px 6px 0px var(--lp-black);
@@ -415,102 +242,824 @@
   display: block;
 }
 
-/* Стан «відео ще не записане»: та сама рамка, всередині заглушка з
-   пунктиром, щоб місце під туторіал було видно на макеті, а не
-   з'явилось несподівано разом із роликом. */
+/* Поки відео немає, у рамці стоїть заглушка: місце під туторіал видно
+   одразу, а не з'являється несподівано разом із роликом. */
 .lp-video-empty {
   position: absolute;
-  inset: 14px;
-  border: 3px dashed var(--lp-black);
-  border-radius: 12px;
-  background: var(--lp-yellow-soft);
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 16px;
   text-align: center;
-  padding: 20px;
+  padding: 24px;
+  background: var(--lp-soft);
 }
 
 .lp-video-empty p {
   margin: 0;
   font-weight: 800;
-  font-size: 0.95rem;
-  max-width: 40ch;
+  font-size: 0.92rem;
+  max-width: 44ch;
   line-height: 1.5;
+  color: var(--lp-muted);
 }
 
 .lp-video-empty code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   background: var(--lp-white);
   border: 2px solid var(--lp-black);
-  border-radius: 8px;
-  padding: 3px 8px;
+  border-radius: 6px;
+  padding: 2px 7px;
+  color: var(--lp-ink);
 }
 
-/* ------------------------------------------------------------------ */
+.lp-play-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: var(--lp-star);
+  border: 3px solid var(--lp-black);
+  box-shadow: 4px 4px 0px var(--lp-black);
+  color: var(--lp-black);
+}
+
+/* ================================================================== */
+/* Другий екран: петля з літаючою зіркою                               */
+/* ================================================================== */
+
+.lp-flow {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.lp-flow svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ================================================================== */
+/* Третій екран: перемикач між екранами продукту                       */
+/* ================================================================== */
+
+.lp-tabs { position: relative; }
+
+/* Радіо лишаються в потоці й фокусуються з клавіатури, просто не видно. */
+.lp-tab-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.lp-tab-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+/* Таб один в один як перемикач періодів у кабінеті
+   (components/Admin/AdminClassList.tsx, tabStyle). */
+.lp-tab {
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: var(--lp-white);
+  color: var(--lp-black);
+  font-weight: 800;
+  font-size: 0.9rem;
+  border: 2px solid var(--lp-black);
+  box-shadow: 2px 2px 0px var(--lp-black);
+  cursor: pointer;
+  user-select: none;
+}
+
+.lp-tab:hover { background: var(--lp-soft); }
+
+.lp-tab-panel { display: none; }
+
+/* Активний таб і його панель. Пари id прописані явно, бо CSS не вміє
+   зв'язати input з панеллю інакше. */
+#lp-tab-journal:checked ~ .lp-tab-bar [for="lp-tab-journal"],
+#lp-tab-entry:checked ~ .lp-tab-bar [for="lp-tab-entry"],
+#lp-tab-stats:checked ~ .lp-tab-bar [for="lp-tab-stats"],
+#lp-tab-student:checked ~ .lp-tab-bar [for="lp-tab-student"] {
+  background: var(--lp-black);
+  color: var(--lp-white);
+}
+
+#lp-tab-journal:focus-visible ~ .lp-tab-bar [for="lp-tab-journal"],
+#lp-tab-entry:focus-visible ~ .lp-tab-bar [for="lp-tab-entry"],
+#lp-tab-stats:focus-visible ~ .lp-tab-bar [for="lp-tab-stats"],
+#lp-tab-student:focus-visible ~ .lp-tab-bar [for="lp-tab-student"] {
+  outline: 3px solid var(--lp-star);
+  outline-offset: 3px;
+}
+
+#lp-tab-journal:checked ~ .lp-tab-panels .lp-panel-journal,
+#lp-tab-entry:checked ~ .lp-tab-panels .lp-panel-entry,
+#lp-tab-stats:checked ~ .lp-tab-panels .lp-panel-stats,
+#lp-tab-student:checked ~ .lp-tab-panels .lp-panel-student {
+  display: block;
+}
+
+.lp-tab-caption {
+  margin: 18px 0 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--lp-muted);
+  max-width: 62ch;
+}
+
+/* ================================================================== */
+/* Макети екранів продукту                                             */
+/* ================================================================== */
+
+.lp-mock {
+  background: var(--lp-white);
+  border: 3px solid var(--lp-black);
+  border-radius: 16px;
+  box-shadow: 4px 4px 0px var(--lp-black);
+  overflow: hidden;
+}
+
+/* ── Шапка журналу ── */
+
+.lp-mock-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 3px solid var(--lp-black);
+  background: var(--lp-white);
+}
+
+.lp-m-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--lp-black);
+  color: var(--lp-white);
+  border: 3px solid var(--lp-black);
+  box-shadow: 3px 3px 0px var(--lp-black);
+  font-size: 1.1rem;
+}
+
+.lp-m-bar-divider {
+  width: 2px;
+  height: 24px;
+  background: #e9ecef;
+  flex-shrink: 0;
+}
+
+.lp-m-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.lp-m-tools {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.lp-m-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--lp-white);
+  border: 2px solid var(--lp-black);
+  box-shadow: 3px 3px 0px var(--lp-black);
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+/* ── Таблиця журналу ── */
+
+.lp-m-scroll {
+  overflow-x: auto;
+}
+
+.lp-m-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 720px;
+}
+
+.lp-m-table th {
+  font-weight: 900;
+  font-size: 0.8rem;
+  text-align: left;
+  color: var(--lp-black);
+  padding: 14px 8px;
+  border-right: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+.lp-m-table td {
+  padding: 12px 8px;
+  border-right: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.lp-m-table tr:last-child td { border-bottom: none; }
+.lp-m-table th:last-child,
+.lp-m-table td:last-child { border-right: none; }
+
+.lp-m-center { text-align: center; }
+
+/* Сірим підсвічений рівно сьогоднішній урок, як у журналі. */
+.lp-m-today { background: var(--lp-soft); }
+
+.lp-m-index {
+  color: #adb5bd;
+  font-weight: 600;
+}
+
+.lp-m-student {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lp-m-avatar {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.lp-m-name {
+  display: block;
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.lp-m-nick {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--lp-muted);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.lp-m-total {
+  display: inline-block;
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--lp-black);
+  background: var(--lp-soft);
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 2px solid var(--lp-line);
+}
+
+/* Чекбокс нагороди: 22px, зелений у виданому стані. */
+.lp-m-check {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 2px solid var(--lp-black);
+  background: var(--lp-white);
+  vertical-align: middle;
+  position: relative;
+}
+
+.lp-m-check-on {
+  background: var(--lp-green);
+  border-color: var(--lp-green);
+}
+
+.lp-m-check-on::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
+/* Значення уроку: чорне для плюса, червоне для «Н», сіре для нуля. */
+.lp-m-score {
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.lp-m-score-plus { color: var(--lp-black); }
+.lp-m-score-minus { color: var(--lp-red); }
+.lp-m-score-zero { color: #adb5bd; }
+
+/* ── Поп-ап нарахування ── */
+
+.lp-mock-modal {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 26px;
+  box-shadow: 5px 5px 0px var(--lp-black);
+}
+
+.lp-m-modal-title {
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  margin-bottom: 22px;
+}
+
+.lp-m-field { margin-bottom: 16px; }
+
+.lp-m-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-bottom: 6px;
+}
+
+.lp-m-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border: 2px solid var(--lp-line);
+  border-radius: 10px;
+  background: var(--lp-white);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.lp-m-input-addon { justify-content: space-between; }
+
+.lp-m-addon {
+  display: inline-flex;
+  align-items: center;
+  padding-left: 10px;
+  border-left: 2px solid var(--lp-line);
+  height: 24px;
+}
+
+.lp-m-segment {
+  display: inline-flex;
+  border: 2px solid var(--lp-black);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.lp-m-seg {
+  padding: 8px 16px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  background: var(--lp-white);
+  color: var(--lp-black);
+}
+
+.lp-m-seg + .lp-m-seg { border-left: 2px solid var(--lp-black); }
+
+.lp-m-seg-on {
+  background: var(--lp-black);
+  color: var(--lp-white);
+}
+
+.lp-m-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.lp-m-btn {
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: 3px solid var(--lp-black);
+  box-shadow: 3px 3px 0px var(--lp-black);
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.lp-m-btn-white { background: var(--lp-white); color: var(--lp-black); }
+.lp-m-btn-black { background: var(--lp-black); color: var(--lp-white); }
+
+/* ── Аналітика ── */
+
+.lp-m-bento {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.lp-mock-widget { padding: 20px; }
+
+.lp-m-widget-title {
+  font-weight: 800;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.lp-m-lb {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lp-m-lb-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+}
+
+.lp-m-lb-rank {
+  font-weight: 900;
+  font-size: 1.15rem;
+  width: 26px;
+  text-align: center;
+  color: var(--lp-grey);
+  flex-shrink: 0;
+}
+
+.lp-m-rank-1 { color: #f59f00; }
+.lp-m-rank-2 { color: #adb5bd; }
+.lp-m-rank-3 { color: #e8590c; }
+
+.lp-m-lb-avatar { font-size: 1.6rem; flex-shrink: 0; }
+.lp-m-lb-name { flex: 1; min-width: 0; }
+
+.lp-m-lb-right { text-align: right; flex-shrink: 0; }
+
+.lp-m-lb-stars {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: var(--lp-star);
+}
+
+.lp-m-trend {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #adb5bd;
+}
+
+.lp-m-trend-up { color: var(--lp-green); }
+.lp-m-trend-down { color: var(--lp-red); }
+
+.lp-m-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lp-m-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lp-m-bar-label { font-size: 1.4rem; flex-shrink: 0; }
+
+.lp-m-bar-track {
+  flex: 1;
+  height: 20px;
+  border: 2px solid var(--lp-black);
+  border-radius: 6px;
+  background: var(--lp-white);
+  overflow: hidden;
+}
+
+.lp-m-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--lp-star);
+}
+
+.lp-m-bar-value {
+  font-weight: 900;
+  font-size: 0.88rem;
+  width: 30px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Сторінка учня ── */
+
+.lp-m-student-page {
+  max-width: 520px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.lp-m-hero-card {
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.lp-m-big-avatar {
+  font-size: 4.2rem;
+  line-height: 1;
+  animation: lp-float 4s ease-in-out infinite;
+}
+
+.lp-m-big-name {
+  font-size: 1.9rem;
+  font-weight: 900;
+  margin: 12px 0 0;
+}
+
+.lp-m-big-row {
+  display: flex;
+  justify-content: center;
+  gap: 44px;
+  margin-top: 24px;
+  align-items: center;
+}
+
+.lp-m-big-stars {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--lp-star);
+}
+
+.lp-m-big-rank {
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #adb5bd;
+}
+
+.lp-m-privacy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #f8f9fa;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--lp-ink);
+  text-align: left;
+}
+
+.lp-m-privacy svg { flex-shrink: 0; font-size: 1.3rem; }
+
+.lp-m-card { padding: 22px; }
+
+.lp-m-card-title {
+  font-weight: 900;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.lp-m-prize + .lp-m-prize { margin-top: 18px; }
+
+.lp-m-prize-head {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 800;
+  font-size: 0.92rem;
+  margin-bottom: 8px;
+}
+
+.lp-m-pct-done { color: var(--lp-green); }
+
+/* Важка смуга прогресу з дашборду учня: 18px, обводка 3px, вкладена
+   смуга 12px. */
+.lp-m-heavy-track {
+  display: block;
+  height: 18px;
+  border: 3px solid var(--lp-black);
+  border-radius: 8px;
+  background: var(--lp-white);
+  padding: 0;
+  overflow: hidden;
+}
+
+.lp-m-heavy-fill {
+  display: block;
+  height: 12px;
+  margin: 0;
+  border-radius: 4px;
+  background: var(--lp-black);
+}
+
+.lp-m-heavy-done { background: var(--lp-green); }
+
+.lp-m-prize-caption {
+  font-size: 0.8rem;
+  color: var(--lp-muted);
+  margin-top: 5px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.lp-m-hist {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--lp-white);
+  border: 2px solid var(--lp-ink);
+  border-radius: 12px;
+  box-shadow: 2px 2px 0px var(--lp-ink);
+}
+
+.lp-m-hist + .lp-m-hist { margin-top: 12px; }
+
+.lp-m-hist-neg { background: #FFF5F5; }
+
+.lp-m-hist-main { flex: 1; min-width: 0; }
+
+.lp-m-hist-date {
+  display: block;
+  color: var(--lp-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.lp-m-hist-title {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.lp-m-hist-amount {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: var(--lp-star);
+  flex-shrink: 0;
+}
+
+.lp-m-neg { color: #E03131; }
+
+/* ================================================================== */
+/* Четвертий екран: що можна налаштувати                               */
+/* ================================================================== */
+
+.lp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.lp-card {
+  background: var(--lp-white);
+  border: 3px solid var(--lp-black);
+  border-radius: 16px;
+  box-shadow: 4px 4px 0px var(--lp-black);
+  padding: 22px;
+}
+
+/* Плитка іконки біла, як кнопки-іконки в тулбарі класу. */
+.lp-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--lp-white);
+  border: 2px solid var(--lp-black);
+  box-shadow: 3px 3px 0px var(--lp-black);
+  margin-bottom: 16px;
+  font-size: 1.4rem;
+}
+
+.lp-card h3 { margin-bottom: 6px; }
+
+.lp-card p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--lp-muted);
+}
+
+/* ================================================================== */
+/* П'ятий екран: безкоштовно                                           */
+/* ================================================================== */
+
+.lp-free {
+  background: var(--lp-white);
+  border: 3px solid var(--lp-black);
+  border-radius: 20px;
+  box-shadow: 6px 6px 0px var(--lp-green);
+  padding: clamp(28px, 4vw, 44px);
+}
+
+.lp-free-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.lp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 20px;
+  border: 2px solid var(--lp-black);
+  background: var(--lp-green-soft);
+  box-shadow: 2px 2px 0px var(--lp-black);
+  font-weight: 800;
+  font-size: 0.84rem;
+}
+
+.lp-chip svg { color: var(--lp-green); flex-shrink: 0; }
+
+/* ================================================================== */
 /* Фінальний заклик                                                    */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
 .lp-cta {
-  margin-top: 72px;
+  margin-top: 76px;
   background: var(--lp-black);
   color: var(--lp-white);
   border: 3px solid var(--lp-black);
   border-radius: 20px;
   box-shadow: 6px 6px 0px var(--lp-star);
-  padding: clamp(32px, 5vw, 56px);
+  padding: clamp(32px, 5vw, 52px);
   text-align: center;
 }
 
-.lp-cta h2 {
-  color: var(--lp-white);
-}
+.lp-cta h2 { color: var(--lp-white); }
 
 .lp-cta .lp-lead {
   color: #e9ecef;
   margin-left: auto;
   margin-right: auto;
-  max-width: 46ch;
 }
 
-.lp-cta .lp-btn-row {
-  justify-content: center;
-}
+.lp-cta .lp-btn-row { justify-content: center; }
 
 .lp-cta .lp-btn-secondary,
 .lp-cta .lp-btn-donate {
-  box-shadow: 4px 4px 0px var(--lp-white);
   border-color: var(--lp-white);
+  box-shadow: 3px 3px 0px var(--lp-white);
 }
 
 .lp-cta .lp-btn-primary {
   background: var(--lp-green);
-  border-color: var(--lp-white);
-  box-shadow: 4px 4px 0px var(--lp-white);
   color: var(--lp-black);
+  border-color: var(--lp-white);
+  box-shadow: 3px 3px 0px var(--lp-white);
 }
 
-.lp-cta .lp-btn-primary:hover {
-  background: #37d130;
-  color: var(--lp-black);
-}
+.lp-cta .lp-btn-primary:hover { background: #37d130; color: var(--lp-black); }
 
 .lp-note {
-  margin: 22px 0 0;
-  font-size: 0.82rem;
+  margin: 20px 0 0;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #adb5bd;
 }
 
-/* ------------------------------------------------------------------ */
-/* Анімації SVG                                                        */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
+/* Анімації                                                            */
+/* ================================================================== */
 
-/* Легке погойдування, те саме, що в .avatar-emoji застосунку. */
 @keyframes lp-float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   50%      { transform: translateY(-6px) rotate(2.5deg); }
@@ -521,224 +1070,125 @@
   transform-origin: center;
 }
 
-/* Зірка летить від журналу вчителя до телефона учня, далі до нагороди.
-   Дуга зібрана вручну по кейфреймах, щоб не залежати від offset-path. */
+/*
+ * Політ зірки. Траєкторія навмисно йде НАД картками, а не крізь них
+ * (живий фідбек: зірка сідала просто на ім'я учня й на лічильник і
+ * закривала їх). Тепер вона з'являється в клітинці журналу, дугою
+ * перелітає поверх картки й гасне рівно там, куди прилетіла: спершу в
+ * лічильнику зірок учня, тоді в нагороді. Момент згасання, це і є момент,
+ * коли лічильник переходить з 12 на 13, а нагорода стає зеленою.
+ *
+ * Числа в translate, це зсуви від базової точки (141 94) у координатах
+ * viewBox: (127 84), це лічильник учня, (345 46), це нагорода, а
+ * проміжні від'ємні y підіймають дугу вище верхньої межі карток.
+ */
 @keyframes lp-fly {
   0%   { transform: translate(0, 0) scale(0.2) rotate(0deg); opacity: 0; }
-  8%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
-  26%  { transform: translate(96px, -34px) scale(1) rotate(90deg); opacity: 1; }
-  44%  { transform: translate(196px, 0) scale(1) rotate(180deg); opacity: 1; }
-  50%  { transform: translate(196px, 0) scale(1.25) rotate(190deg); opacity: 1; }
-  68%  { transform: translate(300px, -34px) scale(1) rotate(270deg); opacity: 1; }
-  86%  { transform: translate(396px, 0) scale(1) rotate(360deg); opacity: 1; }
-  94%  { transform: translate(396px, 0) scale(1.3) rotate(360deg); opacity: 0.6; }
-  100% { transform: translate(396px, 0) scale(0.2) rotate(360deg); opacity: 0; }
+  7%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+  12%  { transform: translate(0, 0) scale(1) rotate(25deg); opacity: 1; }
+  22%  { transform: translate(64px, -54px) scale(1.05) rotate(165deg); opacity: 1; }
+  32%  { transform: translate(127px, 84px) scale(1.15) rotate(300deg); opacity: 1; }
+  37%  { transform: translate(127px, 84px) scale(0.2) rotate(330deg); opacity: 0; }
+  48%  { transform: translate(127px, 84px) scale(0.2) rotate(330deg); opacity: 0; }
+  54%  { transform: translate(127px, 84px) scale(1) rotate(330deg); opacity: 1; }
+  68%  { transform: translate(236px, -54px) scale(1.05) rotate(470deg); opacity: 1; }
+  81%  { transform: translate(345px, 46px) scale(1.15) rotate(610deg); opacity: 1; }
+  86%  { transform: translate(345px, 46px) scale(0.2) rotate(640deg); opacity: 0; }
+  100% { transform: translate(345px, 46px) scale(0.2) rotate(640deg); opacity: 0; }
 }
 
-.lp-a-fly {
-  animation: lp-fly 5.2s cubic-bezier(0.4, 0, 0.5, 1) infinite;
+.lp-a-fly { animation: lp-fly 5.6s cubic-bezier(0.45, 0, 0.4, 1) infinite; }
+
+/* Оцінка уроку проявляється в клітинці журналу. */
+@keyframes lp-score {
+  0%, 3%   { opacity: 0; }
+  7%, 92%  { opacity: 1; }
+  97%, 100% { opacity: 0; }
 }
 
-/* Галочка малюється лінією, а не з'являється цілком. */
-@keyframes lp-draw {
-  0%, 4%   { stroke-dashoffset: 26; }
-  16%, 88% { stroke-dashoffset: 0; }
-  96%, 100% { stroke-dashoffset: 26; }
-}
-
-.lp-a-check {
-  stroke-dasharray: 26;
-  stroke-dashoffset: 26;
-  animation: lp-draw 5.2s ease-in-out infinite;
-}
-
-/* Підсвітка стовпчика уроку в журналі: рамка проходить по колонках. */
-@keyframes lp-sweep {
-  0%, 18%   { transform: translateX(0); }
-  24%, 42%  { transform: translateX(74px); }
-  48%, 66%  { transform: translateX(148px); }
-  72%, 90%  { transform: translateX(222px); }
-  100%      { transform: translateX(0); }
-}
-
-.lp-a-sweep {
-  animation: lp-sweep 6.4s cubic-bezier(0.5, 0, 0.2, 1) infinite;
-}
-
-/* Підскок картки чи бейджа в момент зміни числа. */
-@keyframes lp-pop {
-  0%, 40%, 100% { transform: scale(1); }
-  48%           { transform: scale(1.22); }
-  58%           { transform: scale(0.96); }
-  68%           { transform: scale(1); }
-}
-
-.lp-a-pop {
-  animation: lp-pop 5.2s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
+.lp-a-score { animation: lp-score 5.6s ease-in-out infinite; }
 
 /* Дві цифри на одному місці: стара зникає, нова з'являється. */
 @keyframes lp-num-out {
-  0%, 42%  { opacity: 1; }
-  50%, 100% { opacity: 0; }
+  0%, 33%   { opacity: 1; }
+  35%, 100% { opacity: 0; }
 }
 
 @keyframes lp-num-in {
-  0%, 42%  { opacity: 0; }
-  50%, 100% { opacity: 1; }
+  0%, 33%   { opacity: 0; }
+  35%, 100% { opacity: 1; }
 }
 
-.lp-a-num-out { animation: lp-num-out 5.2s steps(1, end) infinite; }
-.lp-a-num-in  { animation: lp-num-in 5.2s steps(1, end) infinite; }
+.lp-a-num-out { animation: lp-num-out 5.6s steps(1, end) infinite; }
+.lp-a-num-in  { animation: lp-num-in 5.6s steps(1, end) infinite; }
 
-/* Смуга прогресу до нагороди. */
+/* Смуга прогресу до нагороди в панелі учня. */
 @keyframes lp-fill {
-  0%   { width: 18px; }
-  55%  { width: 152px; }
-  85%  { width: 186px; }
-  100% { width: 186px; }
+  0%, 30%  { width: 12px; }
+  42%, 78% { width: 62px; }
+  86%      { width: 90px; }
+  100%     { width: 90px; }
 }
 
-.lp-a-fill {
-  animation: lp-fill 5.2s cubic-bezier(0.3, 0.8, 0.3, 1) infinite;
-}
+.lp-a-fill { animation: lp-fill 5.6s cubic-bezier(0.3, 0.8, 0.3, 1) infinite; }
 
-/* Та сама смуга, але у вужчій панелі героя. */
-@keyframes lp-fill-sm {
-  0%   { width: 6px; }
-  55%  { width: 41px; }
-  85%  { width: 50px; }
-  100% { width: 50px; }
-}
-
-.lp-a-fill-sm {
-  animation: lp-fill-sm 5.2s cubic-bezier(0.3, 0.8, 0.3, 1) infinite;
-}
-
-/* Нагорода стає доступною: сіра картка зеленіє. */
+/* Нагорода стає доступною. */
 @keyframes lp-unlock {
-  0%, 74%   { opacity: 0; }
-  84%, 100% { opacity: 1; }
+  0%, 82%   { opacity: 0; }
+  89%, 100% { opacity: 1; }
 }
 
-.lp-a-unlock {
-  animation: lp-unlock 5.2s ease-out infinite;
+.lp-a-unlock { animation: lp-unlock 5.6s ease-out infinite; }
+
+/* Підскок у момент, коли нагорода відкрилась. */
+@keyframes lp-pop {
+  0%, 82%, 100% { transform: scale(1); }
+  87%           { transform: scale(1.26); }
+  93%           { transform: scale(0.97); }
+  97%           { transform: scale(1); }
 }
 
-/* Модулі QR-коду проявляються один за одним. */
-@keyframes lp-blink {
-  0%, 100% { opacity: 0.18; }
-  50%      { opacity: 1; }
-}
-
-.lp-a-blink { animation: lp-blink 2.6s ease-in-out infinite; }
-
-/* М'який пульс обводки, використовується як «підсвітка» акценту. */
-@keyframes lp-pulse {
-  0%, 100% { opacity: 0.15; transform: scale(1); }
-  50%      { opacity: 0.5; transform: scale(1.06); }
-}
-
-.lp-a-pulse {
-  animation: lp-pulse 3.2s ease-in-out infinite;
+.lp-a-pop {
+  animation: lp-pop 5.6s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
 }
 
-/* Око приватності: перекреслення з'являється і зникає. */
-@keyframes lp-toggle {
-  0%, 45%   { stroke-dashoffset: 40; }
-  55%, 100% { stroke-dashoffset: 0; }
-}
+.lp-d1 { animation-delay: 0.2s; }
+.lp-d2 { animation-delay: 0.45s; }
+.lp-d3 { animation-delay: 0.7s; }
 
-.lp-a-toggle {
-  stroke-dasharray: 40;
-  animation: lp-toggle 3.4s ease-in-out infinite alternate;
-}
-
-/* Кришка подарунка підстрибує. */
-@keyframes lp-lid {
-  0%, 55%, 100% { transform: translateY(0) rotate(0deg); }
-  65%           { transform: translateY(-9px) rotate(-7deg); }
-  80%           { transform: translateY(-3px) rotate(2deg); }
-}
-
-.lp-a-lid {
-  animation: lp-lid 3.6s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-/* Стрілка переходу в новий семестр. */
-@keyframes lp-slide {
-  0%, 15%   { transform: translateX(0); opacity: 0; }
-  30%       { opacity: 1; }
-  70%, 100% { transform: translateX(22px); opacity: 0; }
-}
-
-.lp-a-slide { animation: lp-slide 2.8s ease-in-out infinite; }
-
-/* Затримки, щоб однакові елементи не блимали синхронно. */
-.lp-d1 { animation-delay: 0.25s; }
-.lp-d2 { animation-delay: 0.5s; }
-.lp-d3 { animation-delay: 0.75s; }
-.lp-d4 { animation-delay: 1s; }
-.lp-d5 { animation-delay: 1.25s; }
-
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 /* Адаптив                                                             */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
-@media (max-width: 900px) {
-  .lp-split,
-  .lp-free {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 32px;
-  }
+@media (max-width: 700px) {
+  .lp-root { padding: 0 14px 32px; }
 
-  /* В одну колонку ілюстрація завжди йде ПІСЛЯ свого тексту. У секції
-     вчителя журнал стоїть у розмітці першим (щоб на широкому екрані бути
-     ліворуч), і без цього на телефоні картинка опинялась над заголовком,
-     який її пояснює. */
-  .lp-split-visual {
-    order: 1;
-  }
+  .lp-section { padding-top: 54px; }
 
-  .lp-section {
-    padding-top: 56px;
-  }
-}
-
-@media (max-width: 560px) {
-  .lp-root {
-    padding: 0 14px 32px;
-  }
-
-  .lp-nav {
-    padding-top: 16px;
-  }
+  .lp-nav { padding: 16px 0 18px; }
 
   .lp-btn {
     height: 48px;
     padding: 0 16px;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     flex: 1 1 100%;
   }
 
-  .lp-nav-actions .lp-btn {
-    flex: 1 1 auto;
-  }
+  .lp-nav-actions .lp-btn { flex: 1 1 auto; }
+  .lp-nav-hide-sm { display: none; }
 
-  .lp-btn-row {
-    gap: 10px;
-  }
+  .lp-mock-bar { gap: 10px; padding: 12px; }
+  .lp-m-tools { display: none; }
+
+  .lp-m-big-row { gap: 28px; }
+  .lp-m-big-stars, .lp-m-big-rank { font-size: 2.2rem; }
 }
 
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 /* Зменшена анімація                                                   */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
   .lp-root *,
@@ -748,17 +1198,12 @@
     transition: none !important;
   }
 
-  /* Кінцевий стан того, що інакше домальовується анімацією. */
+  /* Кінцевий стан того, що інакше домальовує анімація. */
   .lp-mark { background-size: 100% 0.4em; }
-  .lp-a-check { stroke-dashoffset: 0; }
-  .lp-a-toggle { stroke-dashoffset: 0; }
-  .lp-a-fill { width: 152px; }
-  .lp-a-fill-sm { width: 41px; }
-  .lp-a-unlock { opacity: 1; }
-  .lp-a-num-in { opacity: 1; }
-  .lp-a-num-out { opacity: 0; }
   .lp-a-fly { opacity: 0; }
-  .lp-a-slide { opacity: 1; }
-  .lp-a-blink { opacity: 1; }
-  .lp-a-pulse { opacity: 0.3; }
+  .lp-a-score { opacity: 1; }
+  .lp-a-num-out { opacity: 0; }
+  .lp-a-num-in { opacity: 1; }
+  .lp-a-fill { width: 62px; }
+  .lp-a-unlock { opacity: 1; }
 }
