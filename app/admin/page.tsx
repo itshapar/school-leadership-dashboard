@@ -4,6 +4,7 @@ import AdminLogoutButton from "@/components/AdminLogoutButton";
 import { ChartLineUp, Ranking } from "@phosphor-icons/react/dist/ssr";
 import { formatClassCode } from "@/lib/classCodes";
 import { loadParallels } from "@/lib/admin/parallels";
+import { loadSemesters, pickCurrentSemesterId } from "@/lib/admin/semesters";
 import { getOnboardingProgressBatch } from "@/lib/admin/onboarding";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
 import AdminClassList, {
@@ -22,10 +23,10 @@ export default async function AdminPage() {
   // реєструвалися до появи чекбоксів (Етап 5, п. 9).
   const termsAccepted = await hasAcceptedCurrentTerms(supabase);
 
-  const [{ data: classes }, parallels] = await Promise.all([
+  const [{ data: classes }, parallels, semesters] = await Promise.all([
     supabase
       .from("classes")
-      .select("id, name, public_code, parallel_id, is_demo")
+      .select("id, name, public_code, parallel_id, semester_id, archived_at, is_demo")
       // Постійний публічний демо-клас (Етап 9, /demo) технічно належить
       // цьому акаунту, але вчитель не має його бачити у своєму списку —
       // це не його дані, лише носій для публічної демонстрації.
@@ -33,6 +34,7 @@ export default async function AdminPage() {
       .is("deleted_at", null)
       .order("name"),
     loadParallels(supabase),
+    loadSemesters(supabase),
   ]);
 
   const classList = classes ?? [];
@@ -97,6 +99,8 @@ export default async function AdminPage() {
     public_code: cls.public_code,
     formatted_code: formatClassCode(cls.public_code),
     parallel_id: cls.parallel_id,
+    semester_id: cls.semester_id ?? null,
+    archived: Boolean(cls.archived_at),
     is_demo: cls.is_demo ?? false,
     studentCount: studentCounts.get(cls.id) ?? 0,
     lessonCount: lessonCounts.get(cls.id) ?? 0,
@@ -108,7 +112,10 @@ export default async function AdminPage() {
   }));
 
   const isEmpty = cards.length === 0;
-  const atClassLimit = cards.length >= TEACHER_LIMITS.classes;
+  // Ліміт рахує лише активні класи: архів минулих семестрів місця не займає
+  // (той самий рахунок, що й у тригері enforce_active_class_limit, міграція 038).
+  const atClassLimit =
+    cards.filter((c) => !c.archived).length >= TEACHER_LIMITS.classes;
 
   return (
     <div className="page-container" style={{ maxWidth: "860px", paddingBottom: "80px" }}>
@@ -207,7 +214,12 @@ export default async function AdminPage() {
         </>
       )}
 
-      <AdminClassList classes={cards} parallels={parallels} />
+      <AdminClassList
+        classes={cards}
+        parallels={parallels}
+        semesters={semesters}
+        currentSemesterId={pickCurrentSemesterId(semesters)}
+      />
 
       <div style={{ marginTop: "40px", textAlign: "center" }}>
         <AdminLogoutButton />

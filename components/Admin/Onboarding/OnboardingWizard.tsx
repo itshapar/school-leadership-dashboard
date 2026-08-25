@@ -25,10 +25,16 @@ import {
 } from "@/lib/admin/classConfig";
 import { upsertParallelByName } from "@/lib/admin/parallels";
 import {
+  loadSemesters,
+  pickCurrentSemesterId,
+  type Semester,
+} from "@/lib/admin/semesters";
+import {
   getOnboardingProgress,
   type OnboardingProgress,
   type OnboardingStepKey,
 } from "@/lib/admin/onboarding";
+import SemesterPicker from "@/components/Admin/SemesterPicker";
 import PrizesPanel from "@/components/Admin/ClassSettings/PrizesPanel";
 import StudentImport from "@/components/Admin/StudentImport";
 import StudentLinesInput from "@/components/Admin/Onboarding/StudentLinesInput";
@@ -101,6 +107,8 @@ export default function OnboardingWizard() {
   const [current, setCurrent] = useState(0);
   const [loading, setLoading] = useState(Boolean(classIdParam));
 
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [semesterId, setSemesterId] = useState<string | null>(null);
   const [parallelId, setParallelId] = useState<string | null>(null);
   const [parallelTouched, setParallelTouched] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState<string | undefined>(undefined);
@@ -149,6 +157,22 @@ export default function OnboardingWizard() {
     },
     [supabase]
   );
+
+  // Семестр нового класу: за замовчуванням поточний. Клас без семестру
+  // технічно можливий, але це глухий кут, він не потрапить у жоден фільтр
+  // кабінету, тож майстер завжди пропонує вибір і дає створити семестр тут же.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const list = await loadSemesters(supabase);
+      if (cancelled) return;
+      setSemesters(list);
+      setSemesterId((prev) => prev ?? pickCurrentSemesterId(list));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
 
   // Початкове завантаження: клас, якщо повернулися в майстер.
   useEffect(() => {
@@ -236,6 +260,7 @@ export default function OnboardingWizard() {
         name: values.name.trim(),
         teacher_id: user.user.id,
         parallel_id: parallelId,
+        semester_id: semesterId,
       })
       .select("id, name, public_code")
       .single();
@@ -356,7 +381,7 @@ export default function OnboardingWizard() {
           <div>
             <StepHeader
               title="Створіть клас"
-              hint="Паралель (номер 1–12) і назва класу обов'язкові, наприклад «7-А» або «ПМ2»."
+              hint="Семестр задає період програми нагород, паралель і назва класу обов'язкові, наприклад «7-А» або «ПМ2»."
             />
 
             {cls ? (
@@ -368,6 +393,16 @@ export default function OnboardingWizard() {
               />
             ) : (
               <Form form={classForm} layout="vertical" onFinish={createClass}>
+                <Form.Item label={<span style={{ fontWeight: 600 }}>Семестр</span>}>
+                  <SemesterPicker
+                    semesters={semesters}
+                    value={semesterId}
+                    onChange={setSemesterId}
+                    onCreated={(created) => setSemesters((prev) => [created, ...prev])}
+                    width={240}
+                  />
+                </Form.Item>
+
                 <Form.Item
                   label={<span style={{ fontWeight: 600 }}>Паралель</span>}
                   required

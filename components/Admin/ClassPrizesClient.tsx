@@ -25,10 +25,13 @@ export default function ClassPrizesClient({
   classId,
   classCode,
   className,
+  archived = false,
 }: {
   classId: string;
   classCode: string;
   className: string;
+  /** Клас в архіві: нагороди видно, але змінювати їх уже не можна. */
+  archived?: boolean;
 }) {
   const supabase = getSupabaseClient();
   const [loading, setLoading] = useState(true);
@@ -105,6 +108,7 @@ export default function ClassPrizesClient({
                     kind="individual"
                     individualPrizes={individualPrizes}
                     onChanged={refresh}
+                    readOnly={archived}
                   />
                 ),
               },
@@ -117,6 +121,7 @@ export default function ClassPrizesClient({
                     kind="class"
                     classPrizes={classPrizes}
                     onChanged={refresh}
+                    readOnly={archived}
                   />
                 ),
               },

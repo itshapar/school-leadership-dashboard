@@ -26,6 +26,7 @@ export default async function ClassPrizesPage({ params }: Props) {
         classId={cls.id}
         classCode={cls.public_code}
         className={cls.name}
+        archived={Boolean(cls.archived_at)}
       />
     </div>
   );

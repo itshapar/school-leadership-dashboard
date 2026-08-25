@@ -6,6 +6,7 @@ import { Button, Tag } from "antd";
 import { TEACHER_LIMITS } from "@/lib/admin/classConfig";
 import type { OnboardingStepKey } from "@/lib/admin/onboarding";
 import type { Parallel } from "@/lib/admin/parallels";
+import { formatSemesterRange, semesterStatus, type Semester } from "@/lib/admin/semesters";
 import StarIcon from "@/components/StarIcon";
 
 /**
@@ -15,9 +16,15 @@ import StarIcon from "@/components/StarIcon";
  * учнів/уроків/зірок, Журнал і Дашборд. Паралель, код класу й прогрес
  * налаштування — це керування, а не щоденний перегляд, тож живуть глибше
  * в налаштуваннях класу, а не на кожній картці списку.
+ *
+ * Етап 10: над списком з'явився фільтр за семестром, і він головний. За
+ * замовчуванням кабінет показує ПОТОЧНИЙ семестр, тобто те, над чим учитель
+ * працює зараз; класи минулих семестрів нікуди не діваються, вони на сусідньому
+ * чіпі й позначені як архів.
  */
 
 const ALL = "__all__";
+const NO_SEMESTER = "__none__";
 
 export interface AdminClassCard {
   id: string;
@@ -25,6 +32,8 @@ export interface AdminClassCard {
   public_code: string;
   formatted_code: string;
   parallel_id: string | null;
+  semester_id: string | null;
+  archived: boolean;
   is_demo: boolean;
   studentCount: number;
   lessonCount: number;
@@ -38,30 +47,119 @@ export interface AdminClassCard {
 export default function AdminClassList({
   classes,
   parallels,
+  semesters,
+  currentSemesterId,
 }: {
   classes: AdminClassCard[];
   parallels: Parallel[];
+  semesters: Semester[];
+  currentSemesterId: string | null;
 }) {
-  const atClassLimit = classes.length >= TEACHER_LIMITS.classes;
+  const atClassLimit =
+    classes.filter((c) => !c.archived).length >= TEACHER_LIMITS.classes;
+
+  // Класи, що лишились без семестру, бувають лише в одному випадку: семестр
+  // видалили, а класи в ньому лишились (FK ставить semester_id у NULL).
+  // Показуємо їх окремим чіпом, щоб вони не зникли з кабінету назовсім.
+  const hasOrphans = classes.some((c) => !c.semester_id);
+
+  const [semesterFilter, setSemesterFilter] = useState<string>(
+    currentSemesterId ?? (hasOrphans ? NO_SEMESTER : ALL)
+  );
+  const [parallelFilter, setParallelFilter] = useState<string>(ALL);
+
+  const bySemester = useMemo(() => {
+    if (semesterFilter === ALL) return classes;
+    if (semesterFilter === NO_SEMESTER) return classes.filter((c) => !c.semester_id);
+    return classes.filter((c) => c.semester_id === semesterFilter);
+  }, [classes, semesterFilter]);
 
   // Паралель — легкий тег без CRUD-екрана (lib/admin/parallels.ts): рядок
   // лишається в таблиці, навіть коли жоден клас на неї вже не посилається
   // (наприклад, клас перенесли в іншу паралель). Порожні паралелі ховаємо
   // з навігації чипів, а не показуємо як мертві кнопки без жодного класу.
+  // Рахуємо їх від класів ВИДИМОГО семестру: у минулому році паралелі були
+  // інші, і показувати їх поруч із поточними немає сенсу.
   const sortedParallels = useMemo(() => {
-    const withClasses = new Set(classes.map((c) => c.parallel_id).filter(Boolean));
+    const withClasses = new Set(bySemester.map((c) => c.parallel_id).filter(Boolean));
     return [...parallels]
       .filter((p) => withClasses.has(p.id))
       .sort((a, b) => Number(a.name) - Number(b.name));
-  }, [parallels, classes]);
-  const [parallelFilter, setParallelFilter] = useState<string>(ALL);
+  }, [parallels, bySemester]);
+
   const visibleClasses =
     parallelFilter === ALL
-      ? classes
-      : classes.filter((c) => c.parallel_id === parallelFilter);
+      ? bySemester
+      : bySemester.filter((c) => c.parallel_id === parallelFilter);
+
+  const activeSemester = semesters.find((s) => s.id === semesterFilter) ?? null;
 
   return (
     <>
+      {(semesters.length > 0 || hasOrphans) && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+            {semesters.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => {
+                  setSemesterFilter(s.id);
+                  setParallelFilter(ALL);
+                }}
+                style={chipStyle(semesterFilter === s.id)}
+              >
+                {s.name}
+              </button>
+            ))}
+            {hasOrphans && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSemesterFilter(NO_SEMESTER);
+                  setParallelFilter(ALL);
+                }}
+                style={chipStyle(semesterFilter === NO_SEMESTER)}
+              >
+                Без семестру
+              </button>
+            )}
+            {semesters.length > 1 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSemesterFilter(ALL);
+                  setParallelFilter(ALL);
+                }}
+                style={chipStyle(semesterFilter === ALL)}
+              >
+                Усі семестри
+              </button>
+            )}
+            <Link
+              href="/admin/semesters"
+              style={{
+                marginLeft: "auto",
+                fontWeight: 600,
+                fontSize: "0.82rem",
+                color: "#495057",
+                textDecoration: "underline",
+              }}
+            >
+              Керувати семестрами
+            </Link>
+          </div>
+
+          {activeSemester && (
+            <div style={{ color: "#868e96", fontWeight: 600, fontSize: "0.8rem", marginTop: 8 }}>
+              {formatSemesterRange(activeSemester)}
+              {semesterStatus(activeSemester) === "past" && ", семестр завершено"}
+              {semesterStatus(activeSemester) === "future" && ", семестр ще не почався"}
+            </div>
+          )}
+        </div>
+      )}
+
       {sortedParallels.length > 0 && (
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
           <button type="button" onClick={() => setParallelFilter(ALL)} style={chipStyle(parallelFilter === ALL)}>
@@ -85,12 +183,14 @@ export default function AdminClassList({
           заголовок над списком карток нічого не додавав. */}
       {atClassLimit && (
         <div style={{ marginBottom: 12, color: "#868e96", fontWeight: 600, fontSize: "0.82rem" }}>
-          Досягнуто ліміт: {TEACHER_LIMITS.classes} класів на акаунт.
+          Досягнуто ліміт: {TEACHER_LIMITS.classes} активних класів на акаунт.
         </div>
       )}
 
       {classes.length === 0 ? (
         <EmptyState />
+      ) : visibleClasses.length === 0 ? (
+        <EmptySemesterState />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {visibleClasses.map((cls) => (
@@ -123,11 +223,16 @@ function chipStyle(active: boolean): React.CSSProperties {
 
 function ClassCard({ cls }: { cls: AdminClassCard }) {
   return (
-    <div className="star-card" style={{ padding: 0 }}>
+    <div className="star-card" style={{ padding: 0, opacity: cls.archived ? 0.72 : 1 }}>
       <div className="admin-card-row">
         <div className="admin-card-info">
           <div className="admin-class-name" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             {cls.name}
+            {cls.archived && (
+              <Tag style={{ fontWeight: 800, margin: 0, border: "2px solid #000", background: "#f1f3f5", color: "#000" }}>
+                АРХІВ
+              </Tag>
+            )}
             {cls.is_demo && (
               <Tag color="purple" style={{ fontWeight: 800, margin: 0 }}>
                 🧪 ДЕМО
@@ -155,10 +260,32 @@ function ClassCard({ cls }: { cls: AdminClassCard }) {
             Дашборд
           </Link>
           <Link href={`/admin/${cls.public_code}`} className="admin-action-btn admin-btn-black">
-            Журнал
+            {cls.archived ? "Переглянути" : "Журнал"}
           </Link>
         </div>
       </div>
+    </div>
+  );
+}
+
+function EmptySemesterState() {
+  return (
+    <div
+      className="star-card"
+      style={{
+        textAlign: "center",
+        padding: "40px 24px",
+        border: "3px dashed #ced4da",
+        boxShadow: "none",
+      }}
+    >
+      <h3 style={{ fontWeight: 900, fontSize: "1.2rem", margin: "0 0 8px" }}>
+        У цьому семестрі ще немає класів
+      </h3>
+      <p style={{ color: "#868e96", fontWeight: 600, maxWidth: 460, margin: "0 auto" }}>
+        Створіть новий клас або перенесіть наявний із попереднього семестру:
+        відкрийте клас, далі налаштування, далі «Новий семестр».
+      </p>
     </div>
   );
 }

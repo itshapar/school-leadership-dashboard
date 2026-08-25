@@ -42,11 +42,20 @@ export default function StudentManager({
   initialStudents,
   publicCode = "",
   className = "",
+  archived = false,
 }: {
   classId: string;
   initialStudents: Student[];
   publicCode?: string;
   className?: string;
+  /**
+   * Клас в архіві: семестр завершено. Додавання, редагування й видалення
+   * учнів зникають (БД їх однаково відхилить, archive_guard_trg з міграції
+   * 018), а от PIN-и лишаються робочими навмисно: дитина може забути PIN і
+   * після завершення семестру, а подивитись торішній дашборд їй ніхто не
+   * забороняє. Той самий виняток прописаний і в самому guard-і.
+   */
+  archived?: boolean;
 }) {
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [pins, setPins] = useState<Record<string, string>>({});
@@ -221,7 +230,7 @@ export default function StudentManager({
         </div>
       ),
     },
-    {
+    ...(archived ? [] : [{
       title: "Дії",
       key: "actions",
       width: 130,
@@ -244,7 +253,7 @@ export default function StudentManager({
           </Popconfirm>
         </Space>
       ),
-    },
+    }]),
   ];
 
   return (
@@ -285,9 +294,11 @@ export default function StudentManager({
             students={students}
             onReset={mergePins}
           />
-          <Button type="primary" icon={<Plus />} onClick={handleAdd} className="btn-primary" style={{ height: "38px" }}>
-            ДОДАТИ УЧНЯ
-          </Button>
+          {!archived && (
+            <Button type="primary" icon={<Plus />} onClick={handleAdd} className="btn-primary" style={{ height: "38px" }}>
+              ДОДАТИ УЧНЯ
+            </Button>
+          )}
         </Space>
       </div>
 

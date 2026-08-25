@@ -32,21 +32,32 @@ export default function AdminClassToolbar({
   classId,
   classCode,
   students,
+  archived = false,
 }: {
   classId: string;
   /** Публічний код класу — усі посилання кабінету йдуть за ним, не за UUID. */
   classCode: string;
   students: Student[];
+  /**
+   * Клас в архіві: семестр завершено. Дії запису (нарахування, новий урок,
+   * видалення уроку) зникають з тулбару — БД їх однаково відхилить
+   * (archive_guard_trg, міграція 018), і показувати кнопку, яка гарантовано
+   * впаде з помилкою, гірше, ніж не показувати її взагалі. Перегляд, історія,
+   * список учнів, нагороди й налаштування лишаються на місці.
+   */
+  archived?: boolean;
 }) {
   const router = useRouter();
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "12px", flexWrap: "wrap", flex: 1 }}>
-      <QuickEntry
-        classId={classId}
-        students={students}
-        onSuccess={() => router.refresh()}
-      />
+      {!archived && (
+        <QuickEntry
+          classId={classId}
+          students={students}
+          onSuccess={() => router.refresh()}
+        />
+      )}
 
       <Tooltip title="БОНУСИ ТА ШТРАФИ">
         <Link href={`/admin/${classCode}/bonus`}>
@@ -64,8 +75,12 @@ export default function AdminClassToolbar({
         </Link>
       </Tooltip>
 
-      <NewLessonButton classId={classId} onSuccess={() => router.refresh()} />
-      <DeleteLessonButton classId={classId} onSuccess={() => router.refresh()} />
+      {!archived && (
+        <>
+          <NewLessonButton classId={classId} onSuccess={() => router.refresh()} />
+          <DeleteLessonButton classId={classId} onSuccess={() => router.refresh()} />
+        </>
+      )}
 
       <Tooltip title="СПИСОК УЧНІВ">
         <Link href={`/admin/${classCode}/students`}>

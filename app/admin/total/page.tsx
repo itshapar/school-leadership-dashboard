@@ -19,11 +19,16 @@ export default async function TotalDashboardPage() {
       .from("students")
       .select("id, full_name, nickname, avatar_emoji, class_id")
       .is("deleted_at", null),
+    // Архівні класи (завершені семестри) у рейтинг не входять: після переходу
+    // 7-А → 8-А та сама дитина існує двічі, і спільний рейтинг показував би
+    // її двома рядками з різними сумами. Історію минулого семестру видно на
+    // дашборді самого архівного класу.
     supabase
       .from("classes")
       .select("id, name, public_code, parallel_id")
       .eq("is_public_demo", false)
-      .is("deleted_at", null),
+      .is("deleted_at", null)
+      .is("archived_at", null),
     loadParallels(supabase),
   ]);
 

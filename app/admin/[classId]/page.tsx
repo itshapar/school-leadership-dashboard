@@ -28,6 +28,7 @@ export default async function AdminClassPage({ params }: Props) {
     .order("full_name");
 
   const journalInitial = await loadManagementJournalData(supabase, classId);
+  const archived = Boolean(cls.archived_at);
 
   return (
     <div style={{ padding: "0", minHeight: "100vh", background: "var(--bg-primary)" }}>
@@ -49,14 +50,51 @@ export default async function AdminClassPage({ params }: Props) {
           <h1 style={{ fontSize: "1.5rem", fontWeight: 900, margin: 0, textTransform: "uppercase", lineHeight: 1.2 }}>
             {cls.name}
           </h1>
+          {archived && (
+            <span
+              style={{
+                padding: "4px 12px",
+                borderRadius: "20px",
+                border: "2px solid #000",
+                background: "#f1f3f5",
+                fontWeight: 800,
+                fontSize: "0.7rem",
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Архів
+            </span>
+          )}
         </div>
 
         <AdminClassToolbar
           classId={classId}
           classCode={cls.public_code}
           students={students ?? []}
+          archived={archived}
         />
       </div>
+
+      {archived && (
+        <div
+          style={{
+            margin: "24px 24px 0",
+            background: "#f1f3f5",
+            border: "3px solid #000",
+            boxShadow: "4px 4px 0px #000",
+            borderRadius: 12,
+            padding: "14px 20px",
+            fontWeight: 600,
+            fontSize: "0.85rem",
+            color: "#212529",
+          }}
+        >
+          Семестр цього класу завершено. Журнал відкритий для перегляду:
+          нарахувати бали, додати урок чи видати приз уже не вийде. Повернути
+          клас у роботу можна в налаштуваннях класу.
+        </div>
+      )}
 
       {/* Full Width Table Area */}
       <div style={{ width: "100%", padding: "24px" }}>
@@ -67,7 +105,12 @@ export default async function AdminClassPage({ params }: Props) {
           border: "3px solid #000000",
           overflow: "hidden"
         }}>
-          <ManagementTable key={classId} classId={classId} initialData={journalInitial} />
+          <ManagementTable
+            key={classId}
+            classId={classId}
+            initialData={journalInitial}
+            readOnly={archived}
+          />
         </div>
       </div>
     </div>

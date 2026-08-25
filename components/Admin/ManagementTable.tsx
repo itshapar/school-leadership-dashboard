@@ -69,9 +69,17 @@ function toState(data: ManagementJournalData): JournalState {
 export default function ManagementTable({
   classId,
   initialData,
+  readOnly = false,
 }: {
   classId: string;
   initialData?: ManagementJournalData;
+  /**
+   * Клас в архіві: семестр завершено, журнал лишається для перегляду.
+   * Запис у такий клас однаково відкине БД (archive_guard_trg, міграція 018),
+   * тож тут ідеться не про безпеку, а про чесність інтерфейсу: не показувати
+   * клікабельним те, що клікати вже не можна.
+   */
+  readOnly?: boolean;
 }) {
   const [state, setState] = useState<JournalState>(
     initialData ? toState(initialData) : EMPTY_STATE
@@ -288,6 +296,7 @@ export default function ManagementTable({
             }}>
               <Checkbox
                 checked={isGiven}
+                disabled={readOnly}
                 onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
                 className={isUnlocked && !isGiven ? "prize-checkbox prize-eligible" : "prize-checkbox"}
                 style={{ transform: "scale(1.15)" }}
@@ -333,7 +342,7 @@ export default function ManagementTable({
               value={score}
               onChange={(val) => handleStarChange(record.id, lesson.id, val)}
               variant="borderless"
-              disabled={!lessonType}
+              disabled={readOnly || !lessonType}
               className="score-select"
               style={{
                 width: "100%",

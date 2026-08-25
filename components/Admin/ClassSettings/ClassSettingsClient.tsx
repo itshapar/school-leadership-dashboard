@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Input, Popconfirm, Select, Switch, message } from "antd";
-import { Trash } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, ArrowRight, Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { setClassParallel, upsertParallelByName, type Parallel } from "@/lib/admin/parallels";
+import { formatSemesterRange, type Semester } from "@/lib/admin/semesters";
 import BackButton from "@/components/BackButton";
 
 // Той самий фіксований список 1–12, що й у майстрі створення класу.
@@ -23,6 +25,10 @@ const GRADE_OPTIONS = Array.from({ length: 12 }, (_, i) => {
  * створенні, див. OnboardingWizard.createClass). PIN-и переїхали в список
  * учнів, нагороди — на власну сторінку /admin/[code]/prizes (живий
  * фідбек): і те, і те шукали не тут.
+ *
+ * Етап 10 додав сюди семестр: у якому періоді живе клас і кнопку переходу в
+ * наступний. Перехід стоїть саме тут, а не в кабінеті: це рідка дія на межі
+ * семестрів, і робити її треба свідомо, з відкритим класом перед очима.
  */
 
 interface Props {
@@ -31,7 +37,10 @@ interface Props {
   className: string;
   initialShowClassmateStars: boolean;
   initialParallelId: string | null;
+  initialSemesterId: string | null;
+  archived: boolean;
   parallels: Parallel[];
+  semesters: Semester[];
 }
 
 export default function ClassSettingsClient({
@@ -40,7 +49,10 @@ export default function ClassSettingsClient({
   className,
   initialShowClassmateStars,
   initialParallelId,
+  initialSemesterId,
+  archived,
   parallels,
+  semesters,
 }: Props) {
   const supabase = getSupabaseClient();
   const router = useRouter();
@@ -51,7 +63,57 @@ export default function ClassSettingsClient({
   const [savingParallel, setSavingParallel] = useState(false);
   const [name, setName] = useState(className);
   const [savingName, setSavingName] = useState(false);
+  const [semesterId, setSemesterId] = useState(initialSemesterId);
+  const [savingSemester, setSavingSemester] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  const semester = semesters.find((s) => s.id === semesterId) ?? null;
+
+  /**
+   * Семестр класу можна змінити вручну: клас, створений посеред року, часто
+   * треба покласти в наступний семестр, а не в поточний. Це просте
+   * перепризначення, воно НЕ переносить учнів і не обнуляє бали, для цього
+   * є окремий майстер переходу.
+   */
+  async function changeSemester(next: string | null) {
+    setSavingSemester(true);
+    const { error } = await supabase
+      .from("classes")
+      .update({ semester_id: next })
+      .eq("id", classId);
+    setSavingSemester(false);
+    if (error) {
+      message.error("Не вдалося змінити семестр");
+      return;
+    }
+    setSemesterId(next);
+    message.success("Семестр класу змінено");
+    router.refresh();
+  }
+
+  /**
+   * Повернення з архіву. Штатний шлях в архів, це перехід у новий семестр,
+   * але помилитись можна будь-де, тож зворотна дія мусить бути під рукою.
+   * Ліміт активних класів БД перевірить сама (тригер enforce_active_class_limit).
+   */
+  async function unarchive() {
+    setBusy(true);
+    const { error } = await supabase
+      .from("classes")
+      .update({ archived_at: null })
+      .eq("id", classId);
+    setBusy(false);
+    if (error) {
+      message.error(
+        error.message?.includes("Досягнуто ліміт")
+          ? "Досягнуто ліміт активних класів: спочатку заархівуйте інший"
+          : "Не вдалося повернути клас з архіву"
+      );
+      return;
+    }
+    message.success("Клас повернуто з архіву");
+    router.refresh();
+  }
 
   /**
    * Назва класу редагується вже після створення (живий фідбек): у майстрі
@@ -160,6 +222,41 @@ export default function ClassSettingsClient({
         </h1>
       </div>
 
+      {archived && (
+        <div
+          style={{
+            background: "#f1f3f5",
+            border: "3px solid #000",
+            boxShadow: "4px 4px 0px #000",
+            borderRadius: 12,
+            padding: "16px 20px",
+            marginBottom: 20,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Клас в архіві</div>
+            <div style={{ color: "#495057", fontSize: "0.8rem", marginTop: 2, maxWidth: 520, fontWeight: 600 }}>
+              Семестр цього класу завершено. Журнал і дашборд відкриваються для
+              перегляду, але нараховувати бали, додавати уроки чи видавати призи
+              вже не можна.
+            </div>
+          </div>
+          <Button
+            className="btn-secondary"
+            icon={<ArrowCounterClockwise />}
+            loading={busy}
+            onClick={unarchive}
+          >
+            Повернути з архіву
+          </Button>
+        </div>
+      )}
+
       <div
         style={{
           background: "#fff",
@@ -263,6 +360,73 @@ export default function ClassSettingsClient({
           доступна лише за особистим PIN-кодом.
         </div>
       </div>
+
+      <div
+        style={{
+          background: "#fff",
+          border: "3px solid #000",
+          boxShadow: "4px 4px 0px #000",
+          borderRadius: 12,
+          padding: "16px 20px",
+          marginBottom: 20,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Семестр</div>
+          <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2, maxWidth: 520 }}>
+            {semester
+              ? `Період програми нагород: ${formatSemesterRange(semester)}. Бали й нагороди класу рахуються тільки в цих межах.`
+              : "Клас поза будь-яким семестром. Оберіть період, у якому він працює."}
+          </div>
+        </div>
+        <Select
+          style={{ width: 240 }}
+          allowClear
+          loading={savingSemester}
+          disabled={savingSemester}
+          placeholder="Оберіть семестр"
+          value={semesterId ?? undefined}
+          onChange={(v) => changeSemester(v ?? null)}
+          options={semesters.map((s) => ({ value: s.id, label: s.name }))}
+        />
+      </div>
+
+      {!archived && (
+        <div
+          style={{
+            background: "#fff",
+            border: "3px solid #000",
+            boxShadow: "4px 4px 0px #000",
+            borderRadius: 12,
+            padding: "16px 20px",
+            marginBottom: 20,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Новий семестр</div>
+            <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2, maxWidth: 520 }}>
+              Коли семестр завершується, клас переходить у наступний: учні,
+              нікнейми, аватарки, PIN-и й код класу переїжджають, а бали, уроки
+              та видані призи лишаються в архіві цього семестру.
+            </div>
+          </div>
+          <Link href={`/admin/${classCode}/rollover`}>
+            <Button className="btn-primary" icon={<ArrowRight />}>
+              Перейти в новий семестр
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* Нагороди переїхали на власну сторінку /admin/[code]/prizes
           (живий фідбек): вчитель ходить у них частіше, ніж у решту

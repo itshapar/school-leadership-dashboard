@@ -29,6 +29,7 @@ export default async function AdminStudentsPage({ params }: Props) {
         initialStudents={students ?? []}
         publicCode={cls.public_code}
         className={cls.name}
+        archived={Boolean(cls.archived_at)}
       />
     </div>
   );
