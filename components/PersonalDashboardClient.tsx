@@ -168,7 +168,9 @@ export default function PersonalDashboardClient({
         }}
       >
         <LockOutlined style={{ fontSize: "1.3rem", flexShrink: 0 }} />
-        <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--color-text-muted)" }}>
+        {/* Чорним, не сірим (живий фідбек): це не другорядна примітка, а
+            обіцянка приватності, яку учень має прочитати. */}
+        <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--color-text)" }}>
           Цю сторінку бачиш лише ти та вчитель. Однокласники доступу до неї не мають.
         </div>
       </div>

@@ -11,6 +11,7 @@ import AdminClassList, {
 } from "@/components/Admin/AdminClassList";
 import TermsGate from "@/components/Legal/TermsGate";
 import { hasAcceptedCurrentTerms } from "@/lib/legal/terms";
+import { TEACHER_LIMITS } from "@/lib/admin/classConfig";
 
 export const dynamic = "force-dynamic";
 
@@ -107,6 +108,7 @@ export default async function AdminPage() {
   }));
 
   const isEmpty = cards.length === 0;
+  const atClassLimit = cards.length >= TEACHER_LIMITS.classes;
 
   return (
     <div className="page-container" style={{ maxWidth: "860px", paddingBottom: "80px" }}>
@@ -116,16 +118,44 @@ export default async function AdminPage() {
         <h1 style={{ margin: 0, fontSize: "2.2rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "-1px" }}>
           Адмін-панель
         </h1>
-        <div style={{ marginTop: "16px" }}>
+        {/* Дві кнопки згори (живий фідбек): «Новий клас» переїхав сюди зі
+            списку, де він стояв у рядку із заголовком «Класи». Так обидві
+            головні дії кабінету поруч, а список нижче лишається просто
+            списком. Без іконок: текст однозначний і сам по собі. */}
+        <div
+          style={{
+            marginTop: "16px",
+            display: "flex",
+            justifyContent: "center",
+            gap: "12px",
+            flexWrap: "wrap",
+          }}
+        >
           <Link
             href="/admin/profile"
             className="admin-action-btn admin-btn-white"
-            style={{ display: "inline-flex", alignItems: "center", gap: "8px", minWidth: "auto" }}
+            style={{ minWidth: "auto" }}
           >
-            {/* Без іконки (живий фідбек): жодна з іконок «вчителя» тут не
-                лягала, а текст сам по собі однозначний. */}
             Профіль вчителя
           </Link>
+
+          {atClassLimit ? (
+            <span
+              className="admin-action-btn admin-btn-black"
+              style={{ minWidth: "auto", opacity: 0.35, cursor: "not-allowed" }}
+              title={`Досягнуто ліміт: ${TEACHER_LIMITS.classes} класів на акаунт`}
+            >
+              Новий клас
+            </span>
+          ) : (
+            <Link
+              href="/admin/onboarding"
+              className="admin-action-btn admin-btn-black"
+              style={{ minWidth: "auto" }}
+            >
+              Новий клас
+            </Link>
+          )}
         </div>
       </div>
 

@@ -2,9 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button, Tag } from "antd";
-import { Plus } from "@phosphor-icons/react";
 import { TEACHER_LIMITS } from "@/lib/admin/classConfig";
 import type { OnboardingStepKey } from "@/lib/admin/onboarding";
 import type { Parallel } from "@/lib/admin/parallels";
@@ -44,7 +42,6 @@ export default function AdminClassList({
   classes: AdminClassCard[];
   parallels: Parallel[];
 }) {
-  const router = useRouter();
   const atClassLimit = classes.length >= TEACHER_LIMITS.classes;
 
   // Паралель — легкий тег без CRUD-екрана (lib/admin/parallels.ts): рядок
@@ -83,37 +80,9 @@ export default function AdminClassList({
         </div>
       )}
 
-      {/* Чорний дивайдер між фільтром паралелей і списком класів (живий
-          фідбек): два блоки просто йшли один за одним і читались як один. */}
-      {sortedParallels.length > 0 && (
-        <div style={{ height: 3, background: "#000000", borderRadius: 2, margin: "0 0 16px" }} />
-      )}
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "16px",
-          gap: "12px",
-          flexWrap: "wrap",
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 900, textTransform: "uppercase", color: "#000000" }}>
-          Класи
-        </h2>
-
-        <Button
-          type="primary"
-          icon={<Plus />}
-          disabled={atClassLimit}
-          onClick={() => router.push("/admin/onboarding")}
-          className="btn-primary"
-        >
-          Новий клас
-        </Button>
-      </div>
-
+      {/* Заголовок «Класи», дивайдер і кнопка «Новий клас» звідси прибрані
+          (живий фідбек): кнопка переїхала нагору, до «Профілю вчителя», а
+          заголовок над списком карток нічого не додавав. */}
       {atClassLimit && (
         <div style={{ marginBottom: 12, color: "#868e96", fontWeight: 600, fontSize: "0.82rem" }}>
           Досягнуто ліміт: {TEACHER_LIMITS.classes} класів на акаунт.
