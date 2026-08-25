@@ -145,15 +145,17 @@ function ClassCard({ cls }: { cls: AdminClassCard }) {
         </div>
 
         <div className="admin-btn-group">
-          <Link href={`/admin/${cls.public_code}`} className="admin-action-btn admin-btn-black">
-            Журнал
-          </Link>
+          {/* Дашборд ліворуч, журнал праворуч (живий фідбек): кожна кнопка
+              лишається собою, міняється лише порядок. */}
           <Link
             href={`/class/${cls.public_code}`}
             target="_blank"
             className="admin-action-btn admin-btn-white"
           >
             Дашборд
+          </Link>
+          <Link href={`/admin/${cls.public_code}`} className="admin-action-btn admin-btn-black">
+            Журнал
           </Link>
         </div>
       </div>
