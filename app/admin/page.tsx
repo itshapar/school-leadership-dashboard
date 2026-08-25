@@ -166,60 +166,64 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      {!isEmpty && (
-        <>
-          <Link
-            href="/admin/total"
-            className="total-dashboard-card"
-            style={{ display: "block", textDecoration: "none", marginBottom: "16px", transition: "transform 0.2s" }}
-          >
-            <div className="star-card" style={{
-              background: "linear-gradient(135deg, #000000 0%, #2c2c2c 100%)",
-              color: "#ffffff",
-              border: "none",
-              padding: "24px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center"
-            }}>
-              <div>
-                <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Рейтинг учнів</div>
-                <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>За паралеллю, класична таблиця рейтингу</div>
-              </div>
-              <Ranking weight="bold" style={{ fontSize: "2.5rem", color: "var(--color-star)" }} />
-            </div>
-          </Link>
-
-          <Link
-            href="/dashboard"
-            className="total-dashboard-card"
-            style={{ display: "block", textDecoration: "none", marginBottom: "32px", transition: "transform 0.2s" }}
-          >
-            <div className="star-card" style={{
-              background: "linear-gradient(135deg, #f59f00 0%, #f08c00 100%)",
-              color: "#000000",
-              border: "3px solid #000",
-              padding: "24px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center"
-            }}>
-              <div>
-                <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Загальний дашборд</div>
-                <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>За паралеллю, розширена статистика, цілі та графіки</div>
-              </div>
-              <ChartLineUp weight="bold" style={{ fontSize: "2.5rem", color: "#000" }} />
-            </div>
-          </Link>
-        </>
-      )}
-
       <AdminClassList
         classes={cards}
         parallels={parallels}
         semesters={semesters}
         currentSemesterId={pickCurrentSemesterId(semesters)}
-      />
+      >
+        {/* Рейтинг і дашборд стоять ПІД дивайдером, усередині обраного
+            періоду (живий фідбек): вибір навчального року й семестру
+            піднявся на самий верх кабінету, і все нижче межі читається як
+            «те, що в цьому періоді». */}
+        {!isEmpty && (
+          <>
+            <Link
+              href="/admin/total"
+              className="total-dashboard-card"
+              style={{ display: "block", textDecoration: "none", marginBottom: "16px", transition: "transform 0.2s" }}
+            >
+              <div className="star-card" style={{
+                background: "linear-gradient(135deg, #000000 0%, #2c2c2c 100%)",
+                color: "#ffffff",
+                border: "none",
+                padding: "24px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
+                <div>
+                  <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Рейтинг учнів</div>
+                  <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>За паралеллю, класична таблиця рейтингу</div>
+                </div>
+                <Ranking weight="bold" style={{ fontSize: "2.5rem", color: "var(--color-star)" }} />
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard"
+              className="total-dashboard-card"
+              style={{ display: "block", textDecoration: "none", marginBottom: "32px", transition: "transform 0.2s" }}
+            >
+              <div className="star-card" style={{
+                background: "linear-gradient(135deg, #f59f00 0%, #f08c00 100%)",
+                color: "#000000",
+                border: "3px solid #000",
+                padding: "24px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
+                <div>
+                  <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Загальний дашборд</div>
+                  <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>За паралеллю, розширена статистика, цілі та графіки</div>
+                </div>
+                <ChartLineUp weight="bold" style={{ fontSize: "2.5rem", color: "#000" }} />
+              </div>
+            </Link>
+          </>
+        )}
+      </AdminClassList>
 
       <div style={{ marginTop: "40px", textAlign: "center" }}>
         <AdminLogoutButton />

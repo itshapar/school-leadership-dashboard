@@ -2,25 +2,36 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Button, Tag } from "antd";
+import { Button, Select, Tag } from "antd";
 import { TEACHER_LIMITS } from "@/lib/admin/classConfig";
 import type { OnboardingStepKey } from "@/lib/admin/onboarding";
 import type { Parallel } from "@/lib/admin/parallels";
-import { formatSemesterRange, semesterStatus, type Semester } from "@/lib/admin/semesters";
+import {
+  formatSemesterRange,
+  groupBySchoolYear,
+  schoolYearOf,
+  semesterChipLabel,
+  semesterStatus,
+  type Semester,
+} from "@/lib/admin/semesters";
 import StarIcon from "@/components/StarIcon";
 
 /**
- * Плаский список класів кабінету.
+ * Кабінет: вибір періоду згори, під дивайдером — усе, що до цього періоду
+ * належить (рейтинг, дашборд, паралелі, класи).
  *
- * Картка класу навмисно мінімальна (Етап 9.2, live-фідбек): назва, кількість
- * учнів/уроків/зірок, Журнал і Дашборд. Паралель, код класу й прогрес
- * налаштування — це керування, а не щоденний перегляд, тож живуть глибше
- * в налаштуваннях класу, а не на кожній картці списку.
+ * Ієрархія навмисно двоступенева (живий фідбек): навчальний рік випадайкою,
+ * семестри цього року — перемикачами під нею, тими самими, що й паралелі
+ * нижче. Плаский список усіх семестрів підряд розмивав картинку: «I семестр
+ * 2025/2026» і «II семестр 2026/2027» стояли поруч як рівні, хоча це різні
+ * роки. Рік — це те, що обирають рідко, семестр — те, що перемикають.
  *
- * Етап 10: над списком з'явився фільтр за семестром, і він головний. За
- * замовчуванням кабінет показує ПОТОЧНИЙ семестр, тобто те, над чим учитель
- * працює зараз; класи минулих семестрів нікуди не діваються, вони на сусідньому
- * чіпі й позначені як архів.
+ * Дивайдер тут не декорація, а межа сенсу: усе нижче нього показує рівно той
+ * період, який обрано вище.
+ *
+ * Картка класу лишається мінімальною (Етап 9.2, live-фідбек): назва,
+ * кількість учнів/уроків/зірок, Журнал і Дашборд. Паралель, код класу й
+ * прогрес налаштування живуть глибше, в налаштуваннях класу.
  */
 
 const ALL = "__all__";
@@ -49,37 +60,65 @@ export default function AdminClassList({
   parallels,
   semesters,
   currentSemesterId,
+  children,
 }: {
   classes: AdminClassCard[];
   parallels: Parallel[];
   semesters: Semester[];
   currentSemesterId: string | null;
+  /**
+   * Рейтинг учнів і загальний дашборд: приходять зі сторінки готовими, щоб
+   * лишитись серверними, але рендеряться ПІД дивайдером, уже всередині
+   * обраного періоду.
+   */
+  children?: React.ReactNode;
 }) {
   const atClassLimit =
     classes.filter((c) => !c.archived).length >= TEACHER_LIMITS.classes;
 
-  // Класи, що лишились без семестру, бувають лише в одному випадку: семестр
-  // видалили, а класи в ньому лишились (FK ставить semester_id у NULL).
-  // Показуємо їх окремим чіпом, щоб вони не зникли з кабінету назовсім.
+  // Класи без семестру бувають в одному випадку: семестр видалили, а класи в
+  // ньому лишились (FK ставить semester_id у NULL). Показуємо їх окремим
+  // пунктом року, щоб вони не зникли з кабінету назовсім.
   const hasOrphans = classes.some((c) => !c.semester_id);
 
-  const [semesterFilter, setSemesterFilter] = useState<string>(
-    currentSemesterId ?? (hasOrphans ? NO_SEMESTER : ALL)
+  const years = useMemo(() => groupBySchoolYear(semesters), [semesters]);
+
+  const currentSemester = semesters.find((s) => s.id === currentSemesterId) ?? null;
+
+  const [year, setYear] = useState<string>(
+    currentSemester ? schoolYearOf(currentSemester) : years[0]?.year ?? NO_SEMESTER
   );
+  const [semesterFilter, setSemesterFilter] = useState<string>(currentSemesterId ?? ALL);
   const [parallelFilter, setParallelFilter] = useState<string>(ALL);
 
+  const yearSemesters = years.find((y) => y.year === year)?.semesters ?? [];
+
+  // Один семестр у році — перемикати нема чого, він і є весь рік.
+  const effectiveSemesterId =
+    year === NO_SEMESTER
+      ? NO_SEMESTER
+      : yearSemesters.length === 1
+      ? yearSemesters[0].id
+      : yearSemesters.some((s) => s.id === semesterFilter)
+      ? semesterFilter
+      : ALL;
+
+  const selectedSemester =
+    yearSemesters.find((s) => s.id === effectiveSemesterId) ?? null;
+
   const bySemester = useMemo(() => {
-    if (semesterFilter === ALL) return classes;
-    if (semesterFilter === NO_SEMESTER) return classes.filter((c) => !c.semester_id);
-    return classes.filter((c) => c.semester_id === semesterFilter);
-  }, [classes, semesterFilter]);
+    if (effectiveSemesterId === NO_SEMESTER) return classes.filter((c) => !c.semester_id);
+    if (effectiveSemesterId === ALL) {
+      const ids = new Set(yearSemesters.map((s) => s.id));
+      return classes.filter((c) => c.semester_id && ids.has(c.semester_id));
+    }
+    return classes.filter((c) => c.semester_id === effectiveSemesterId);
+  }, [classes, effectiveSemesterId, yearSemesters]);
 
   // Паралель — легкий тег без CRUD-екрана (lib/admin/parallels.ts): рядок
-  // лишається в таблиці, навіть коли жоден клас на неї вже не посилається
-  // (наприклад, клас перенесли в іншу паралель). Порожні паралелі ховаємо
-  // з навігації чипів, а не показуємо як мертві кнопки без жодного класу.
-  // Рахуємо їх від класів ВИДИМОГО семестру: у минулому році паралелі були
-  // інші, і показувати їх поруч із поточними немає сенсу.
+  // лишається в таблиці, навіть коли жоден клас на неї вже не посилається.
+  // Порожні паралелі ховаємо з навігації чипів, а не показуємо як мертві
+  // кнопки. Рахуємо їх від класів ВИДИМОГО періоду: торік паралелі були інші.
   const sortedParallels = useMemo(() => {
     const withClasses = new Set(bySemester.map((c) => c.parallel_id).filter(Boolean));
     return [...parallels]
@@ -92,50 +131,46 @@ export default function AdminClassList({
       ? bySemester
       : bySemester.filter((c) => c.parallel_id === parallelFilter);
 
-  const activeSemester = semesters.find((s) => s.id === semesterFilter) ?? null;
+  const yearOptions = [
+    ...years.map((y) => ({ value: y.year, label: `${y.year} навчальний рік` })),
+    ...(hasOrphans ? [{ value: NO_SEMESTER, label: "Без семестру" }] : []),
+  ];
 
   return (
     <>
-      {(semesters.length > 0 || hasOrphans) && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
-            {semesters.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => {
-                  setSemesterFilter(s.id);
-                  setParallelFilter(ALL);
-                }}
-                style={chipStyle(semesterFilter === s.id)}
-              >
-                {s.name}
-              </button>
-            ))}
-            {hasOrphans && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSemesterFilter(NO_SEMESTER);
-                  setParallelFilter(ALL);
-                }}
-                style={chipStyle(semesterFilter === NO_SEMESTER)}
-              >
-                Без семестру
-              </button>
-            )}
-            {semesters.length > 1 && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSemesterFilter(ALL);
-                  setParallelFilter(ALL);
-                }}
-                style={chipStyle(semesterFilter === ALL)}
-              >
-                Усі семестри
-              </button>
-            )}
+      {yearOptions.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              flexWrap: "wrap",
+              marginBottom: yearSemesters.length > 1 ? 12 : 0,
+            }}
+          >
+            <span
+              style={{
+                fontWeight: 800,
+                fontSize: "0.75rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                color: "#868e96",
+              }}
+            >
+              Навчальний рік
+            </span>
+            <Select
+              className="year-select"
+              value={year}
+              onChange={(next) => {
+                setYear(next);
+                setSemesterFilter(ALL);
+                setParallelFilter(ALL);
+              }}
+              options={yearOptions}
+              style={{ minWidth: 240 }}
+            />
             <Link
               href="/admin/semesters"
               style={{
@@ -150,15 +185,51 @@ export default function AdminClassList({
             </Link>
           </div>
 
-          {activeSemester && (
-            <div style={{ color: "#868e96", fontWeight: 600, fontSize: "0.8rem", marginTop: 8 }}>
-              {formatSemesterRange(activeSemester)}
-              {semesterStatus(activeSemester) === "past" && ", семестр завершено"}
-              {semesterStatus(activeSemester) === "future" && ", семестр ще не почався"}
+          {yearSemesters.length > 1 && (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setSemesterFilter(ALL);
+                  setParallelFilter(ALL);
+                }}
+                style={chipStyle(effectiveSemesterId === ALL)}
+              >
+                Увесь рік
+              </button>
+              {yearSemesters.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => {
+                    setSemesterFilter(s.id);
+                    setParallelFilter(ALL);
+                  }}
+                  style={chipStyle(effectiveSemesterId === s.id)}
+                >
+                  {semesterChipLabel(s.name)}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {selectedSemester && (
+            <div style={{ color: "#868e96", fontWeight: 600, fontSize: "0.8rem", marginTop: 10 }}>
+              {formatSemesterRange(selectedSemester)}
+              {semesterStatus(selectedSemester) === "past" && ", семестр завершено"}
+              {semesterStatus(selectedSemester) === "future" && ", семестр ще не почався"}
             </div>
           )}
         </div>
       )}
+
+      {/* Дивайдер малюємо лише разом із блоком періоду: без нього це була б
+          просто риска нізвідки над рейтингом. */}
+      {yearOptions.length > 0 && (
+        <div style={{ height: 3, background: "#000", borderRadius: 2, margin: "0 0 24px" }} />
+      )}
+
+      {children}
 
       {sortedParallels.length > 0 && (
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
@@ -198,6 +269,26 @@ export default function AdminClassList({
           ))}
         </div>
       )}
+
+      {/* Випадайка року мусить читатись як рідня чипам під нею: та сама чорна
+          обводка, та сама зміщена тінь, та сама пігулка. Інакше сірий бордер
+          antd за замовчуванням виглядає чужим елементом просто над чипами. */}
+      <style jsx global>{`
+        .year-select .ant-select-selector {
+          border: 2px solid #000000 !important;
+          box-shadow: 2px 2px 0px #000000 !important;
+          border-radius: 20px !important;
+          height: 40px !important;
+          padding: 0 16px !important;
+        }
+        .year-select .ant-select-selection-item {
+          line-height: 36px !important;
+          font-weight: 800 !important;
+        }
+        .year-select .ant-select-arrow {
+          color: #000000 !important;
+        }
+      `}</style>
     </>
   );
 }
@@ -280,11 +371,11 @@ function EmptySemesterState() {
       }}
     >
       <h3 style={{ fontWeight: 900, fontSize: "1.2rem", margin: "0 0 8px" }}>
-        У цьому семестрі ще немає класів
+        У цьому періоді ще немає класів
       </h3>
       <p style={{ color: "#868e96", fontWeight: 600, maxWidth: 460, margin: "0 auto" }}>
         Створіть новий клас або перенесіть наявний із попереднього семестру:
-        відкрийте клас, далі налаштування, далі «Новий семестр».
+        відкрийте клас, далі налаштування, далі «Перейти в новий семестр».
       </p>
     </div>
   );

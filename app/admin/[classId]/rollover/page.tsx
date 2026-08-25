@@ -56,6 +56,7 @@ export default async function ClassRolloverPage({ params }: Props) {
         classId={cls.id}
         classCode={cls.public_code}
         className={cls.name}
+        currentSemesterId={meta?.semester_id ?? null}
         currentSemesterName={semesterName}
         parallelName={parallelName}
         students={(students ?? []) as RolloverStudent[]}

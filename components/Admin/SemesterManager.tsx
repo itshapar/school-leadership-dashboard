@@ -8,6 +8,7 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import {
   createSemester,
   formatSemesterRange,
+  groupBySchoolYear,
   semesterStatus,
   suggestSemesters,
   type Semester,
@@ -21,6 +22,16 @@ const STATUS_LABEL: Record<ReturnType<typeof semesterStatus>, string> = {
   current: "Триває",
   future: "Попереду",
 };
+
+/** 1 клас, 2 класи, 5 класів — інакше в підписі стабільно стояло «3 класів». */
+function classesLabel(n: number): string {
+  const mod100 = n % 100;
+  const mod10 = n % 10;
+  if (mod100 >= 11 && mod100 <= 14) return `${n} класів`;
+  if (mod10 === 1) return `${n} клас`;
+  if (mod10 >= 2 && mod10 <= 4) return `${n} класи`;
+  return `${n} класів`;
+}
 
 /**
  * Керування семестрами вчителя.
@@ -57,6 +68,11 @@ export default function SemesterManager({
     const taken = new Set(semesters.map((s) => s.name.trim().toLowerCase()));
     return suggestSemesters().filter((s) => !taken.has(s.name.toLowerCase()));
   }, [semesters]);
+
+  // Групуємо за навчальним роком тією ж логікою, що й кабінет: рік зверху,
+  // семестри під ним. Інакше два роки по два семестри лежали б однією
+  // стрічкою, де «II семестр 2025/2026» і «I семестр 2026/2027» сусіди.
+  const years = useMemo(() => groupBySchoolYear(semesters), [semesters]);
 
   async function onCreate() {
     if (!range) {
@@ -218,8 +234,23 @@ export default function SemesterManager({
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {semesters.map((s) => {
+      <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+        {years.map((group) => (
+          <div key={group.year}>
+            <div
+              style={{
+                fontWeight: 800,
+                fontSize: "0.75rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                color: "#868e96",
+                marginBottom: 10,
+              }}
+            >
+              {group.year} навчальний рік
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {group.semesters.map((s) => {
           const status = semesterStatus(s);
           const count = classCounts[s.id] ?? 0;
           const editing = editingId === s.id;
@@ -286,7 +317,7 @@ export default function SemesterManager({
                       </span>
                     </div>
                     <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 4, fontWeight: 600 }}>
-                      {formatSemesterRange(s)} · {count} {count === 1 ? "клас" : "класів"}
+                      {formatSemesterRange(s)} · {classesLabel(count)}
                     </div>
                   </div>
 
@@ -319,6 +350,9 @@ export default function SemesterManager({
             </div>
           );
         })}
+            </div>
+          </div>
+        ))}
 
         {semesters.length === 0 && (
           <div

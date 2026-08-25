@@ -8,7 +8,6 @@ import { upsertParallelByName } from "@/lib/admin/parallels";
 import {
   nextClassName,
   nextParallelName,
-  semesterStatus,
   type Semester,
 } from "@/lib/admin/semesters";
 import SemesterPicker from "@/components/Admin/SemesterPicker";
@@ -31,6 +30,7 @@ interface Props {
   classId: string;
   classCode: string;
   className: string;
+  currentSemesterId: string | null;
   currentSemesterName: string | null;
   parallelName: string | null;
   students: RolloverStudent[];
@@ -53,6 +53,7 @@ export default function RolloverClient({
   classId,
   classCode,
   className,
+  currentSemesterId,
   currentSemesterName,
   parallelName,
   students,
@@ -60,17 +61,26 @@ export default function RolloverClient({
 }: Props) {
   const supabase = getSupabaseClient();
 
-  // Ціль за замовчуванням: найближчий семестр, який ще не почався або триває
-  // зараз, але не той, у якому клас живе просто зараз, туди переносити нема
-  // сенсу. Якщо такого немає, вчитель створює семестр тут же, у формі нижче.
-  const suggestedTarget = useMemo(() => {
-    const future = [...semesters]
-      .filter((s) => semesterStatus(s) !== "past")
-      .sort((a, b) => a.starts_on.localeCompare(b.starts_on));
-    return future[0]?.id ?? null;
-  }, [semesters]);
+  // Семестр, у якому клас живе просто зараз, зі списку цілей прибираємо:
+  // перенести клас сам у себе неможливо за змістом, а саме він за датами
+  // зазвичай і є «поточним», тож без цього фільтра майстер підставляв його
+  // першим (живий фідбек).
+  const targets = useMemo(
+    () => semesters.filter((s) => s.id !== currentSemesterId),
+    [semesters, currentSemesterId]
+  );
 
-  const [semesterList, setSemesterList] = useState(semesters);
+  // Ціль за замовчуванням: найраніший семестр, який починається ПІСЛЯ
+  // поточного. Якщо такого ще немає, вчитель створює його тут же, у формі.
+  const suggestedTarget = useMemo(() => {
+    const current = semesters.find((s) => s.id === currentSemesterId) ?? null;
+    const next = targets
+      .filter((s) => !current || s.starts_on > current.starts_on)
+      .sort((a, b) => a.starts_on.localeCompare(b.starts_on));
+    return next[0]?.id ?? null;
+  }, [semesters, targets, currentSemesterId]);
+
+  const [semesterList, setSemesterList] = useState(targets);
   const [semesterId, setSemesterId] = useState<string | null>(suggestedTarget);
 
   const [name, setName] = useState(nextClassName(className) ?? "");
@@ -264,21 +274,29 @@ export default function RolloverClient({
 
       {/* ───────────── Що переносимо ───────────── */}
       <Card title="Що переносимо" hint="Усе, крім балів, уроків і виданих призів.">
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <Checkbox checked={copyPins} onChange={(e) => setCopyPins(e.target.checked)}>
-            <span style={{ fontWeight: 600 }}>PIN-и учнів</span>
-            <span style={{ color: "#868e96", display: "block", fontSize: "0.8rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* Опис — окремим рядком під чекбоксом, а не всередині його label
+              (живий фідбек): antd вирівнює квадратик по всьому вмісту label,
+              тож із багаторядковим описом галочка з'їжджала на другий рядок,
+              навпроти опису замість заголовка. */}
+          <div>
+            <Checkbox checked={copyPins} onChange={(e) => setCopyPins(e.target.checked)}>
+              <span style={{ fontWeight: 600 }}>PIN-и учнів</span>
+            </Checkbox>
+            <div style={{ color: "#868e96", fontSize: "0.8rem", marginLeft: 24, lineHeight: 1.5 }}>
               Для дітей не змінюється нічого: той самий код класу, той самий PIN.
               Якщо зняти, PIN-и доведеться згенерувати й роздати наново.
-            </span>
-          </Checkbox>
-          <Checkbox checked={copyConfig} onChange={(e) => setCopyConfig(e.target.checked)}>
-            <span style={{ fontWeight: 600 }}>Нагороди, типи балів і групи</span>
-            <span style={{ color: "#868e96", display: "block", fontSize: "0.8rem" }}>
+            </div>
+          </div>
+          <div>
+            <Checkbox checked={copyConfig} onChange={(e) => setCopyConfig(e.target.checked)}>
+              <span style={{ fontWeight: 600 }}>Нагороди, типи балів і групи</span>
+            </Checkbox>
+            <div style={{ color: "#868e96", fontSize: "0.8rem", marginLeft: 24, lineHeight: 1.5 }}>
               Якщо зняти, новий клас отримає стандартну систему балів без нагород,
               як щойно створений.
-            </span>
-          </Checkbox>
+            </div>
+          </div>
         </div>
 
         <div

@@ -166,6 +166,61 @@ export function suggestSemesters(today: string = todayIso()): SemesterInput[] {
 }
 
 /**
+ * Навчальний рік семестру: «2026/2027».
+ *
+ * Спершу дивимось у назву: її пише сам учитель, і якщо там уже стоїть
+ * «I семестр 2026/2027», то це й є відповідь, без здогадок. Якщо року в
+ * назві немає, виводимо з дати початку: до вересня триває попередній рік.
+ */
+export function schoolYearOf(s: Pick<Semester, "name" | "starts_on">): string {
+  const fromName = s.name.match(/\b(20\d{2})\s*[\/–—-]\s*(20\d{2}|\d{2})\b/);
+  if (fromName) {
+    const start = Number(fromName[1]);
+    return `${start}/${start + 1}`;
+  }
+  const [year, month] = s.starts_on.split("-").map(Number);
+  const start = month >= 9 ? year : year - 1;
+  return `${start}/${start + 1}`;
+}
+
+/**
+ * Підпис семестру на перемикачі, коли навчальний рік уже обрано зверху:
+ * «I семестр 2026/2027» → «I семестр». Рік у чіпі був би шумом, він і так
+ * стоїть у випадайці над ним.
+ *
+ * Окремий випадок — період на цілий рік (такі семестри створив бекфіл
+ * міграції 038): після викидання року від назви лишається саме
+ * «навчальний рік», і чесніше підписати такий перемикач «Увесь рік».
+ */
+export function semesterChipLabel(name: string): string {
+  const withoutYear = name
+    .replace(/\b20\d{2}\s*[\/–—-]\s*(20\d{2}|\d{2})\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!withoutYear || /^навчальн\w*\s+р\w*$/i.test(withoutYear)) return "Увесь рік";
+  return withoutYear;
+}
+
+/** Семестри, згруповані за навчальним роком, найновіший рік зверху. */
+export function groupBySchoolYear(
+  semesters: Semester[]
+): Array<{ year: string; semesters: Semester[] }> {
+  const byYear = new Map<string, Semester[]>();
+  semesters.forEach((s) => {
+    const year = schoolYearOf(s);
+    const list = byYear.get(year) ?? [];
+    list.push(s);
+    byYear.set(year, list);
+  });
+  return Array.from(byYear.entries())
+    .map(([year, list]) => ({
+      year,
+      semesters: [...list].sort((a, b) => a.starts_on.localeCompare(b.starts_on)),
+    }))
+    .sort((a, b) => b.year.localeCompare(a.year));
+}
+
+/**
  * Наступна назва класу: 7-А → 8-А, 7А → 8А, 11-Б → 12-Б.
  *
  * Чіпляємось лише за число на початку назви — саме воно й означає рік
