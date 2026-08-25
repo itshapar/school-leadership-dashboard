@@ -1,3 +1,5 @@
+import StarIcon from "@/components/StarIcon";
+
 export default function VelocityWidget({ topStudent }: any) {
   if (!topStudent || topStudent.starsLast30 === 0) {
     return (
@@ -26,7 +28,7 @@ export default function VelocityWidget({ topStudent }: any) {
             {topStudent.student.nickname || topStudent.student.full_name.split(" ")[0]}
           </div>
           <div style={{ fontSize: "0.85rem", color: "#e8590c", fontWeight: 800, marginTop: "4px", background: "#fff0f6", padding: "2px 8px", borderRadius: "12px", display: "inline-block" }}>
-            +{topStudent.starsLast30} ⭐ за 30 днів
+            +{topStudent.starsLast30} <StarIcon color="currentColor" /> за 30 днів
           </div>
         </div>
       </div>

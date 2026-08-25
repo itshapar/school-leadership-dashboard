@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ClassProgressBars from "@/components/ClassProgress";
 import ClassRosterList from "@/components/ClassRosterList";
-import { BarChartOutlined, StarFilled } from "@ant-design/icons";
+import { BarChartOutlined } from "@ant-design/icons";
 import { getPublicClassOverview } from "@/lib/public/classData";
 import { isLegacyClassCode } from "@/lib/classCodes";
 import LegacyCodeNotice from "@/components/LegacyCodeNotice";
@@ -10,6 +10,7 @@ import StudentPinLogin from "@/components/StudentPinLogin";
 import StudentLogoutButton from "@/components/StudentLogoutButton";
 import { getClassRosterFromSession, getStudentDashboardFromSession } from "@/lib/studentSession";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import StarIcon from "@/components/StarIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -176,9 +177,7 @@ export default async function ClassPage({ params }: Props) {
           }}
         >
           {totalClassStars}{" "}
-          <StarFilled
-            style={{ fontSize: "3.5rem", verticalAlign: "middle", marginTop: "-10px" }}
-          />
+          <StarIcon size="3.5rem" style={{ verticalAlign: "middle", marginTop: "-10px" }} />
         </div>
       </div>
 
@@ -237,7 +236,7 @@ export default async function ClassPage({ params }: Props) {
               }}
             >
               {classBonus > 0 ? "+" : ""}
-              {classBonus} <StarFilled style={{ fontSize: "1.1rem" }} />
+              {classBonus} <StarIcon size="1.1rem" color="currentColor" />
             </div>
           </div>
 

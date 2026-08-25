@@ -1,5 +1,6 @@
-import { StarFilled, ArrowUpOutlined, ArrowDownOutlined, MinusOutlined } from "@ant-design/icons";
+import { ArrowUpOutlined, ArrowDownOutlined, MinusOutlined } from "@ant-design/icons";
 import React from "react";
+import StarIcon from "@/components/StarIcon";
 
 export default function LeaderboardWidget({ leaderboard, isGlobal, onStudentClick }: any) {
   return (
@@ -34,7 +35,7 @@ export default function LeaderboardWidget({ leaderboard, isGlobal, onStudentClic
               </div>
               <div style={{ textAlign: "right" }}>
                 <div style={{ fontWeight: 900, fontSize: "1.1rem", color: "var(--color-star, #f59f00)", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
-                  {item.totalStars} <StarFilled style={{ color: "var(--color-star, #f59f00)", fontSize: "0.95rem" }} />
+                  {item.totalStars} <StarIcon size="0.95em" />
                 </div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px" }}>
                   {item.trend > 0 ? (

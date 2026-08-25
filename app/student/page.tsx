@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Form, Input, Button, Alert } from "antd";
 import { useRouter } from "next/navigation";
 import { normalizeClassCode } from "@/lib/classCodes";
+import StarIcon from "@/components/StarIcon";
 
 /**
  * Пряма сторінка входу учня: код класу + PIN (для пам'ятки/QR без коду в URL).
@@ -51,7 +52,7 @@ export default function StudentLoginPage() {
     >
       <div style={{ width: "100%", maxWidth: "400px" }}>
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ fontSize: "3rem" }}>⭐</div>
+          <StarIcon size="3rem" />
           <h1
             style={{
               fontSize: "1.8rem",

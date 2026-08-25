@@ -11,6 +11,7 @@ import {
   type ClassPrize,
   type IndividualPrize,
 } from "@/lib/admin/classConfig";
+import StarIcon from "@/components/StarIcon";
 
 /**
  * Нагороди класу — і індивідуальні, і класові, одним компонентом.
@@ -159,7 +160,11 @@ export default function PrizesPanel({
       key: "threshold",
       width: 160,
       align: "center" as const,
-      render: (v: number) => <span style={{ fontWeight: 900 }}>{v} ⭐</span>,
+      render: (v: number) => (
+        <span style={{ fontWeight: 900 }}>
+          {v} <StarIcon />
+        </span>
+      ),
     },
     {
       title: "",
@@ -269,7 +274,7 @@ export default function PrizesPanel({
             }
             rules={[{ required: true, message: "Вкажіть поріг" }]}
           >
-            <InputNumber min={1} max={100000} size="large" addonAfter="⭐" style={{ width: "100%" }} />
+            <InputNumber min={1} max={100000} size="large" addonAfter={<StarIcon />} style={{ width: "100%" }} />
           </Form.Item>
         </Form>
       </Modal>

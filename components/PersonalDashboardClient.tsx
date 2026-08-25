@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { Progress } from "antd";
 import { format } from "date-fns";
 import { uk } from "date-fns/locale";
-import { StarFilled, CheckCircleFilled, HistoryOutlined, LockOutlined, TrophyOutlined } from "@ant-design/icons";
+import { CheckCircleFilled, HistoryOutlined, LockOutlined, TrophyOutlined } from "@ant-design/icons";
+import StarIcon from "@/components/StarIcon";
 
 interface Prize {
   id: string;
@@ -133,7 +134,7 @@ export default function PersonalDashboardClient({
                 gap: "12px"
               }}
             >
-              {displayed} <StarFilled style={{ fontSize: "2.5rem" }} />
+              {displayed} <StarIcon size="2.5rem" color="currentColor" />
             </div>
           </div>
 
@@ -255,7 +256,7 @@ export default function PersonalDashboardClient({
                     gap: "4px"
                   }}>
                     {(entry.amount > 0 ? "+" : "") + entry.amount}
-                    <StarFilled style={{ fontSize: "0.9rem" }} />
+                    <StarIcon size="0.9rem" color="currentColor" />
                   </div>
                 </div>
               );

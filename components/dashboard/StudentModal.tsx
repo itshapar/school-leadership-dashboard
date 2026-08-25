@@ -1,5 +1,6 @@
 import { CloseOutlined, TrophyOutlined } from "@ant-design/icons";
 import React, { useEffect } from "react";
+import StarIcon from "@/components/StarIcon";
 
 const REWARDS = [
   { stars: 10, name: "Kinder", emoji: "🍬" },
@@ -67,7 +68,9 @@ export default function StudentModal({ student, onClose }: any) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
             <div style={{ background: "#fff9db", padding: "16px", borderRadius: "12px", border: "2px solid #000", textAlign: "center" }}>
               <div style={{ fontSize: "0.85rem", fontWeight: 800, textTransform: "uppercase", marginBottom: "8px" }}>Зірки</div>
-              <div style={{ fontSize: "1.8rem", fontWeight: 900, color: "#f59f00" }}>{student.totalStars} ⭐</div>
+              <div style={{ fontSize: "1.8rem", fontWeight: 900, color: "#f59f00" }}>
+                {student.totalStars} <StarIcon color="currentColor" />
+              </div>
             </div>
             <div style={{ background: "#e3fafc", padding: "16px", borderRadius: "12px", border: "2px solid #000", textAlign: "center" }}>
               <div style={{ fontSize: "0.85rem", fontWeight: 800, textTransform: "uppercase", marginBottom: "8px" }}>Ефективність</div>
@@ -101,7 +104,9 @@ export default function StudentModal({ student, onClose }: any) {
               <div style={{ fontSize: "0.85rem", fontWeight: 800, color: "#868e96", marginBottom: "4px" }}>Наступна ціль</div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontWeight: 800, fontSize: "1.1rem" }}>{nextReward.emoji} {nextReward.name}</span>
-                <span style={{ fontWeight: 800, color: "#f59f00" }}>{nextReward.stars - student.totalStars} ⭐ лишилось</span>
+                <span style={{ fontWeight: 800, color: "#f59f00" }}>
+                  {nextReward.stars - student.totalStars} <StarIcon color="currentColor" /> лишилось
+                </span>
               </div>
             </div>
           )}

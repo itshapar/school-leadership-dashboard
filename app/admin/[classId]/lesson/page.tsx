@@ -13,6 +13,7 @@ import {
   primaryLessonType,
   type EntryType,
 } from "@/lib/admin/classConfig";
+import StarIcon from "@/components/StarIcon";
 
 /**
  * «Швидкий урок»: створити урок і одразу проставити бали всьому класу.
@@ -32,9 +33,9 @@ interface Student {
 const STAR_OPTIONS = [
   { value: 0, label: "Не нараховувати" },
   { value: -1, label: "Н (не був)" },
-  { value: 1, label: "⭐ 1 зірка" },
-  { value: 2, label: "⭐⭐ 2 зірки" },
-  { value: 3, label: "⭐⭐⭐ 3 зірки" },
+  { value: 1, label: <><StarIcon /> 1 зірка</> },
+  { value: 2, label: <><StarIcon /><StarIcon /> 2 зірки</> },
+  { value: 3, label: <><StarIcon /><StarIcon /><StarIcon /> 3 зірки</> },
 ];
 
 export default function AddLessonPage() {
@@ -235,7 +236,9 @@ export default function AddLessonPage() {
       </div>
 
       <div className="star-card">
-        <div style={{ fontWeight: 600, marginBottom: "16px" }}>🌟 Зірки за урок</div>
+        <div style={{ fontWeight: 600, marginBottom: "16px", display: "flex", alignItems: "center", gap: 6 }}>
+          <StarIcon /> Зірки за урок
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {students.map((s) => {
             const displayName = s.nickname || s.full_name;

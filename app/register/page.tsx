@@ -7,6 +7,7 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { COMBINED_ACCEPT_SUBTEXT, signUpTermsMetadata } from "@/lib/legal/terms";
 import { scorePassword } from "@/lib/password";
+import StarIcon from "@/components/StarIcon";
 
 /**
  * Реєстрація вчителя: email + пароль з підтвердженням пошти, або Google.
@@ -72,7 +73,7 @@ export default function RegisterPage() {
       <div style={{ width: "100%", maxWidth: "440px" }}>
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: 0.7 }}>
-            <span style={{ fontSize: "1.3rem" }}>⭐</span>
+            <StarIcon size="1.3rem" />
             <span
               style={{
                 fontSize: "1rem",

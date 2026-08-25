@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeftOutlined, StarFilled } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { getDemoTeacherView } from "@/lib/public/demoTeacherView";
 import { PUBLIC_DEMO_CLASS_CODE } from "@/lib/publicDemo";
 import DemoStudentList from "@/components/DemoStudentList";

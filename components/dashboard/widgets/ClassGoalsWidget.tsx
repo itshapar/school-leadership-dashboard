@@ -2,8 +2,8 @@
 
 import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { StarFilled } from "@ant-design/icons";
 import type { ClassPrizeLite } from "@/lib/analytics";
+import StarIcon from "@/components/StarIcon";
 
 /**
  * «Епічні цілі класу» — прогрес до кожного класового призу.
@@ -115,7 +115,7 @@ export default function ClassGoalsWidget({
           }}
         >
           {totalStars} / {prize.threshold}{" "}
-          <StarFilled style={{ color: "var(--color-star, #f59f00)", fontSize: "0.85rem" }} />
+          <StarIcon size="0.85rem" />
         </div>
       </div>
     );

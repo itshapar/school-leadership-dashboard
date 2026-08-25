@@ -4,11 +4,11 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Tag } from "antd";
-import { StarFilled } from "@ant-design/icons";
 import { Plus } from "@phosphor-icons/react";
 import { TEACHER_LIMITS } from "@/lib/admin/classConfig";
 import type { OnboardingStepKey } from "@/lib/admin/onboarding";
 import type { Parallel } from "@/lib/admin/parallels";
+import StarIcon from "@/components/StarIcon";
 
 /**
  * Плаский список класів кабінету.
@@ -163,7 +163,7 @@ function ClassCard({ cls }: { cls: AdminClassCard }) {
             <span>{cls.studentCount} учнів</span>
             <span>{cls.lessonCount} уроків</span>
             <span className="admin-stars-count">
-              {cls.totalStars} <StarFilled style={{ fontSize: "0.9rem" }} />
+              {cls.totalStars} <StarIcon size="0.9em" color="currentColor" />
             </span>
           </div>
         </div>

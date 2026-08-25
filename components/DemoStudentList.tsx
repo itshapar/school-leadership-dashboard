@@ -1,8 +1,8 @@
 "use client";
 
 import { Collapse, Tag } from "antd";
-import { StarFilled } from "@ant-design/icons";
 import type { DemoStudent } from "@/lib/public/demoTeacherView";
+import StarIcon from "@/components/StarIcon";
 
 export default function DemoStudentList({ students }: { students: DemoStudent[] }) {
   return (
@@ -15,7 +15,7 @@ export default function DemoStudentList({ students }: { students: DemoStudent[] 
             <span style={{ fontSize: "1.4rem" }}>{s.avatar_emoji}</span>
             <span style={{ fontWeight: 800, flex: 1 }}>{s.display_name}</span>
             <span style={{ fontWeight: 900, color: "var(--color-star)", display: "flex", alignItems: "center", gap: "4px" }}>
-              {s.total_stars} <StarFilled style={{ fontSize: "0.9rem" }} />
+              {s.total_stars} <StarIcon size="0.9em" color="currentColor" />
             </span>
           </div>
         ),

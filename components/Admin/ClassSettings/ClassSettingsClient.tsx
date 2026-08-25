@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Popconfirm, Select, Spin, Switch, Tabs, message } from "antd";
+import { Button, Input, Popconfirm, Select, Spin, Switch, Tabs, message } from "antd";
 import Link from "next/link";
 import { Archive, ArrowLeft, Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
@@ -71,6 +71,8 @@ export default function ClassSettingsClient({
   const [savingVisibility, setSavingVisibility] = useState(false);
   const [parallelId, setParallelId] = useState(initialParallelId);
   const [savingParallel, setSavingParallel] = useState(false);
+  const [name, setName] = useState(className);
+  const [savingName, setSavingName] = useState(false);
   const [busy, setBusy] = useState(false);
   const [individualPrizes, setIndividualPrizes] = useState<IndividualPrize[]>([]);
   const [classPrizes, setClassPrizes] = useState<ClassPrize[]>([]);
@@ -115,6 +117,34 @@ export default function ClassSettingsClient({
     }
     setArchived((v) => !v);
     message.success(archived ? "Клас повернуто з архіву" : "Клас заархівовано");
+    router.refresh();
+  }
+
+  /**
+   * Назва класу редагується вже після створення (живий фідбек): у майстрі
+   * її вводять поспіхом, а перейменувати клас потім не було де взагалі.
+   * Обрізаємо пробіли й тримаємо ту саму межу в 60 символів, що й у
+   * майстрі, щоб довга назва не ламала верстку картки в кабінеті.
+   */
+  async function saveName() {
+    const next = name.trim();
+    if (!next) {
+      message.error("Назва не може бути порожньою");
+      return;
+    }
+    if (next.length > 60) {
+      message.error("Занадто довга назва");
+      return;
+    }
+    setSavingName(true);
+    const { error } = await supabase.from("classes").update({ name: next }).eq("id", classId);
+    setSavingName(false);
+    if (error) {
+      message.error("Не вдалося змінити назву");
+      return;
+    }
+    setName(next);
+    message.success("Назву класу змінено");
     router.refresh();
   }
 
@@ -210,8 +240,50 @@ export default function ClassSettingsClient({
             Налаштування класу
           </h1>
           <div style={{ color: "#868e96", fontWeight: 600, fontSize: "0.9rem" }}>
-            {className}
+            {name}
           </div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          background: "#fff",
+          border: "3px solid #000",
+          boxShadow: "4px 4px 0px #000",
+          borderRadius: 12,
+          padding: "16px 20px",
+          marginBottom: 20,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Назва класу</div>
+          <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2 }}>
+            Так клас підписаний у кабінеті, журналі й на дашборді для учнів.
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <Input
+            value={name}
+            maxLength={60}
+            disabled={savingName}
+            onChange={(e) => setName(e.target.value)}
+            onPressEnter={saveName}
+            placeholder="7-А, ПМ2…"
+            style={{ width: 200 }}
+          />
+          <Button
+            className="btn-primary"
+            loading={savingName}
+            disabled={!name.trim() || name.trim() === className}
+            onClick={saveName}
+          >
+            Зберегти
+          </Button>
         </div>
       </div>
 
@@ -274,13 +346,13 @@ export default function ClassSettingsClient({
             <PrintClassPinsButton
               classId={classId}
               publicCode={classCode}
-              className={className}
+              className={name}
               students={students}
             />
             <RegenerateClassPinsButton
               classId={classId}
               publicCode={classCode}
-              className={className}
+              className={name}
               students={students}
             />
           </div>
@@ -302,14 +374,15 @@ export default function ClassSettingsClient({
             центрував Switch проти багаторядкового опису, і він "плавав"
             десь посередині замість рівня заголовка. */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Бали однокласників</div>
+          <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Конкурентне середовище</div>
           <Switch checked={showClassmateStars} loading={savingVisibility} onChange={toggleClassmateStars} />
         </div>
         <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 8 }}>
-          На публічному дашборді класу (без PIN-коду) учні бачать список класу.
-          Тут можна дозволити показувати й кількість зірок кожного. Історію
-          "за що", свою чи чужу, це не відкриває, її бачить лише сам учень
-          через власний PIN.
+          Увімкнено: у списку класу кожен учень бачить, скільки зірок мають
+          однокласники, тобто змагається з ними. Вимкнено: бачить лише імена,
+          а власний результат порівнює сам із собою. Історію "за що" це не
+          відкриває в жодному разі, її бачить тільки сам учень через власний
+          PIN.
         </div>
       </div>
 

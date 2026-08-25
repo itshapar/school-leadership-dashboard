@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { App } from "antd";
-import { StarFilled } from "@ant-design/icons";
 import { splitFullName } from "@/lib/students/fullName";
+import StarIcon from "@/components/StarIcon";
 
 /**
  * Список класу на дашборді, який бачить УЧЕНЬ (не адмінський). Сортування
@@ -132,7 +132,7 @@ export default function ClassRosterList({
           </div>
           {typeof student.stars === "number" && (
             <div style={{ fontWeight: 900, fontSize: "1.3rem", color: "var(--color-star)", display: "flex", alignItems: "center", gap: "4px" }}>
-              {student.stars} <StarFilled style={{ fontSize: "0.9rem" }} />
+              {student.stars} <StarIcon size="0.9em" color="currentColor" />
             </div>
           )}
         </div>

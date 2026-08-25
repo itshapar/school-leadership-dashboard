@@ -12,6 +12,7 @@ import {
   signedAmount,
   type EntryType,
 } from "@/lib/admin/classConfig";
+import StarIcon from "@/components/StarIcon";
 
 /**
  * Нарахування поза журналом: учню або всьому класу.
@@ -245,7 +246,7 @@ export default function QuickEntry({
               </span>
             }
           >
-            <InputNumber min={1} max={100} size="middle" addonAfter="⭐" style={{ width: "100%" }} />
+            <InputNumber min={1} max={100} size="middle" addonAfter={<StarIcon />} style={{ width: "100%" }} />
           </Form.Item>
 
           <EntryNoteField />

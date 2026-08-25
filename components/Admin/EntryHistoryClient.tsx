@@ -10,6 +10,7 @@ import { uk } from "date-fns/locale";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import { entryTypeLabel, type EntryType } from "@/lib/admin/classConfig";
+import StarIcon from "@/components/StarIcon";
 
 /**
  * Історія нарахувань поза журналом.
@@ -205,7 +206,8 @@ export default function EntryHistoryClient({
             }}
           >
             {isNeg ? "" : "+"}
-            {row.amount} ⭐{row.memberCount > 1 ? " кожному" : ""}
+            {row.amount} <StarIcon color="currentColor" />
+            {row.memberCount > 1 ? " кожному" : ""}
           </span>
         );
       },
@@ -254,23 +256,23 @@ export default function EntryHistoryClient({
   return (
     <div className="page-container" style={{ maxWidth: "1000px" }}>
       <div style={{ marginBottom: "24px" }}>
-        <Link
-          href={`/admin/${classCode}`}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            color: "#fff",
-            fontSize: "1rem",
-            fontWeight: 800,
-            padding: "8px 16px",
-            border: "2px solid #000",
-            borderRadius: "10px",
-            textDecoration: "none",
-            background: "#000",
-          }}
-        >
-          <ArrowLeft /> Назад до журналу
+        {/* Лише іконка (живий фідбек): та сама квадратна чорна кнопка
+            «назад», що й у налаштуваннях класу та списку учнів. */}
+        <Link href={`/admin/${classCode}`} aria-label="Назад до журналу">
+          <Button
+            icon={<ArrowLeft />}
+            style={{
+              background: "#000",
+              color: "#fff",
+              border: "none",
+              height: 38,
+              width: 38,
+              borderRadius: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          />
         </Link>
       </div>
 

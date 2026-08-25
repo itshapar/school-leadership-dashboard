@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { Table, Input, Tag } from "antd";
-import { StarFilled } from "@ant-design/icons";
 import { ArrowLeft, MagnifyingGlass } from "@phosphor-icons/react";
 import Link from "next/link";
 import type { Parallel } from "@/lib/admin/parallels";
+import StarIcon from "@/components/StarIcon";
 
 interface StudentData {
   id: string;
@@ -142,7 +142,7 @@ export default function TotalDashboardClient({
           justifyContent: "center",
           gap: "4px"
         }}>
-          {stars} <StarFilled style={{ fontSize: "0.9rem" }} />
+          {stars} <StarIcon size="0.9em" color="currentColor" />
         </div>
       ),
     },

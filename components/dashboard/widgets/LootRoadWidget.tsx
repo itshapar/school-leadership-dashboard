@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { StarFilled } from "@ant-design/icons";
+import StarIcon from "@/components/StarIcon";
 
 const REWARDS = [
   { stars: 10, emoji: "🍬" },
@@ -93,7 +93,7 @@ export default function LootRoadWidget({ leaderboard, classInfo }: any) {
                 {reward.emoji}
               </div>
 
-              {/* Stars requirement with StarFilled icon */}
+              {/* Скільки зірок треба до нагороди */}
               <div style={{ 
                 fontWeight: 900, 
                 fontSize: "0.75rem", 
@@ -103,7 +103,7 @@ export default function LootRoadWidget({ leaderboard, classInfo }: any) {
                 alignItems: "center",
                 gap: "2px" 
               }}>
-                {reward.stars} <StarFilled style={{ color: "var(--color-star, #f59f00)", fontSize: "0.75rem" }} />
+                {reward.stars} <StarIcon size="0.75rem" />
               </div>
 
               {/* Progress percent */}

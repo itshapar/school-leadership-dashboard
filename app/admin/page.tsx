@@ -123,7 +123,10 @@ export default async function AdminPage() {
             className="admin-action-btn admin-btn-white"
             style={{ display: "inline-flex", alignItems: "center", gap: "8px", minWidth: "auto" }}
           >
-            <User weight="bold" style={{ fontSize: "1.1em" }} /> Профіль вчителя
+            {/* 1.45em — той самий розмір, що й у CSS-правилі для іконок в
+                antd-кнопках із текстом: це посилання-кнопка, під те правило
+                воно не підпадає, тож розмір задано тут явно. */}
+            <User weight="bold" style={{ fontSize: "1.45em" }} /> Профіль вчителя
           </Link>
         </div>
       </div>

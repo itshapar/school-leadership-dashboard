@@ -5,6 +5,7 @@ import { Form, Input, Button, Alert, Card, Divider } from "antd";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import StarIcon from "@/components/StarIcon";
 
 export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
@@ -42,7 +43,7 @@ export default function AdminLoginPage() {
     >
       <div style={{ width: "100%", maxWidth: "400px" }}>
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ fontSize: "3rem" }}>⭐</div>
+          <StarIcon size="3rem" />
           <h1
             style={{
               fontSize: "1.8rem",
