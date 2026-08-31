@@ -1,53 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CaretDown, PlayCircle } from "@phosphor-icons/react";
 
 /**
  * Картка з відеотуторіалом згори кабінету: вбудований Loom, який можна
  * згорнути кареткою праворуч.
  *
- * Стан згортання живе в localStorage, а не в сесії: вчитель, який уже
- * подивився інструкцію, не має згортати її щоразу при вході. Початковий
- * стан, розгорнуто; localStorage читається в useEffect, бо на сервері
- * його немає і будь-яке читання під час рендеру дало б розбіжність
- * гідратації.
+ * Згорнутий стан НЕ запам'ятовується (живий фідбек): раніше він лежав у
+ * localStorage, і вчитель, який один раз згорнув картку, більше ніколи її
+ * не бачив. Тепер кожне відкриття кабінету починається з розгорнутої
+ * інструкції, а згортання діє тільки до наступного заходу.
  *
  * iframe монтується лише коли картка відкрита, тож у згорнутому стані
- * плеєр Loom взагалі не вантажиться.
+ * плеєр Loom не вантажиться, а при повторному відкритті вантажиться
+ * наново.
  */
 
-const STORAGE_KEY = "sld_tutorial_collapsed";
 const LOOM_EMBED = "https://www.loom.com/embed/b1b56faf44544e1f81d4629a6cb05e8e";
 
 export default function TutorialCard() {
   const [open, setOpen] = useState(true);
 
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(STORAGE_KEY) === "1") setOpen(false);
-    } catch {
-      // приватний режим або заблоковане сховище: лишаємо картку відкритою
-    }
-  }, []);
-
-  function toggle() {
-    setOpen((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem(STORAGE_KEY, next ? "0" : "1");
-      } catch {
-        // те саме: не змогли запам'ятати, але згортання все одно працює
-      }
-      return next;
-    });
-  }
-
   return (
     <div className="star-card" style={{ padding: "16px", marginBottom: "24px" }}>
       <button
         type="button"
-        onClick={toggle}
+        onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
         style={{
           width: "100%",

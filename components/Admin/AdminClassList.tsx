@@ -19,6 +19,7 @@ import {
   yearStartOf,
   type PeriodCode,
 } from "@/lib/admin/periods";
+import { CaretDown } from "@phosphor-icons/react";
 import StarIcon from "@/components/StarIcon";
 
 /**
@@ -97,6 +98,11 @@ export default function AdminClassList({
 
   const [period, setPeriod] = useState<PeriodCode>(initialPeriod);
   const [parallelFilter, setParallelFilter] = useState<string>(ALL);
+  // Вибір періоду згорнутий за замовчуванням (живий фідбек): роки й
+  // семестри це не те, що вчитель перемикає щодня, а радше архів. Видимим
+  // лишається рядок з назвою поточного періоду, самі таби, це вже крок
+  // усередину.
+  const [periodOpen, setPeriodOpen] = useState(false);
 
   const yearStarts = useMemo(() => listYearStarts(firstPeriod), [firstPeriod]);
   const selectedYear = yearStartOf(period);
@@ -140,6 +146,45 @@ export default function AdminClassList({
           шапки з кнопками «Профіль вчителя» і «Новий клас». */}
       <div style={{ height: 3, background: "#000", borderRadius: 2, margin: "0 0 20px" }} />
 
+      {/* Згорнутий стан: один рядок, який каже, який період зараз видно. */}
+      <button
+        type="button"
+        onClick={() => setPeriodOpen((prev) => !prev)}
+        aria-expanded={periodOpen}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          width: "100%",
+          background: "none",
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
+          textAlign: "left",
+          font: "inherit",
+        }}
+      >
+        <span style={{ fontWeight: 800, fontSize: "0.95rem" }}>
+          {schoolYearLabel(selectedYear)}, {periodLabel(period)}
+        </span>
+        <span style={{ color: "#868e96", fontWeight: 600, fontSize: "0.8rem" }}>
+          {periodStatus(period) === "past" && "семестр завершено"}
+          {periodStatus(period) === "current" && "триває зараз"}
+        </span>
+        <CaretDown
+          weight="bold"
+          style={{
+            marginLeft: "auto",
+            fontSize: "1.1rem",
+            flexShrink: 0,
+            transition: "transform 0.2s ease",
+            transform: periodOpen ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        />
+      </button>
+
+      {periodOpen && (
+      <div style={{ marginTop: 16 }}>
       {/* ── Ряд 1: навчальний рік ── */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
         {yearStarts.map((y) => {
@@ -174,6 +219,7 @@ export default function AdminClassList({
               onClick={() => {
                 setPeriod(code);
                 setParallelFilter(ALL);
+                setPeriodOpen(false);
               }}
               title={available ? undefined : periodOpensLabel(code)}
               style={tabStyle(code === period, !available)}
@@ -186,9 +232,9 @@ export default function AdminClassList({
 
       <div style={{ color: "#868e96", fontWeight: 600, fontSize: "0.8rem", margin: "10px 0 0" }}>
         {periodRangeLabel(period)}
-        {periodStatus(period) === "past" && ", семестр завершено"}
-        {periodStatus(period) === "current" && ", триває зараз"}
       </div>
+      </div>
+      )}
 
       {/* Нижній дивайдер — межа сенсу: усе під ним показує рівно обраний
           період. */}
