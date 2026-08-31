@@ -3,10 +3,10 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Form, Input, Button, Alert } from "antd";
-import { PlayCircle } from "@phosphor-icons/react";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import DemoEntryCard from "@/components/DemoEntryCard";
 import AuthShell from "@/components/AuthShell";
 
 /**
@@ -92,36 +92,11 @@ function AdminLoginForm() {
 
       <GoogleSignInButton label="Увійти через Google" />
 
-      {/* Демо стоїть окремим блоком під формою (живий фідбек): до цього
+      {/* Демо окремим блоком під формою (живий фідбек): до цього
           незалогінена людина бачила тільки вхід, реєстрацію й відновлення
-          пароля, тобто подивитись продукт до реєстрації було ніде.
-          Помаранчевий тут навмисно: це єдина дія на екрані, яка нічого не
-          вимагає, і вона має ловити око. */}
-      <Link href="/demo" style={{ textDecoration: "none" }}>
-        <div
-          className="star-card"
-          style={{
-            marginTop: 20,
-            padding: "16px 18px",
-            background: "linear-gradient(135deg, #f59f00 0%, #f08c00 100%)",
-            border: "3px solid #000",
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
-            cursor: "pointer",
-          }}
-        >
-          <PlayCircle weight="fill" style={{ fontSize: "2rem", flexShrink: 0 }} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 900, textTransform: "uppercase", fontSize: "1rem" }}>
-              Дивитися демо
-            </div>
-            <div style={{ fontWeight: 600, fontSize: "0.82rem", opacity: 0.8 }}>
-              Клас із вигаданими учнями, без реєстрації
-            </div>
-          </div>
-        </div>
-      </Link>
+          пароля, тобто спробувати продукт до реєстрації було ніде.
+          Компонент сам ховається, поки анонімний вхід вимкнено. */}
+      <DemoEntryCard />
 
       {/* Другорядні дії — теж кнопки нашого стилю, не текстові посилання
           (живий фідбек): раніше вони виглядали як звичайні сині лінки. */}
