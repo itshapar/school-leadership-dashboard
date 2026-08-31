@@ -65,9 +65,15 @@ export default function AdminClassList({
   parallels,
   firstPeriod,
   children,
+  basePath = "/admin",
 }: {
   classes: AdminClassCard[];
   parallels: Parallel[];
+  /**
+   * Куди ведуть посилання карток. Кабінет вчителя лишає "/admin", демо
+   * підставляє "/demo": та сама розмітка, інші адреси.
+   */
+  basePath?: string;
   /** Найраніший період, доступний цьому вчителю (див. firstAvailablePeriod). */
   firstPeriod: PeriodCode;
   /**
@@ -276,7 +282,7 @@ export default function AdminClassList({
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {visibleClasses.map((cls) => (
-            <ClassCard key={cls.id} cls={cls} />
+            <ClassCard key={cls.id} cls={cls} basePath={basePath} />
           ))}
         </div>
       )}
@@ -325,7 +331,7 @@ function chipStyle(active: boolean): React.CSSProperties {
   };
 }
 
-function ClassCard({ cls }: { cls: AdminClassCard }) {
+function ClassCard({ cls, basePath }: { cls: AdminClassCard; basePath: string }) {
   return (
     <div className="star-card" style={{ padding: 0, opacity: cls.archived ? 0.72 : 1 }}>
       <div className="admin-card-row">
@@ -363,7 +369,7 @@ function ClassCard({ cls }: { cls: AdminClassCard }) {
           >
             Дашборд
           </Link>
-          <Link href={`/admin/${cls.public_code}`} className="admin-action-btn admin-btn-black">
+          <Link href={`${basePath}/${cls.public_code}`} className="admin-action-btn admin-btn-black">
             {cls.archived ? "Переглянути" : "Журнал"}
           </Link>
         </div>

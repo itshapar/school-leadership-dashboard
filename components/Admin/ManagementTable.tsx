@@ -70,9 +70,17 @@ export default function ManagementTable({
   classId,
   initialData,
   readOnly = false,
+  demoMode = false,
 }: {
   classId: string;
   initialData?: ManagementJournalData;
+  /**
+   * Демо: журнал повністю клікабельний, але нікуди не пишеться. Оптимістичне
+   * оновлення стану вище лишається, а запит до API просто не йде, тож гість
+   * бачить, як працює нарахування, і при цьому не може зіпсувати спільні
+   * демо-дані. Після перезавантаження сторінки все повертається як було.
+   */
+  demoMode?: boolean;
   /**
    * Клас в архіві: семестр завершено, журнал лишається для перегляду.
    * Запис у такий клас однаково відкине БД (archive_guard_trg, міграція 018),
@@ -147,6 +155,8 @@ export default function ManagementTable({
       },
     }));
 
+    if (demoMode) return;
+
     try {
       const res = await adminApiFetch(supabase, "/api/admin/star-entry", {
         method: "POST",
@@ -189,6 +199,8 @@ export default function ManagementTable({
         [studentId]: { ...(prev.givenPrizes[studentId] || {}), [prizeId]: checked },
       },
     }));
+
+    if (demoMode) return;
 
     try {
       const res = await adminApiFetch(supabase, "/api/admin/prize-given", {

@@ -34,7 +34,13 @@ export type TimeFrame = "all_time" | "last_30_days" | "last_7_days";
 /** Один клас (classId), кілька класів однієї паралелі (string[]), або все (null/undefined). */
 export async function getDashboardData(
   supabase: SupabaseClient,
-  classIdFilter?: string | string[] | null
+  classIdFilter?: string | string[] | null,
+  /**
+   * Демо-дашборд (/demo/dashboard) — єдиний випадок, коли потрібен саме
+   * публічний демо-клас, а не реальні класи вчителя. За замовчуванням
+   * поведінка стара: демо-клас у зведення не потрапляє.
+   */
+  options?: { publicDemo?: boolean }
 ) {
   // 1. Fetch Classes
   //
@@ -48,8 +54,9 @@ export async function getDashboardData(
     .is("deleted_at", null)
     // Постійний публічний демо-клас технічно належить цьому акаунту
     // (носій для /demo), але це не реальні дані вчителя — не показуємо
-    // його в жодній агрегованій аналітиці.
-    .eq("is_public_demo", false)
+    // його в жодній агрегованій аналітиці. Виняток один: сам демо-дашборд,
+    // де показувати треба рівно його.
+    .eq("is_public_demo", options?.publicDemo === true)
     // Архівні класи — це завершені семестри. У зведеній аналітиці їм не місце:
     // після переходу класу в новий семестр учні існують двома рядками, і
     // загальні суми рахували б їх двічі. Дашборд окремого архівного класу
