@@ -45,6 +45,17 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
     const supabase = getSupabaseClient();
+
+    // Людина могла прийти сюди з демо, а там сесія анонімна. Її треба
+    // закрити ПЕРЕД реєстрацією: інакше Supabase прив'яже email до того
+    // самого користувача, і вигаданий демо-клас із вигаданими учнями
+    // переїде у справжній кабінет як свій.
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser();
+    if (currentUser?.is_anonymous) {
+      await supabase.auth.signOut();
+    }
     // Ім'я й школу свідомо не питаємо (Етап 9.2, live-фідбек): менше PII —
     // менший ризик, якщо ці дані колись витечуть разом із даними учнів.
     const { data, error } = await supabase.auth.signUp({

@@ -38,6 +38,12 @@ export default async function AdminPage() {
     supabase.auth.getUser(),
   ]);
 
+  // Демо-сесія (анонімний вхід через /demo): кабінет той самий, різниць дві.
+  // Профілю вчителя в демо немає (живий фідбек): редагувати ім'я й пошту
+  // акаунта, який зникне разом із сесією, немає сенсу. І акцепт Умов у
+  // гостя не питаємо: він нічого не реєструє.
+  const isDemo = Boolean(auth?.user?.is_anonymous);
+
   const classList = classes ?? [];
   const classIds = classList.map((c) => c.id);
 
@@ -127,9 +133,9 @@ export default async function AdminPage() {
 
   return (
     <div className="page-container" style={{ maxWidth: "860px", paddingBottom: "80px" }}>
-      {!termsAccepted && <TermsGate />}
+      {!termsAccepted && !isDemo && <TermsGate />}
 
-      <TutorialCard />
+      {!isDemo && <TutorialCard />}
 
       <div style={{ textAlign: "center", marginBottom: "32px" }}>
         <h1 style={{ margin: 0, fontSize: "2.2rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "-1px" }}>
@@ -148,13 +154,15 @@ export default async function AdminPage() {
             flexWrap: "wrap",
           }}
         >
-          <Link
-            href="/admin/profile"
-            className="admin-action-btn admin-btn-white"
-            style={{ minWidth: "auto" }}
-          >
-            Профіль вчителя
-          </Link>
+          {!isDemo && (
+            <Link
+              href="/admin/profile"
+              className="admin-action-btn admin-btn-white"
+              style={{ minWidth: "auto" }}
+            >
+              Профіль вчителя
+            </Link>
+          )}
 
           {atClassLimit ? (
             <span
