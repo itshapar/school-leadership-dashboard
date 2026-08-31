@@ -145,3 +145,63 @@ export async function getPublicStudentDashboard(
   if (error || !data) return null;
   return data as PublicStudentDashboard;
 }
+
+/* ------------------------------------------------------------------ */
+/* Демо                                                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Код постійного публічного демо-класу. Константа, а не запит до бази:
+ * анонімний клієнт не має права читати таблицю classes (і правильно), а
+ * заводити заради одного рядка службовий ключ на публічній сторінці, це
+ * гірше, ніж тримати тут код, який і так друкується на пам'ятках.
+ * Змінити можна змінною оточення, без релізу.
+ */
+export const DEMO_CLASS_CODE =
+  process.env.NEXT_PUBLIC_DEMO_CLASS_CODE ?? "RCAC9FW68S";
+
+export interface DemoTeacherEntry {
+  amount: number;
+  type_name: string | null;
+  type_icon: string | null;
+  note: string | null;
+  lesson_date: string | null;
+  created_at: string;
+}
+
+export interface DemoTeacherStudent {
+  id: string;
+  display_name: string;
+  avatar_emoji: string;
+  total_stars: number;
+  history: DemoTeacherEntry[];
+}
+
+export interface DemoTeacherView {
+  class_id: string;
+  name: string;
+  public_code: string;
+  lessons: Array<{ id: string; date: string }>;
+  students: DemoTeacherStudent[];
+}
+
+/**
+ * «Погляд вчителя» на демо-клас: хто скільки зірок отримав і за що.
+ *
+ * RPC (міграція 031) сам прив'язаний до is_public_demo = true, тож підставити
+ * сюди код справжнього класу і побачити чужих учнів неможливо: функція
+ * поверне NULL. Саме тому сторінка /demo обходиться без логіну.
+ */
+export async function getDemoTeacherView(
+  rawCode: string = DEMO_CLASS_CODE
+): Promise<DemoTeacherView | null> {
+  if (!isPlausibleClassCode(rawCode)) return null;
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("public_demo_teacher_view", {
+    p_code: normalizeClassCode(rawCode),
+  });
+
+  if (error || !data) return null;
+  return data as DemoTeacherView;
+}
