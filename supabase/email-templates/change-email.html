@@ -8,16 +8,21 @@
   а обидві адреси показані явно ({{ .Email }} — стара, {{ .NewEmail }} — нова).
 -->
 <div style="background:#FFF9F0;padding:32px 16px;font-family:'Montserrat',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:480px;margin:0 auto;background:#FFFFFF;border:3px solid #2C2C2C;border-radius:16px;">
+  <!-- Прехедер: рядок, який поштовий клієнт показує у списку листів поруч із темою. -->
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#FFF9F0;font-size:1px;line-height:1px;">
+    Підтвердьте нову адресу акаунту.
+  </div>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:480px;margin:0 auto;background:#FFFFFF;border:3px solid #2C2C2C;border-radius:16px;box-shadow:4px 4px 0px #2C2C2C;">
     <tr>
       <td style="padding:32px 32px 24px;text-align:center;">
-        <div style="font-size:40px;line-height:1;">⭐</div>
-        <div style="font-size:20px;font-weight:900;letter-spacing:-0.5px;color:#F08C00;margin-top:4px;">StarBoard</div>
+        <div style="font-size:36px;line-height:1;">⭐</div>
+        <div style="font-size:18px;font-weight:900;letter-spacing:0.5px;text-transform:uppercase;color:#2C2C2C;margin-top:6px;">StarBoard</div>
       </td>
     </tr>
     <tr>
       <td style="padding:0 32px 8px;">
-        <h1 style="margin:0;font-size:22px;font-weight:900;text-transform:uppercase;color:#2C2C2C;">Зміна email</h1>
+        <h1 style="margin:0;font-size:22px;font-weight:900;letter-spacing:-0.5px;text-transform:uppercase;color:#2C2C2C;">Зміна email</h1>
       </td>
     </tr>
     <tr>
@@ -36,9 +41,14 @@
     <tr>
       <td style="padding:0 32px 32px;text-align:center;">
         <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email_change&next=/admin/profile"
-           style="display:inline-block;background:#2C2C2C;color:#FFFFFF;font-weight:800;font-size:15px;text-transform:uppercase;text-decoration:none;padding:14px 32px;border-radius:10px;box-shadow:3px 3px 0px #F08C00;">
+           style="display:inline-block;background:#000000;border:3px solid #000000;color:#FFFFFF;font-weight:800;font-size:15px;letter-spacing:0.3px;text-transform:uppercase;text-decoration:none;padding:12px 30px;border-radius:10px;box-shadow:3px 3px 0px #F08C00;">
           Підтвердити зміну
         </a>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:0 32px 28px;">
+        <div style="height:3px;background:#2C2C2C;border-radius:2px;"></div>
       </td>
     </tr>
     <tr>

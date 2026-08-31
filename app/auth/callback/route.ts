@@ -26,6 +26,14 @@ export async function GET(request: NextRequest) {
   const rawNext = searchParams.get("next") ?? "/admin";
   const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/admin";
 
+  // Лист про реєстрацію веде на сторінку входу (живий фідбек): людина
+  // після підтвердження має побачити форму, а не лендінг і не одразу
+  // кабінет. Прапорець дописуємо тут, а не в шаблоні листа, щоб у листі
+  // лишалось читабельне посилання без екранованого "?".
+  const isSignupConfirm = type === "email" || type === "signup";
+  const destination =
+    isSignupConfirm && next === "/admin/login" ? "/admin/login?confirmed=1" : next;
+
   // Лист скидання пароля міг прийти в будь-якому з форматів Supabase, і
   // частина з них узагалі не долітає до сервера (токени в хеші адреси).
   // Тому все, що пахне recovery, віддаємо клієнтській сторінці — вона
@@ -44,7 +52,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/admin/login?error=auth`);
   }
 
-  const response = NextResponse.redirect(`${origin}${next}`);
+  const response = NextResponse.redirect(`${origin}${destination}`);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

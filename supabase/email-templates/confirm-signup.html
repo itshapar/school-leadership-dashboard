@@ -7,39 +7,60 @@
   до code_verifier у localStorage ТОГО САМОГО браузера: відкрив лист на
   телефоні, а реєструвався на ноуті — посилання мертве. {{ .TokenHash }}
   такої прив'язки не має і перевіряється на нашому /auth/callback.
+
+  next=/admin/login (живий фідбек): після підтвердження людина має бачити
+  форму входу, а не лендінг і не одразу кабінет. Прапорець ?confirmed=1
+  дописує сам /auth/callback, щоб на сторінці входу з'явилось зелене
+  «Пошту підтверджено».
+
+  Стилі інлайнові й на таблиці: поштові клієнти не читають <style> і
+  флексбокс. box-shadow Gmail вирізає, тож картка й кнопка лишаються
+  впізнаваними завдяки товстій рамці, а тінь просто прикраса там, де вона
+  підтримується.
 -->
 <div style="background:#FFF9F0;padding:32px 16px;font-family:'Montserrat',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:480px;margin:0 auto;background:#FFFFFF;border:3px solid #2C2C2C;border-radius:16px;">
+  <!-- Прехедер: рядок, який поштовий клієнт показує у списку листів поруч із темою. -->
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#FFF9F0;font-size:1px;line-height:1px;">
+    Один клік, і акаунт вчителя активний.
+  </div>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:480px;margin:0 auto;background:#FFFFFF;border:3px solid #2C2C2C;border-radius:16px;box-shadow:4px 4px 0px #2C2C2C;">
     <tr>
       <td style="padding:32px 32px 24px;text-align:center;">
-        <div style="font-size:40px;line-height:1;">⭐</div>
-        <div style="font-size:20px;font-weight:900;letter-spacing:-0.5px;color:#F08C00;margin-top:4px;">StarBoard</div>
+        <div style="font-size:36px;line-height:1;">⭐</div>
+        <div style="font-size:18px;font-weight:900;letter-spacing:0.5px;text-transform:uppercase;color:#2C2C2C;margin-top:6px;">StarBoard</div>
       </td>
     </tr>
     <tr>
       <td style="padding:0 32px 8px;">
-        <h1 style="margin:0;font-size:22px;font-weight:900;text-transform:uppercase;color:#2C2C2C;">Підтвердьте email</h1>
+        <h1 style="margin:0;font-size:22px;font-weight:900;letter-spacing:-0.5px;text-transform:uppercase;color:#2C2C2C;">Підтвердьте email</h1>
       </td>
     </tr>
     <tr>
       <td style="padding:8px 32px 28px;color:#666666;font-size:15px;font-weight:600;line-height:1.6;">
-        Ви реєструєтесь як вчитель у StarBoard. Щоб активувати акаунт і почати працювати з класами, підтвердьте свою email-адресу.
+        Ви реєструєтесь як вчитель у StarBoard. Підтвердьте адресу
+        <span style="color:#2C2C2C;">{{ .Email }}</span>, і ми повернемо вас на сторінку входу.
       </td>
     </tr>
     <tr>
       <td style="padding:0 32px 32px;text-align:center;">
-        <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email&next=/admin"
-           style="display:inline-block;background:#2C2C2C;color:#FFFFFF;font-weight:800;font-size:15px;text-transform:uppercase;text-decoration:none;padding:14px 32px;border-radius:10px;box-shadow:3px 3px 0px #F08C00;">
+        <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email&next=/admin/login"
+           style="display:inline-block;background:#000000;border:3px solid #000000;color:#FFFFFF;font-weight:800;font-size:15px;letter-spacing:0.3px;text-transform:uppercase;text-decoration:none;padding:12px 30px;border-radius:10px;box-shadow:3px 3px 0px #F08C00;">
           Підтвердити email
         </a>
       </td>
     </tr>
     <tr>
+      <td style="padding:0 32px 28px;">
+        <div style="height:3px;background:#2C2C2C;border-radius:2px;"></div>
+      </td>
+    </tr>
+    <tr>
       <td style="padding:0 32px 32px;color:#666666;font-size:12.5px;font-weight:600;line-height:1.6;">
         Якщо кнопка не працює, скопіюйте це посилання в браузер:<br />
-        <span style="word-break:break-all;">{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email&next=/admin</span>
+        <span style="word-break:break-all;">{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email&next=/admin/login</span>
         <br /><br />
-        Не реєструвались у StarBoard? Просто проігноруйте цей лист.
+        Не реєструвались у StarBoard? Просто проігноруйте цей лист, акаунт не активується.
       </td>
     </tr>
   </table>

@@ -1,13 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Form, Input, Button, Alert } from "antd";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import AuthShell from "@/components/AuthShell";
 
-export default function AdminLoginPage() {
+/**
+ * ?confirmed=1 ставить /auth/callback після успішного підтвердження пошти:
+ * лист веде саме сюди (живий фідбек), і без цього рядка людина побачила б
+ * просто форму входу, без жодного знаку, що підтвердження спрацювало.
+ *
+ * ?error=auth туди ж давно редіректив callback на мертвому посиланні, але
+ * сторінка його мовчки ігнорувала: людина поверталась на вхід без пояснень.
+ *
+ * Suspense навколо useSearchParams обов'язковий: без нього Next не збирає
+ * сторінку статично і падає на білді.
+ */
+function AdminLoginForm() {
+  const params = useSearchParams();
+  const confirmed = params.get("confirmed") === "1";
+  const linkFailed = params.get("error") === "auth";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +48,24 @@ export default function AdminLoginPage() {
 
   return (
     <AuthShell title="Вхід для вчителя" subtitle="Кабінет класів і журналу">
+      {confirmed && !error && (
+        <Alert
+          type="success"
+          showIcon
+          message="Пошту підтверджено"
+          description="Акаунт активний. Увійдіть, щоб перейти в кабінет."
+          style={{ marginBottom: "16px" }}
+        />
+      )}
+      {linkFailed && !error && (
+        <Alert
+          type="warning"
+          showIcon
+          message="Посилання не спрацювало"
+          description="Воно застаріле або вже використане. Увійдіть паролем, а якщо не виходить, попросіть новий лист."
+          style={{ marginBottom: "16px" }}
+        />
+      )}
       {error && (
         <Alert message={error} type="error" showIcon style={{ marginBottom: "16px" }} />
       )}
@@ -73,5 +106,13 @@ export default function AdminLoginPage() {
         </Link>
       </div>
     </AuthShell>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<AuthShell title="Вхід для вчителя" subtitle="Кабінет класів і журналу"><div /></AuthShell>}>
+      <AdminLoginForm />
+    </Suspense>
   );
 }
