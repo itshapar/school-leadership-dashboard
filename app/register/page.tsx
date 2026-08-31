@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Form, Input, Button, Alert, Checkbox, Progress } from "antd";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
@@ -10,18 +11,26 @@ import { scorePassword } from "@/lib/password";
 import AuthShell from "@/components/AuthShell";
 
 /**
- * Реєстрація вчителя: email + пароль з підтвердженням пошти, або Google.
- * Відкрита з першого дня (PRD Р8), без інвайтів.
+ * Реєстрація вчителя: email + пароль, або Google. Відкрита з першого дня
+ * (PRD Р8), без інвайтів.
  *
- * Анти-enumeration: відповідь однакова і для нового email, і для вже
- * зареєстрованого — «перевірте пошту». Supabase у другому випадку сам
- * не створює дубль і не розкриває існування акаунта.
+ * Підтвердження пошти вимкнено (живий фідбек): Supabase віддає сесію
+ * одразу на signUp, і людина потрапляє у свій кабінет без походу в
+ * поштову скриньку. Гілка «перевірте пошту» лишається як запасна: якщо
+ * підтвердження колись увімкнуть назад у налаштуваннях проєкту, signUp
+ * поверне відповідь без сесії, і реєстрація не зламається, а просто
+ * знову попросить відкрити лист.
+ *
+ * Анти-enumeration: коли сесії немає, відповідь однакова і для нового
+ * email, і для вже зареєстрованого — «перевірте пошту». Supabase у
+ * другому випадку сам не створює дубль і не розкриває існування акаунта.
  *
  * Акцепт email-реєстрації їде метаданими signUp: тригер handle_new_user
  * (міграція 025) записує його в terms_acceptances при створенні користувача.
  * У Google OAuth такого каналу немає — там акцепт фіксує TermsGate у кабінеті.
  */
 export default function RegisterPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -38,7 +47,7 @@ export default function RegisterPage() {
     const supabase = getSupabaseClient();
     // Ім'я й школу свідомо не питаємо (Етап 9.2, live-фідбек): менше PII —
     // менший ризик, якщо ці дані колись витечуть разом із даними учнів.
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
@@ -54,6 +63,15 @@ export default function RegisterPage() {
         "Не вдалося зареєструватися. Перевірте пароль (мінімум 8 символів, не з відомих витоків) і спробуйте ще раз."
       );
       setLoading(false);
+      return;
+    }
+    // Сесія є, значить підтвердження пошти вимкнене: одразу в кабінет.
+    // Куки вже виставив createBrowserClient (@supabase/ssr), тому
+    // серверний /admin побачить користувача; refresh() змушує Next
+    // перезібрати серверний рендер із цими куками.
+    if (data.session) {
+      router.replace("/admin");
+      router.refresh();
       return;
     }
     setSent(true);

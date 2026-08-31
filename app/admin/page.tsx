@@ -1,7 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
-import { ChartLineUp, Ranking } from "@phosphor-icons/react/dist/ssr";
+import { ChartLineUp } from "@phosphor-icons/react/dist/ssr";
 import { formatClassCode } from "@/lib/classCodes";
 import { loadParallels } from "@/lib/admin/parallels";
 import { firstAvailablePeriod, type PeriodCode } from "@/lib/admin/periods";
@@ -10,6 +10,7 @@ import { fetchAllRows } from "@/lib/supabase/fetchAll";
 import AdminClassList, {
   type AdminClassCard,
 } from "@/components/Admin/AdminClassList";
+import TutorialCard from "@/components/Admin/TutorialCard";
 import TermsGate from "@/components/Legal/TermsGate";
 import { hasAcceptedCurrentTerms } from "@/lib/legal/terms";
 import { TEACHER_LIMITS } from "@/lib/admin/classConfig";
@@ -128,6 +129,8 @@ export default async function AdminPage() {
     <div className="page-container" style={{ maxWidth: "860px", paddingBottom: "80px" }}>
       {!termsAccepted && <TermsGate />}
 
+      <TutorialCard />
+
       <div style={{ textAlign: "center", marginBottom: "32px" }}>
         <h1 style={{ margin: 0, fontSize: "2.2rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "-1px" }}>
           Адмін-панель
@@ -178,34 +181,13 @@ export default async function AdminPage() {
         parallels={parallels}
         firstPeriod={firstPeriod}
       >
-        {/* Рейтинг і дашборд стоять ПІД дивайдером, усередині обраного
-            періоду (живий фідбек): вибір навчального року й семестру
-            піднявся на самий верх кабінету, і все нижче межі читається як
-            «те, що в цьому періоді». */}
+        {/* Дашборд стоїть ПІД дивайдером, усередині обраного періоду
+            (живий фідбек): вибір навчального року й семестру піднявся на
+            самий верх кабінету, і все нижче межі читається як «те, що в
+            цьому періоді». Окрема картка «Рейтинг учнів» звідси прибрана
+            (живий фідбек): та сама таблиця є всередині дашборду. */}
         {!isEmpty && (
           <>
-            <Link
-              href="/admin/total"
-              className="total-dashboard-card"
-              style={{ display: "block", textDecoration: "none", marginBottom: "16px", transition: "transform 0.2s" }}
-            >
-              <div className="star-card" style={{
-                background: "linear-gradient(135deg, #000000 0%, #2c2c2c 100%)",
-                color: "#ffffff",
-                border: "none",
-                padding: "24px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}>
-                <div>
-                  <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Рейтинг учнів</div>
-                  <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>За паралеллю, класична таблиця рейтингу</div>
-                </div>
-                <Ranking weight="bold" style={{ fontSize: "2.5rem", color: "var(--color-star)" }} />
-              </div>
-            </Link>
-
             <Link
               href="/dashboard"
               className="total-dashboard-card"
