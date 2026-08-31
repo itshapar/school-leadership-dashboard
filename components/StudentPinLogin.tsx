@@ -93,17 +93,15 @@ export default function StudentPinLogin({
                 }}
               />
             </Form.Item>
+            {/* Той самий вигляд, що й на /student і на вході вчителя
+                (живий фідбек): помаранчевий градієнт лишався тільки тут
+                і на сторінці входу учня. */}
             <Button
               type="primary"
               htmlType="submit"
-              size="large"
               loading={loading}
               block
-              style={{
-                background: "linear-gradient(135deg, #f5a623, #e8940f)",
-                border: "none",
-                fontWeight: 600,
-              }}
+              className="btn-primary"
             >
               Увійти
             </Button>

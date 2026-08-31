@@ -16,11 +16,15 @@ export default function AuthShell({
   subtitle,
   children,
   width = 420,
+  homeHref = "/",
 }: {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   width?: number;
+  /** Куди веде логотип. Учнівський вхід лишає дитину в себе: "/" тепер
+      редіректить на кабінет вчителя, і дитині там робити нічого. */
+  homeHref?: string;
 }) {
   return (
     <div
@@ -35,7 +39,7 @@ export default function AuthShell({
       <div style={{ width: "100%", maxWidth: width }}>
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <Link
-            href="/"
+            href={homeHref}
             aria-label="StarBoard, на головну"
             style={{
               display: "inline-flex",
