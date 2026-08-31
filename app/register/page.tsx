@@ -51,7 +51,12 @@ export default function RegisterPage() {
       email: values.email,
       password: values.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/admin`,
+        // Куди Supabase поверне людину, якщо в дашборді ще стоїть його
+        // ДЕФОЛТНИЙ шаблон листа: {{ .ConfirmationURL }} веде на verify і
+        // далі сюди. Наш власний шаблон цей параметр не використовує,
+        // він будує адресу сам з {{ .SiteURL }}. В обох випадках фініш
+        // однаковий, сторінка входу (живий фідбек).
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/admin/login`,
         data: signUpTermsMetadata(),
       },
     });
