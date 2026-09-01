@@ -89,13 +89,31 @@ export default function TermsGate() {
       />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {/*
+          Підкреслені й чорні (живий фідбек): вчитель цілився в рядок, щоб
+          поставити галочку, влучав у назву документа і не розумів, чому
+          відкрилась нова вкладка. Тепер видно, що це посилання, а не текст.
+
+          stopPropagation: клік по посиланню більше не перемикає заразом і
+          чекбокс, інакше «я лише хотів почитати» тихо ставило згоду.
+        */}
         <Checkbox checked={accepted} onChange={(e) => setAccepted(e.target.checked)}>
           Я приймаю{" "}
-          <Link href="/terms" target="_blank" style={{ fontWeight: 600 }}>
+          <Link
+            href="/terms"
+            target="_blank"
+            onClick={(e) => e.stopPropagation()}
+            style={{ fontWeight: 700, color: "#000", textDecoration: "underline" }}
+          >
             умови використання
           </Link>{" "}
           та{" "}
-          <Link href="/privacy" target="_blank" style={{ fontWeight: 600 }}>
+          <Link
+            href="/privacy"
+            target="_blank"
+            onClick={(e) => e.stopPropagation()}
+            style={{ fontWeight: 700, color: "#000", textDecoration: "underline" }}
+          >
             політику приватності
           </Link>
         </Checkbox>

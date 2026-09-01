@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { PlayCircle, MonitorPlay } from "@phosphor-icons/react";
+import { PlayCircle, Flask } from "@phosphor-icons/react";
 import { TUTORIAL_SHARE_URL } from "@/lib/tutorial";
 
 /**
@@ -69,13 +69,13 @@ export default function DemoEntryCard() {
         rel="noopener noreferrer"
         style={BUTTON}
       >
-        <MonitorPlay weight="fill" style={{ fontSize: "1.4rem", flexShrink: 0 }} />
+        <PlayCircle weight="fill" style={{ fontSize: "1.4rem", flexShrink: 0 }} />
         Дивитися туторіал
       </a>
 
       {demoAvailable && (
         <Link href="/demo" style={BUTTON}>
-          <PlayCircle weight="fill" style={{ fontSize: "1.4rem", flexShrink: 0 }} />
+          <Flask weight="fill" style={{ fontSize: "1.4rem", flexShrink: 0 }} />
           Спробувати демо
         </Link>
       )}

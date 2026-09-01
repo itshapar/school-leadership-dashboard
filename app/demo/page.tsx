@@ -42,6 +42,15 @@ export default function DemoEntryPage() {
           data: { user },
         } = await supabase.auth.getUser();
 
+        // Залогінений справжній вчитель у демо не потрапляє (живий фідбек):
+        // раніше копія демо-класу створювалась просто в його кабінеті і
+        // ставала поруч із реальними класами. У нього вже є продукт, тож
+        // ведемо його туди. Те саме тепер забороняє й сама функція в БД.
+        if (user && !user.is_anonymous) {
+          window.location.href = "/admin";
+          return;
+        }
+
         if (!user) {
           const { error: signInError } = await supabase.auth.signInAnonymously();
           if (signInError) throw signInError;
