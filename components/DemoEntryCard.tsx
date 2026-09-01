@@ -2,21 +2,44 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { PlayCircle } from "@phosphor-icons/react";
+import { PlayCircle, MonitorPlay } from "@phosphor-icons/react";
+import { TUTORIAL_SHARE_URL } from "@/lib/tutorial";
 
 /**
- * Блок «Дивитися демо» на сторінці входу.
+ * Дві дії на сторінці входу для тих, хто ще не має акаунта: подивитися
+ * туторіал і спробувати демо.
  *
- * Показується ЛИШЕ якщо в проєкті Supabase справді ввімкнено анонімний вхід,
- * бо саме на ньому тримається демо-пісочниця (/demo → signInAnonymously →
- * create_demo_sandbox → /admin). Той самий підхід, що й у кнопки Google
- * (components/GoogleSignInButton.tsx) і з тієї ж причини: краще не показати
- * кнопку, ніж показати кнопку, яка веде в помилку.
+ * Дві окремі рівноцінні кнопки, без пояснювального тексту (живий фідбек):
+ * підписи «Дивитися туторіал» і «Спробувати демо» самі кажуть, що буде, а
+ * дрібний текст під ними лише розмивав обидві дії.
  *
- * Щойно провайдера ввімкнуть у дашборді, блок з'явиться сам, без релізу.
+ * Кнопка демо показується ЛИШЕ якщо в проєкті Supabase справді ввімкнено
+ * анонімний вхід, бо саме на ньому тримається пісочниця (/demo →
+ * signInAnonymously → create_demo_sandbox → /admin). Той самий підхід, що в
+ * кнопки Google, і з тієї ж причини: краще не показати кнопку, ніж показати
+ * кнопку, яка веде в помилку. Туторіал від цього не залежить і є завжди.
  */
+
+const BUTTON: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 10,
+  padding: "14px 18px",
+  borderRadius: 12,
+  border: "3px solid #000",
+  boxShadow: "3px 3px 0px #000",
+  background: "linear-gradient(135deg, #f59f00 0%, #f08c00 100%)",
+  color: "#000000",
+  fontWeight: 900,
+  fontSize: "0.95rem",
+  textTransform: "uppercase",
+  textDecoration: "none",
+  cursor: "pointer",
+};
+
 export default function DemoEntryCard() {
-  const [available, setAvailable] = useState(false);
+  const [demoAvailable, setDemoAvailable] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -27,10 +50,10 @@ export default function DemoEntryCard() {
     fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } })
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
-        if (!cancelled) setAvailable(Boolean(json?.external?.anonymous_users));
+        if (!cancelled) setDemoAvailable(Boolean(json?.external?.anonymous_users));
       })
       .catch(() => {
-        /* немає зв'язку з Supabase — просто не показуємо блок */
+        /* немає зв'язку з Supabase — просто не показуємо кнопку демо */
       });
 
     return () => {
@@ -38,33 +61,24 @@ export default function DemoEntryCard() {
     };
   }, []);
 
-  if (!available) return null;
-
   return (
-    <Link href="/demo" style={{ textDecoration: "none" }}>
-      <div
-        className="star-card"
-        style={{
-          marginTop: 20,
-          padding: "16px 18px",
-          background: "linear-gradient(135deg, #f59f00 0%, #f08c00 100%)",
-          border: "3px solid #000",
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-          cursor: "pointer",
-        }}
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 20 }}>
+      <a
+        href={TUTORIAL_SHARE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={BUTTON}
       >
-        <PlayCircle weight="fill" style={{ fontSize: "2rem", flexShrink: 0 }} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 900, textTransform: "uppercase", fontSize: "1rem" }}>
-            Спробувати демо
-          </div>
-          <div style={{ fontWeight: 600, fontSize: "0.82rem", opacity: 0.8 }}>
-            Власний клас 7-А з вигаданими учнями, без реєстрації
-          </div>
-        </div>
-      </div>
-    </Link>
+        <MonitorPlay weight="fill" style={{ fontSize: "1.4rem", flexShrink: 0 }} />
+        Дивитися туторіал
+      </a>
+
+      {demoAvailable && (
+        <Link href="/demo" style={BUTTON}>
+          <PlayCircle weight="fill" style={{ fontSize: "1.4rem", flexShrink: 0 }} />
+          Спробувати демо
+        </Link>
+      )}
+    </div>
   );
 }

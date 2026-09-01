@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CaretDown, PlayCircle } from "@phosphor-icons/react";
+import { TUTORIAL_EMBED_URL } from "@/lib/tutorial";
 
 /**
  * Картка з відеотуторіалом згори кабінету: вбудований Loom, який можна
@@ -16,8 +17,6 @@ import { CaretDown, PlayCircle } from "@phosphor-icons/react";
  * плеєр Loom не вантажиться, а при повторному відкритті вантажиться
  * наново.
  */
-
-const LOOM_EMBED = "https://www.loom.com/embed/b1b56faf44544e1f81d4629a6cb05e8e";
 
 export default function TutorialCard() {
   const [open, setOpen] = useState(true);
@@ -74,7 +73,7 @@ export default function TutorialCard() {
           }}
         >
           <iframe
-            src={LOOM_EMBED}
+            src={TUTORIAL_EMBED_URL}
             title="Відеоінструкція StarBoard"
             allow="fullscreen; picture-in-picture"
             style={{
