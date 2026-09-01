@@ -18,7 +18,7 @@
 export const SUPPORT_TELEGRAM_URL = "https://t.me/ux_ui_ua";
 
 /** Форма для багів і побажань. Формат: https://forms.gle/... */
-export const SUPPORT_FORM_URL = "";
+export const SUPPORT_FORM_URL = "https://forms.gle/uVHmk63kYxkCdJux5";
 
 export function hasSupportChannels(): boolean {
   return Boolean(SUPPORT_TELEGRAM_URL || SUPPORT_FORM_URL);
