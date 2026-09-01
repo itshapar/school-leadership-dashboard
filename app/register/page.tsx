@@ -31,7 +31,10 @@ import AuthShell from "@/components/AuthShell";
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  // Окремо код помилки, бо «цей email уже зайнятий» вимагає не тексту, а
+  // дій: піти на вхід або відновити пароль.
   const [error, setError] = useState<string | null>(null);
+  const [duplicate, setDuplicate] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [password, setPassword] = useState("");
 
@@ -42,6 +45,7 @@ export default function RegisterPage() {
 
     setLoading(true);
     setError(null);
+    setDuplicate(false);
     const supabase = getSupabaseClient();
 
     // Людина могла прийти сюди з демо, а там сесія анонімна. Її треба
@@ -70,11 +74,21 @@ export default function RegisterPage() {
       },
     });
     if (error) {
-      // Не деталізуємо причину (зокрема «email уже існує» сюди не потрапляє —
-      // Supabase повертає це як успіх без сесії). Типові реальні причини:
-      // заслабкий/витеклий пароль (Leaked password protection) або rate limit.
+      // Відколи підтвердження пошти вимкнене, Supabase каже прямо:
+      // user_already_exists замість мовчазного «успіху» без сесії. Раніше ми
+      // ховали цей факт заради анти-enumeration, але тепер його однаково
+      // видно в API, тож мовчання в інтерфейсі захищає нікого, а людину, яка
+      // просто забула, що вже реєструвалася, заганяє в глухий кут.
+      const code = (error as { code?: string }).code;
+      if (code === "user_already_exists" || /already registered/i.test(error.message)) {
+        setDuplicate(true);
+        setLoading(false);
+        return;
+      }
       setError(
-        "Не вдалося зареєструватися. Перевірте пароль (мінімум 8 символів, не з відомих витоків) і спробуйте ще раз."
+        code === "over_request_rate_limit" || code === "over_email_send_rate_limit"
+          ? "Забагато спроб поспіль. Зачекайте хвилину і спробуйте ще раз."
+          : "Не вдалося зареєструватися. Перевірте пароль (мінімум 8 символів, не з відомих витоків) і спробуйте ще раз."
       );
       setLoading(false);
       return;
@@ -101,6 +115,33 @@ export default function RegisterPage() {
   return (
     <AuthShell title="Реєстрація вчителя" width={440}>
       <>
+          {duplicate && (
+            <Alert
+              type="warning"
+              showIcon
+              style={{ marginBottom: "16px" }}
+              message="На цей email уже створено акаунт"
+              description={
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <span>Увійдіть у нього, а якщо не пам'ятаєте пароль, задайте новий.</span>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <Link href="/admin/login" style={{ flex: 1, minWidth: 120 }}>
+                      <Button block className="btn-primary">
+                        Увійти
+                      </Button>
+                    </Link>
+                    {/* «Новий пароль», а не «Забули пароль?»: у вузькій
+                        картці сповіщення довший підпис розпирає кнопку. */}
+                    <Link href="/forgot-password" style={{ flex: 1, minWidth: 120 }}>
+                      <Button block className="btn-secondary">
+                        Новий пароль
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              }
+            />
+          )}
           {error && (
             <Alert message={error} type="error" showIcon style={{ marginBottom: "16px" }} />
           )}
