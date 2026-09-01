@@ -14,16 +14,15 @@ import AuthShell from "@/components/AuthShell";
  * Реєстрація вчителя: email + пароль, або Google. Відкрита з першого дня
  * (PRD Р8), без інвайтів.
  *
- * Підтвердження пошти вимкнено (живий фідбек): Supabase віддає сесію
- * одразу на signUp, і людина потрапляє у свій кабінет без походу в
- * поштову скриньку. Гілка «перевірте пошту» лишається як запасна: якщо
- * підтвердження колись увімкнуть назад у налаштуваннях проєкту, signUp
- * поверне відповідь без сесії, і реєстрація не зламається, а просто
- * знову попросить відкрити лист.
+ * Підтвердження пошти вимкнене в проєкті Supabase (mailer_autoconfirm),
+ * тому signUp одразу віддає сесію, і людина потрапляє у свій кабінет. Про
+ * листи тут не сказано жодного слова свідомо (живий фідбек): їх немає, і
+ * обіцяти людині щось у скриньці означало б посилати її чекати на те, що
+ * ніколи не прийде.
  *
- * Анти-enumeration: коли сесії немає, відповідь однакова і для нового
- * email, і для вже зареєстрованого — «перевірте пошту». Supabase у
- * другому випадку сам не створює дубль і не розкриває існування акаунта.
+ * Якщо підтвердження колись увімкнуть назад, signUp поверне відповідь без
+ * сесії. Тоді показуємо помилку зі спробою увійти, а не «перевірте пошту»:
+ * мовчазний глухий кут гірший за чесне «щось не так».
  *
  * Акцепт email-реєстрації їде метаданими signUp: тригер handle_new_user
  * (міграція 025) записує його в terms_acceptances при створенні користувача.
@@ -33,7 +32,6 @@ export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [password, setPassword] = useState("");
 
@@ -81,7 +79,7 @@ export default function RegisterPage() {
       setLoading(false);
       return;
     }
-    // Сесія є, значить підтвердження пошти вимкнене: одразу в кабінет.
+    // Сесія є завжди, поки підтвердження пошти вимкнене: одразу в кабінет.
     // Куки вже виставив createBrowserClient (@supabase/ssr), тому
     // серверний /admin побачить користувача; refresh() змушує Next
     // перезібрати серверний рендер із цими куками.
@@ -90,140 +88,136 @@ export default function RegisterPage() {
       router.refresh();
       return;
     }
-    setSent(true);
+
+    // Сесії немає: або цей email уже зареєстрований (Supabase віддає це як
+    // успіх без сесії, щоб не розкривати існування акаунта), або хтось
+    // увімкнув підтвердження пошти назад.
+    setError(
+      "Не вдалося увійти одразу. Якщо ви вже реєструвалися цією адресою, скористайтеся входом або відновленням пароля."
+    );
     setLoading(false);
   }
 
   return (
     <AuthShell title="Реєстрація вчителя" width={440}>
       <>
-          {sent ? (
-            <Alert
-              type="success"
-              showIcon
-              message="Перевірте пошту"
-              description="Якщо цей email ще не зареєстровано, ми надіслали лист із посиланням для підтвердження. Відкрийте його на цьому ж пристрої."
-            />
-          ) : (
-            <>
-              {error && (
-                <Alert message={error} type="error" showIcon style={{ marginBottom: "16px" }} />
-              )}
-              <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
-                <Form.Item
-                  name="email"
-                  label={<span style={{ color: "var(--color-text-muted)" }}>Email</span>}
-                  rules={[{ required: true, type: "email", message: "Введіть email" }]}
-                >
-                  <Input size="large" placeholder="teacher@school.ua" autoComplete="email" />
-                </Form.Item>
-                <Form.Item
-                  name="password"
-                  label={<span style={{ color: "var(--color-text-muted)" }}>Пароль</span>}
-                  rules={[
-                    { required: true, message: "Введіть пароль" },
-                    { min: 8, message: "Мінімум 8 символів" },
-                    {
-                      validator: (_, value: string) =>
-                        !value || (/[a-zа-яіїєґ]/i.test(value) && /[0-9]/.test(value))
-                          ? Promise.resolve()
-                          : Promise.reject(new Error("Додайте і літери, і цифри")),
-                    },
-                  ]}
-                >
-                  <Input.Password
-                    size="large"
-                    autoComplete="new-password"
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </Form.Item>
-                {password.length > 0 && (
-                  <div style={{ marginTop: "-12px", marginBottom: "20px" }}>
-                    <Progress
-                      percent={(strength.score / 4) * 100}
-                      showInfo={false}
-                      strokeColor={strength.color}
-                      size="small"
-                    />
-                    <div style={{ fontSize: "0.78rem", fontWeight: 600, color: strength.color, marginTop: 2 }}>
-                      {strength.label}
-                    </div>
-                  </div>
-                )}
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                    padding: "14px",
-                    background: "#f8f9fa",
-                    border: "2px solid #dee2e6",
-                    borderRadius: "10px",
-                    marginBottom: "20px",
-                  }}
-                >
-                  <Checkbox checked={accepted} onChange={(e) => setAccepted(e.target.checked)}>
-                    <span style={{ fontSize: "0.88rem" }}>
-                      {/* Підкреслені (живий фідбек): це посилання на
-                          документи, які людина приймає, і вони мають
-                          читатись як посилання, а не як жирний текст. */}
-                      Я приймаю{" "}
-                      <Link
-                        href="/terms"
-                        target="_blank"
-                        style={{ fontWeight: 700, color: "#000", textDecoration: "underline" }}
-                      >
-                        умови використання
-                      </Link>{" "}
-                      та{" "}
-                      <Link
-                        href="/privacy"
-                        target="_blank"
-                        style={{ fontWeight: 700, color: "#000", textDecoration: "underline" }}
-                      >
-                        політику приватності
-                      </Link>
-                    </span>
-                  </Checkbox>
-                  <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", paddingLeft: "24px" }}>
-                    {COMBINED_ACCEPT_SUBTEXT}
-                  </div>
-                </div>
-
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loading}
-                  disabled={!accepted}
-                  block
-                  className="btn-primary"
-                >
-                  Зареєструватися
-                </Button>
-              </Form>
-              {/* Google-реєстрація так само вимагає акцепту. Сам акцепт
-                  зафіксує TermsGate у кабінеті: OAuth-потік не передає
-                  метаданих форми. */}
-              <GoogleSignInButton
-                label="Зареєструватися через Google"
-                disabled={!accepted}
-              />
-              {!accepted && (
-                <div
-                  style={{
-                    textAlign: "center",
-                    marginTop: "10px",
-                    fontSize: "0.8rem",
-                    color: "var(--color-text-muted)",
-                    fontWeight: 600,
-                  }}
-                >
-                  Позначте пункт вище, щоб продовжити.
-                </div>
-              )}
-            </>
+          {error && (
+            <Alert message={error} type="error" showIcon style={{ marginBottom: "16px" }} />
           )}
+            <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
+              <Form.Item
+                name="email"
+                label={<span style={{ color: "var(--color-text-muted)" }}>Email</span>}
+                rules={[{ required: true, type: "email", message: "Введіть email" }]}
+              >
+                <Input size="large" placeholder="teacher@school.ua" autoComplete="email" />
+              </Form.Item>
+              <Form.Item
+                name="password"
+                label={<span style={{ color: "var(--color-text-muted)" }}>Пароль</span>}
+                rules={[
+                  { required: true, message: "Введіть пароль" },
+                  { min: 8, message: "Мінімум 8 символів" },
+                  {
+                    validator: (_, value: string) =>
+                      !value || (/[a-zа-яіїєґ]/i.test(value) && /[0-9]/.test(value))
+                        ? Promise.resolve()
+                        : Promise.reject(new Error("Додайте і літери, і цифри")),
+                  },
+                ]}
+              >
+                <Input.Password
+                  size="large"
+                  autoComplete="new-password"
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </Form.Item>
+              {password.length > 0 && (
+                <div style={{ marginTop: "-12px", marginBottom: "20px" }}>
+                  <Progress
+                    percent={(strength.score / 4) * 100}
+                    showInfo={false}
+                    strokeColor={strength.color}
+                    size="small"
+                  />
+                  <div style={{ fontSize: "0.78rem", fontWeight: 600, color: strength.color, marginTop: 2 }}>
+                    {strength.label}
+                  </div>
+                </div>
+              )}
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  padding: "14px",
+                  background: "#f8f9fa",
+                  border: "2px solid #dee2e6",
+                  borderRadius: "10px",
+                  marginBottom: "20px",
+                }}
+              >
+                <Checkbox checked={accepted} onChange={(e) => setAccepted(e.target.checked)}>
+                  <span style={{ fontSize: "0.88rem" }}>
+                    {/* Підкреслені (живий фідбек): це посилання на
+                        документи, які людина приймає, і вони мають
+                        читатись як посилання, а не як жирний текст. */}
+                    Я приймаю{" "}
+                    <Link
+                      href="/terms"
+                      target="_blank"
+                      style={{ fontWeight: 700, color: "#000", textDecoration: "underline" }}
+                    >
+                      умови використання
+                    </Link>{" "}
+                    та{" "}
+                    <Link
+                      href="/privacy"
+                      target="_blank"
+                      style={{ fontWeight: 700, color: "#000", textDecoration: "underline" }}
+                    >
+                      політику приватності
+                    </Link>
+                  </span>
+                </Checkbox>
+                <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", paddingLeft: "24px" }}>
+                  {COMBINED_ACCEPT_SUBTEXT}
+                </div>
+              </div>
+
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                disabled={!accepted}
+                block
+                className="btn-primary"
+              >
+                Зареєструватися
+              </Button>
+            </Form>
+            {/* Google-реєстрація так само вимагає акцепту. Сам акцепт
+                зафіксує TermsGate у кабінеті: OAuth-потік не передає
+                метаданих форми. */}
+            <GoogleSignInButton
+              label="Зареєструватися через Google"
+              disabled={!accepted}
+            />
+            {!accepted && (
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: "10px",
+                  fontSize: "0.8rem",
+                  color: "var(--color-text-muted)",
+                  fontWeight: 600,
+                }}
+              >
+                Позначте пункт вище, щоб продовжити.
+              </div>
+            )}
+
 
           <div style={{ marginTop: "16px" }}>
             <Link href="/admin/login">
