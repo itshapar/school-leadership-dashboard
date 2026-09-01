@@ -15,7 +15,7 @@
  */
 
 /** Особистий Telegram, пряме звернення. Формат: https://t.me/username */
-export const SUPPORT_TELEGRAM_URL = "";
+export const SUPPORT_TELEGRAM_URL = "https://t.me/ux_ui_ua";
 
 /** Форма для багів і побажань. Формат: https://forms.gle/... */
 export const SUPPORT_FORM_URL = "";
