@@ -5,6 +5,13 @@ import { Button, Checkbox, DatePicker, message } from "antd";
 import dayjs from "dayjs";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
+import {
+  isValidPeriod,
+  periodEndIso,
+  periodStartIso,
+  periodRangeLabel,
+  type PeriodCode,
+} from "@/lib/admin/periods";
 
 const { RangePicker } = DatePicker;
 
@@ -38,6 +45,7 @@ function datesInRange(start: dayjs.Dayjs, end: dayjs.Dayjs, weekdays: number[]):
  */
 export default function LessonSeriesForm({
   classId,
+  periodCode,
   onCreated,
   /**
    * У поп-апі «Новий урок» ця кнопка працює як commit-кнопка модалки, тож
@@ -48,6 +56,12 @@ export default function LessonSeriesForm({
   submitAlign = "start",
 }: {
   classId: string;
+  /**
+   * Семестр класу. Уроки живуть у межах семестру, тож календар за ці межі не
+   * пускає (живий фідбек): раніше можна було завести серію уроків на дати,
+   * яких у цьому семестрі не існує, і вони назавжди осідали в журналі.
+   */
+  periodCode: PeriodCode;
   onCreated?: (inserted: number) => void;
   submitAlign?: "start" | "end";
 }) {
@@ -55,6 +69,17 @@ export default function LessonSeriesForm({
   const [weekdays, setWeekdays] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const supabase = getSupabaseClient();
+
+  const bounds = useMemo(() => {
+    if (!isValidPeriod(periodCode)) return null;
+    return { from: periodStartIso(periodCode), to: periodEndIso(periodCode) };
+  }, [periodCode]);
+
+  const disabledDate = (d: dayjs.Dayjs) => {
+    if (!bounds) return false;
+    const iso = d.format("YYYY-MM-DD");
+    return iso < bounds.from || iso > bounds.to;
+  };
 
   const seriesDates = useMemo(
     () => (range && weekdays.length > 0 ? datesInRange(range[0], range[1], weekdays) : []),
@@ -113,8 +138,14 @@ export default function LessonSeriesForm({
         value={range}
         onChange={(v) => setRange(v && v[0] && v[1] ? [v[0], v[1]] : null)}
         format="DD.MM.YYYY"
+        disabledDate={disabledDate}
         style={{ width: "100%", borderRadius: "8px" }}
       />
+      {bounds && (
+        <div style={{ marginTop: 6, fontSize: "0.8rem", fontWeight: 600, color: "var(--color-text-muted)" }}>
+          Семестр: {periodRangeLabel(periodCode)}
+        </div>
+      )}
 
       <div
         style={{

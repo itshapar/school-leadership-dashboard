@@ -46,6 +46,8 @@ export interface TeacherStudentView {
     type_icon: string | null;
     note: string | null;
     created_at: string;
+    /** Дата уроку для записів за урок, null для бонусів і штрафів. */
+    occurred_on: string | null;
   }>;
 }
 
@@ -55,6 +57,7 @@ interface EntryRow {
   note: string | null;
   created_at: string;
   entry_type_id: string;
+  lesson_id: string | null;
 }
 
 export async function loadTeacherStudentView(
@@ -72,7 +75,14 @@ export async function loadTeacherStudentView(
 
   const classId = student.class_id as string;
 
-  const [{ data: cls }, { data: classmates }, { data: entries }, { data: prizes }, { data: entryTypes }] =
+  const [
+    { data: cls },
+    { data: classmates },
+    { data: entries },
+    { data: prizes },
+    { data: entryTypes },
+    { data: lessonRows },
+  ] =
     await Promise.all([
       supabase.from("classes").select("id, name, public_code").eq("id", classId).maybeSingle(),
       supabase
@@ -82,7 +92,7 @@ export async function loadTeacherStudentView(
         .is("deleted_at", null),
       supabase
         .from("star_entries")
-        .select("student_id, amount, note, created_at, entry_type_id")
+        .select("student_id, amount, note, created_at, entry_type_id, lesson_id")
         .eq("class_id", classId)
         .order("created_at", { ascending: false }),
       supabase
@@ -92,9 +102,18 @@ export async function loadTeacherStudentView(
         .is("deleted_at", null)
         .order("sort_order"),
       supabase.from("entry_types").select("id, name, icon").eq("class_id", classId),
+      // Дати уроків класу: запис за урок в історії підписується датою, коли
+      // урок БУВ, а не коли вчитель заповнив журнал (живий фідбек). Уроки з
+      // deleted_at сюди теж потрапляють навмисно: якщо урок згодом прибрали,
+      // дата, коли він відбувся, від цього не змінилась.
+      supabase.from("lessons").select("id, date").eq("class_id", classId),
     ]);
 
   if (!cls) return null;
+
+  const lessonDateById = new Map(
+    (lessonRows ?? []).map((l) => [l.id as string, l.date as string])
+  );
 
   const typeById = new Map(
     (entryTypes ?? []).map((t) => [t.id as string, { name: t.name as string, icon: t.icon as string | null }])
@@ -156,15 +175,24 @@ export async function loadTeacherStudentView(
       sort_order: (p.sort_order as number) ?? 0,
     })),
     givenPrizeIds,
+    // Сортування — за тією ж датою, якою запис підписаний: інакше три уроки,
+    // внесені одним заходом, шикувались у зворотному до дат порядку.
     history: rows
       .filter((e) => e.student_id === studentId)
-      .slice(0, 50)
       .map((e) => ({
         amount: e.amount,
         type_name: typeById.get(e.entry_type_id)?.name ?? null,
         type_icon: typeById.get(e.entry_type_id)?.icon ?? null,
         note: e.note,
         created_at: e.created_at,
-      })),
+        occurred_on: (e.lesson_id && lessonDateById.get(e.lesson_id)) || null,
+      }))
+      .sort((a, b) => {
+        const ad = a.occurred_on ?? a.created_at.slice(0, 10);
+        const bd = b.occurred_on ?? b.created_at.slice(0, 10);
+        if (ad !== bd) return ad < bd ? 1 : -1;
+        return a.created_at < b.created_at ? 1 : -1;
+      })
+      .slice(0, 50),
   };
 }

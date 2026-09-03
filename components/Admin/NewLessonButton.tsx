@@ -7,19 +7,57 @@ import dayjs from "dayjs";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 import LessonSeriesForm from "@/components/Admin/LessonSeriesForm";
+import {
+  isValidPeriod,
+  periodEndIso,
+  periodRangeLabel,
+  periodStartIso,
+  type PeriodCode,
+} from "@/lib/admin/periods";
 
 export default function NewLessonButton({
   classId,
+  periodCode,
   onSuccess,
 }: {
   classId: string;
+  /**
+   * Семестр класу. Урок не може відбутися поза семестром, тож календар за
+   * його межі не пускає (живий фідбек): раніше можна було поставити урок на
+   * будь-яку дату, і в журналі з'являлась колонка з чужого семестру.
+   */
+  periodCode: PeriodCode;
   onSuccess: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"single" | "series">("single");
-  const [date, setDate] = useState<dayjs.Dayjs>(dayjs());
+  const bounds = isValidPeriod(periodCode)
+    ? { from: periodStartIso(periodCode), to: periodEndIso(periodCode) }
+    : null;
+
+  /**
+   * Дефолт — сьогодні, але притиснуте до меж семестру: у класі минулого
+   * семестру відкривати календар на сьогоднішній, заблокованій даті означало
+   * б показати вчителю порожній місяць, де все сіре.
+   */
+  const initialDate = () => {
+    const today = dayjs();
+    if (!bounds) return today;
+    const iso = today.format("YYYY-MM-DD");
+    if (iso < bounds.from) return dayjs(bounds.from);
+    if (iso > bounds.to) return dayjs(bounds.to);
+    return today;
+  };
+
+  const [date, setDate] = useState<dayjs.Dayjs>(initialDate);
   const [loading, setLoading] = useState(false);
   const supabase = getSupabaseClient();
+
+  const disabledDate = (d: dayjs.Dayjs) => {
+    if (!bounds) return false;
+    const iso = d.format("YYYY-MM-DD");
+    return iso < bounds.from || iso > bounds.to;
+  };
 
   async function submitSingle() {
     setLoading(true);
@@ -124,12 +162,19 @@ export default function NewLessonButton({
                 onChange={(d) => d && setDate(d)}
                 format="DD.MM.YYYY"
                 size="middle"
+                disabledDate={disabledDate}
                 style={{ width: "100%", borderRadius: "8px" }}
               />
+              {bounds && (
+                <div style={{ marginTop: 6, fontSize: "0.8rem", fontWeight: 600, color: "var(--color-text-muted)" }}>
+                  Семестр: {periodRangeLabel(periodCode)}
+                </div>
+              )}
             </>
           ) : (
             <LessonSeriesForm
               classId={classId}
+              periodCode={periodCode}
               submitAlign="end"
               onCreated={() => {
                 setOpen(false);

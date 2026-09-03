@@ -133,7 +133,7 @@ export function formatIsoDate(iso: string): string {
 }
 
 export function periodRangeLabel(code: PeriodCode): string {
-  return `${formatIsoDate(periodStartIso(code))} — ${formatIsoDate(periodEndIso(code))}`;
+  return `з ${formatIsoDate(periodStartIso(code))} по ${formatIsoDate(periodEndIso(code))}`;
 }
 
 /** «Стане доступним 1 січня 2027» — підказка на вимкненому табі. */

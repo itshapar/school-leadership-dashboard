@@ -40,8 +40,8 @@ export default async function StudentDashboardPage({ params }: Props) {
         student={data.student}
         totalStars={data.total_stars}
         individualStars={data.total_stars}
-        rank={data.rank}
-        totalStudents={data.total_students}
+        rank={data.show_classmate_stars ? data.rank : null}
+        totalStudents={data.show_classmate_stars ? data.total_students : null}
         prizes={data.prizes ?? []}
         givenPrizes={givenPrizes}
         history={data.history ?? []}

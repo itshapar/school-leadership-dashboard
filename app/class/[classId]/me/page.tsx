@@ -65,6 +65,17 @@ export default async function MyDashboardPage({ params, searchParams }: Props) {
     givenPrizes[prizeId] = true;
   }
 
+  /**
+   * Місце в класі — лише при увімкненому конкурентному середовищі (живий
+   * фідбек): вчитель вимикав показ зірок однокласників, а учень усе одно
+   * бачив у себе «#4», тобто те саме порівняння, тільки згорнуте в число.
+   *
+   * Прапорець беремо з overview класу, а не лише з RPC учня: 045 гасить
+   * `rank` уже в базі, але поки міграція не застосована, RPC віддає старе
+   * число, і сторінка мусить не показати його однаково.
+   */
+  const showRank = overview.show_classmate_stars;
+
   return (
     <div className="page-container">
       <div style={{ marginBottom: "8px" }}>
@@ -77,8 +88,8 @@ export default async function MyDashboardPage({ params, searchParams }: Props) {
         student={data.student}
         totalStars={data.total_stars}
         individualStars={data.total_stars}
-        rank={data.rank}
-        totalStudents={data.total_students}
+        rank={showRank ? data.rank : null}
+        totalStudents={showRank ? data.total_students : null}
         prizes={data.prizes ?? []}
         givenPrizes={givenPrizes}
         history={data.history ?? []}

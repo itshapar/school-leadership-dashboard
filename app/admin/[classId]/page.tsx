@@ -83,6 +83,7 @@ export default async function AdminClassPage({ params }: Props) {
         <AdminClassToolbar
           classId={classId}
           classCode={cls.public_code}
+          periodCode={cls.period_code}
           students={students ?? []}
           archived={archived}
         />

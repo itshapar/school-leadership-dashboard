@@ -74,6 +74,13 @@ export interface PublicHistoryEntry {
   type_icon: string | null;
   note: string | null;
   created_at: string;
+  /**
+   * Дата САМОГО УРОКУ (YYYY-MM-DD) для записів, прив'язаних до уроку, і null
+   * для бонусів/штрафів (міграція 045). Історія показує зірки за урок тією
+   * датою, коли урок був, а не коли вчитель заповнив журнал; нарахування
+   * поза уроком лишаються на `created_at`, бо для них факт і є дата.
+   */
+  occurred_on: string | null;
 }
 
 export interface PublicPrize {
@@ -94,8 +101,14 @@ export interface PublicStudentDashboard {
     avatar_emoji: string;
   };
   total_stars: number;
-  rank: number;
-  total_students: number;
+  /**
+   * Ранг і розмір класу приходять лише при увімкненому конкурентному
+   * середовищі (`show_classmate_stars`); інакше RPC віддає null, і місце
+   * учня взагалі не залишає БД (міграція 045).
+   */
+  rank: number | null;
+  total_students: number | null;
+  show_classmate_stars: boolean;
   prizes: PublicPrize[];
   given_prize_ids: string[];
   history: PublicHistoryEntry[];

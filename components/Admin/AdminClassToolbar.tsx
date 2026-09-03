@@ -31,12 +31,15 @@ const iconButtonStyle: React.CSSProperties = {
 export default function AdminClassToolbar({
   classId,
   classCode,
+  periodCode,
   students,
   archived = false,
 }: {
   classId: string;
   /** Публічний код класу — усі посилання кабінету йдуть за ним, не за UUID. */
   classCode: string;
+  /** Семестр класу: обмежує дати в календарі «Новий урок». */
+  periodCode: string;
   students: Student[];
   /**
    * Клас в архіві: семестр завершено. Дії запису (нарахування, новий урок,
@@ -77,7 +80,11 @@ export default function AdminClassToolbar({
 
       {!archived && (
         <>
-          <NewLessonButton classId={classId} onSuccess={() => router.refresh()} />
+          <NewLessonButton
+            classId={classId}
+            periodCode={periodCode}
+            onSuccess={() => router.refresh()}
+          />
           <DeleteLessonButton classId={classId} onSuccess={() => router.refresh()} />
         </>
       )}

@@ -28,6 +28,14 @@ interface HistoryEntry {
   type_icon: string | null;
   note: string | null;
   created_at: string;
+  /**
+   * Дата уроку (YYYY-MM-DD) для зірок за урок, null для бонусів і штрафів.
+   * Запис за урок показується датою, коли урок БУВ, а не коли вчитель
+   * заповнив журнал: вчитель часто вносить кілька уроків одним заходом, і
+   * без цього учень бачив три різні уроки однією сьогоднішньою датою
+   * (живий фідбек).
+   */
+  occurred_on?: string | null;
 }
 
 interface Props {
@@ -39,8 +47,14 @@ interface Props {
   };
   totalStars: number;
   individualStars: number;
-  rank: number;
-  totalStudents: number;
+  /**
+   * Місце в класі. null — коли вчитель вимкнув конкурентне середовище
+   * (`show_classmate_stars`): тоді учень не бачить ані зірок однокласників,
+   * ані власного місця серед них. Блок рангу в цьому разі не малюється
+   * взагалі, а не показується прочерком (живий фідбек).
+   */
+  rank: number | null;
+  totalStudents: number | null;
   prizes: Prize[];
   givenPrizes: Record<string, boolean>;
   history: HistoryEntry[];
@@ -85,13 +99,6 @@ export default function PersonalDashboardClient({
 
   const displayName = student.display_name;
 
-  function rankMedal(r: number) {
-    if (r === 1) return "🥇";
-    if (r === 2) return "🥈";
-    if (r === 3) return "🥉";
-    return `#${r}`;
-  }
-
   /**
    * Підпис запису: іконка й назва типу, а якщо тип уже прибрали — нотатка,
    * і лише в останню чергу нейтральне «Нарахування». Ніякого мапінгу за
@@ -102,6 +109,20 @@ export default function PersonalDashboardClient({
     if (label && entry.note) return `${label}: ${entry.note}`;
     if (label) return label;
     return entry.note || "Нарахування";
+  }
+
+  /**
+   * Дата запису: для зірок за урок — дата уроку, інакше момент нарахування.
+   * `occurred_on` розбирається вручну, а не через `new Date("YYYY-MM-DD")`:
+   * такий рядок парситься як UTC-опівніч і в зонах на захід від Гринвіча
+   * показував би попередній день.
+   */
+  function entryDate(entry: HistoryEntry): Date {
+    if (entry.occurred_on) {
+      const [y, m, d] = entry.occurred_on.split("-").map(Number);
+      if (y && m && d) return new Date(y, m - 1, d);
+    }
+    return new Date(entry.created_at);
   }
 
   return (
@@ -138,16 +159,18 @@ export default function PersonalDashboardClient({
             </div>
           </div>
 
-          <div>
-            <div style={{
-              fontSize: "3.5rem",
-              fontWeight: 900,
-              lineHeight: 1,
-              color: "#adb5bd"
-            }}>
-              #{rank}
+          {rank !== null && (
+            <div>
+              <div style={{
+                fontSize: "3.5rem",
+                fontWeight: 900,
+                lineHeight: 1,
+                color: "#adb5bd"
+              }}>
+                #{rank}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -241,7 +264,7 @@ export default function PersonalDashboardClient({
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
                       <div style={{ color: "var(--color-text-muted)", fontSize: "0.75rem", fontWeight: 800 }}>
-                        {format(new Date(entry.created_at), "d MMM yyyy", { locale: uk }).toUpperCase()}
+                        {format(entryDate(entry), "d MMM yyyy", { locale: uk }).toUpperCase()}
                       </div>
                     </div>
                     

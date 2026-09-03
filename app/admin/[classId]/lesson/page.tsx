@@ -15,6 +15,12 @@ import {
 } from "@/lib/admin/classConfig";
 import StarIcon from "@/components/StarIcon";
 import BackButton from "@/components/BackButton";
+import {
+  isValidPeriod,
+  periodEndIso,
+  periodRangeLabel,
+  periodStartIso,
+} from "@/lib/admin/periods";
 
 /**
  * «Швидкий урок»: створити урок і одразу проставити бали всьому класу.
@@ -45,6 +51,8 @@ export default function AddLessonPage() {
 
   const [classId, setClassId] = useState<string | null>(null);
   const [className, setClassName] = useState("");
+  // Семестр класу: цими межами обмежений календар, як і в поп-апі «Новий урок».
+  const [periodCode, setPeriodCode] = useState<string | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [lessonTypes, setLessonTypes] = useState<EntryType[]>([]);
   const [typeId, setTypeId] = useState<string | null>(null);
@@ -59,7 +67,7 @@ export default function AddLessonPage() {
   const load = useCallback(async () => {
     // URL-параметр може бути і кодом класу, і UUID — резолвимо через RLS-запит.
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const query = supabase.from("classes").select("id, name");
+    const query = supabase.from("classes").select("id, name, period_code");
     const { data: cls } = UUID_RE.test(classParam)
       ? await query.eq("id", classParam).maybeSingle()
       : await query.eq("public_code", classParam.toUpperCase()).maybeSingle();
@@ -71,6 +79,7 @@ export default function AddLessonPage() {
 
     setClassId(cls.id);
     setClassName(cls.name);
+    setPeriodCode((cls.period_code as string | null) ?? null);
 
     const [{ data: studentRows }, types] = await Promise.all([
       supabase
@@ -97,6 +106,26 @@ export default function AddLessonPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const bounds = isValidPeriod(periodCode)
+    ? { from: periodStartIso(periodCode), to: periodEndIso(periodCode) }
+    : null;
+
+  const disabledDate = (d: dayjs.Dayjs) => {
+    if (!bounds) return false;
+    const iso = d.format("YYYY-MM-DD");
+    return iso < bounds.from || iso > bounds.to;
+  };
+
+  // Дата за замовчуванням — сьогодні, але притиснута до меж семестру: у класі
+  // минулого семестру календар інакше відкривався б на суцільно сірому місяці.
+  useEffect(() => {
+    if (!bounds) return;
+    const iso = date.format("YYYY-MM-DD");
+    if (iso < bounds.from) setDate(dayjs(bounds.from));
+    else if (iso > bounds.to) setDate(dayjs(bounds.to));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodCode]);
 
   async function submit() {
     if (!classId || !typeId) return;
@@ -216,8 +245,14 @@ export default function AddLessonPage() {
           value={date}
           onChange={(d) => d && setDate(d)}
           format="DD.MM.YYYY"
+          disabledDate={disabledDate}
           style={{ width: "100%" }}
         />
+        {bounds && (
+          <div style={{ marginTop: 6, fontSize: "0.8rem", fontWeight: 600, color: "var(--color-text-muted)" }}>
+            Семестр: {periodRangeLabel(periodCode!)}
+          </div>
+        )}
 
         {lessonTypes.length > 1 && (
           <div style={{ marginTop: "16px" }}>

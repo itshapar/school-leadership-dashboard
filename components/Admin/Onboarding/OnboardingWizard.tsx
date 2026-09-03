@@ -463,7 +463,11 @@ export default function OnboardingWizard() {
                 message={`У класі вже ${lessonsCount} уроків`}
               />
             )}
-            <LessonSeriesForm classId={cls.id} onCreated={() => void refresh(cls.id)} />
+            <LessonSeriesForm
+              classId={cls.id}
+              periodCode={period}
+              onCreated={() => void refresh(cls.id)}
+            />
           </div>
         )}
 

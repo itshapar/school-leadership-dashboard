@@ -4,6 +4,7 @@ import { getSupabaseForAdminApi } from "@/lib/supabase/server";
 import { z } from "zod";
 import { assertClassOwnership } from "@/lib/admin/classOwnership";
 import { uuidLike } from "@/lib/validation/uuid";
+import { isValidPeriod, periodEndIso, periodRangeLabel, periodStartIso } from "@/lib/admin/periods";
 
 const PostLessonSchema = z
   .object({
@@ -40,6 +41,37 @@ export async function POST(request: Request) {
   const claim = await assertClassOwnership(supabaseForRls, class_id, user.id);
   if (!claim.success) {
     return NextResponse.json({ error: claim.error || "Permission denied" }, { status: 403 });
+  }
+
+  /**
+   * Урок живе в семестрі класу (живий фідбек): раніше календар пускав будь-яку
+   * дату, і в журналі з'являлась колонка з чужого семестру. Календар тепер за
+   * межі не пускає, але перевірка мусить стояти й тут: клієнт можна обійти.
+   *
+   * Перевіряються ЛИШЕ нові уроки — уже наявні дати поза семестром лишаються
+   * як є. Такі є в живій базі: періоди з'явились у міграції 039 і проставились
+   * усім класам поточним, тож уроки минулого семестру формально випадають з
+   * періоду свого класу і чіпати їх ця перевірка не повинна.
+   */
+  const { data: clsRow } = await supabaseForRls
+    .from("classes")
+    .select("period_code")
+    .eq("id", class_id)
+    .maybeSingle();
+
+  const periodCode = clsRow?.period_code as string | undefined;
+  if (isValidPeriod(periodCode)) {
+    const from = periodStartIso(periodCode);
+    const to = periodEndIso(periodCode);
+    const outside = dates.filter((d) => d < from || d > to);
+    if (outside.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Урок можна додати лише в межах семестру, ${periodRangeLabel(periodCode)}`,
+        },
+        { status: 400 }
+      );
+    }
   }
 
   const { data: existingRows } = await supabaseForRls
