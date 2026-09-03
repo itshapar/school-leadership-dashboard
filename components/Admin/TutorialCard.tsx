@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CaretDown, PlayCircle } from "@phosphor-icons/react";
 import { TUTORIAL_EMBED_URL } from "@/lib/tutorial";
 
@@ -8,24 +8,54 @@ import { TUTORIAL_EMBED_URL } from "@/lib/tutorial";
  * Картка з відеотуторіалом згори кабінету: вбудований Loom, який можна
  * згорнути кареткою праворуч.
  *
- * Згорнутий стан НЕ запам'ятовується (живий фідбек): раніше він лежав у
- * localStorage, і вчитель, який один раз згорнув картку, більше ніколи її
- * не бачив. Тепер кожне відкриття кабінету починається з розгорнутої
- * інструкції, а згортання діє тільки до наступного заходу.
+ * Згорнутий стан ЗАПАМ'ЯТОВУЄТЬСЯ в localStorage (живий фідбек): вчитель,
+ * який уже подивився відео, згортає картку один раз, а не при кожному
+ * заході в кабінет. Раніше стан навмисне не зберігався, щоб інструкція не
+ * зникала назавжди, але сам заголовок картки з кареткою нікуди не дівається
+ * і в згорнутому стані, тож відео лишається за один клік.
+ *
+ * Початковий стан — `null`: на сервері localStorage немає, і читати його
+ * під час рендеру означало б розбіжність гідратації. До того, як ефект
+ * прочитає сховище, картка показується згорнутою. Ціна — той, хто заходить
+ * уперше, бачить, як відео з'являється кадром пізніше; вигода — той, хто
+ * картку згорнув, більше не бачить, як вона блимає розгорнутою на кожному
+ * заході. Саме друге й дратувало.
  *
  * iframe монтується лише коли картка відкрита, тож у згорнутому стані
  * плеєр Loom не вантажиться, а при повторному відкритті вантажиться
  * наново.
  */
 
+const COLLAPSED_KEY = "starboard:tutorial-collapsed";
+
 export default function TutorialCard() {
-  const [open, setOpen] = useState(true);
+  const [collapsed, setCollapsed] = useState<boolean | null>(null);
+  const open = collapsed === false;
+
+  useEffect(() => {
+    try {
+      setCollapsed(window.localStorage.getItem(COLLAPSED_KEY) === "1");
+    } catch {
+      // приватний режим або заблоковане сховище: картка просто відкрита
+      setCollapsed(false);
+    }
+  }, []);
+
+  function toggle() {
+    const next = !open;
+    setCollapsed(!next);
+    try {
+      window.localStorage.setItem(COLLAPSED_KEY, next ? "0" : "1");
+    } catch {
+      /* не змогли запам'ятати, але згортання все одно працює до перезаходу */
+    }
+  }
 
   return (
     <div className="star-card" style={{ padding: "16px", marginBottom: "24px" }}>
       <button
         type="button"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={toggle}
         aria-expanded={open}
         style={{
           width: "100%",
