@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { resolveOwnedClass } from "@/lib/admin/resolveClass";
 import StudentManager from "@/components/Admin/StudentManager";
+
+export const metadata: Metadata = {
+  title: "Учні класу",
+};
 
 interface Props {
   params: Promise<{ classId: string }>;

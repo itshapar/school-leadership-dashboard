@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadTeacherStudentView } from "@/lib/admin/teacherStudentView";
 import PersonalDashboardClient from "@/components/PersonalDashboardClient";
 import BackButton from "@/components/BackButton";
+
+export const metadata: Metadata = {
+  title: "Учень",
+};
 
 export const dynamic = "force-dynamic";
 

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getDashboardData } from "@/lib/analytics";
@@ -6,6 +7,10 @@ import BentoGrid from "@/components/dashboard/BentoGrid";
 import Link from "next/link";
 import "./dashboard.css";
 import BackButton from "@/components/BackButton";
+
+export const metadata: Metadata = {
+  title: "Загальний дашборд",
+};
 
 export const dynamic = "force-dynamic";
 

@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolveOwnedClass } from "@/lib/admin/resolveClass";
 import { loadParallels } from "@/lib/admin/parallels";
 import { firstAvailablePeriod, type PeriodCode } from "@/lib/admin/periods";
 import ClassSettingsClient from "@/components/Admin/ClassSettings/ClassSettingsClient";
+
+export const metadata: Metadata = {
+  title: "Налаштування класу",
+};
 
 export const dynamic = "force-dynamic";
 

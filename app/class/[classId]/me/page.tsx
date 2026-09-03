@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import PersonalDashboardClient from "@/components/PersonalDashboardClient";
 import PersonalDashboardIntroToast from "@/components/PersonalDashboardIntroToast";
@@ -6,6 +7,10 @@ import StudentLogoutButton from "@/components/StudentLogoutButton";
 import { getPublicClassOverview } from "@/lib/public/classData";
 import { getStudentDashboardFromSession } from "@/lib/studentSession";
 import BackButton from "@/components/BackButton";
+
+export const metadata: Metadata = {
+  title: "Мій прогрес",
+};
 
 export const dynamic = "force-dynamic";
 

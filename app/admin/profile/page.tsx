@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/Admin/ProfileForm";
 import BackButton from "@/components/BackButton";
+
+export const metadata: Metadata = {
+  title: "Профіль вчителя",
+};
 
 export const dynamic = "force-dynamic";
 

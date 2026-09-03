@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ClassProgressBars from "@/components/ClassProgress";
@@ -16,6 +17,16 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ classId: string }>;
+}
+
+/**
+ * Публічна дошка класу: у вкладці стоїть назва класу, бо це посилання діти
+ * і батьки тримають у закладках.
+ */
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { classId: classParam } = await params;
+  const overview = await getPublicClassOverview(classParam);
+  return { title: overview ? overview.name : "Клас" };
 }
 
 export default async function ClassPage({ params }: Props) {

@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolveOwnedClass } from "@/lib/admin/resolveClass";
 import ClassPrizesClient from "@/components/Admin/ClassPrizesClient";
+
+export const metadata: Metadata = {
+  title: "Нагороди класу",
+};
 
 export const dynamic = "force-dynamic";
 

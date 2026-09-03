@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolveOwnedClass } from "@/lib/admin/resolveClass";
@@ -5,6 +6,10 @@ import { loadAllEntryTypes } from "@/lib/admin/classConfig";
 import EntryHistoryClient, {
   type HistoryRow,
 } from "@/components/Admin/EntryHistoryClient";
+
+export const metadata: Metadata = {
+  title: "Бонуси та штрафи",
+};
 
 export const dynamic = "force-dynamic";
 

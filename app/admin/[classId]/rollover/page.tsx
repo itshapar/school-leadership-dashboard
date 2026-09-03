@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolveOwnedClass } from "@/lib/admin/resolveClass";
@@ -6,6 +7,10 @@ import type { PeriodCode } from "@/lib/admin/periods";
 import RolloverClient, {
   type RolloverStudent,
 } from "@/components/Admin/ClassRollover/RolloverClient";
+
+export const metadata: Metadata = {
+  title: "Перехід у новий семестр",
+};
 
 export const dynamic = "force-dynamic";
 

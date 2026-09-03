@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import ManagementTable from "@/components/Admin/ManagementTable";
@@ -10,6 +11,17 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ classId: string }>;
+}
+
+/**
+ * Назва класу у вкладці: вчитель тримає відкритими кілька журналів одночасно,
+ * і без цього всі вкладки називались однаково.
+ */
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { classId: classParam } = await params;
+  const supabase = await createSupabaseServerClient();
+  const cls = await resolveOwnedClass(supabase, classParam);
+  return { title: cls ? `${cls.name}, журнал` : "Журнал класу" };
 }
 
 export default async function AdminClassPage({ params }: Props) {

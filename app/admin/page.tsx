@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
@@ -14,6 +15,10 @@ import TutorialCard from "@/components/Admin/TutorialCard";
 import TermsGate from "@/components/Legal/TermsGate";
 import { hasAcceptedCurrentTerms } from "@/lib/legal/terms";
 import { TEACHER_LIMITS } from "@/lib/admin/classConfig";
+
+export const metadata: Metadata = {
+  title: "Кабінет",
+};
 
 export const dynamic = "force-dynamic";
 

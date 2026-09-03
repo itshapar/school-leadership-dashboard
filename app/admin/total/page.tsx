@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadParallels } from "@/lib/admin/parallels";
 import TotalDashboardClient from "@/components/Admin/TotalDashboardClient";
+
+export const metadata: Metadata = {
+  title: "Рейтинг учнів",
+};
 
 export const dynamic = "force-dynamic";
 

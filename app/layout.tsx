@@ -4,9 +4,50 @@ import "./globals.css";
 import LegalFooter from "@/components/Legal/LegalFooter";
 import ThemeProvider from "@/components/ThemeProvider";
 
+/**
+ * Метадані сайту.
+ *
+ * title.template додає « · StarBoard» до заголовка кожної сторінки, тож
+ * вкладка завжди каже, і що це за сервіс, і де саме людина зараз. Раніше всі
+ * вкладки називались однаково, і десять відкритих класів були нерозрізнимі.
+ *
+ * metadataBase потрібен, щоб відносний шлях до og-картинки перетворювався на
+ * абсолютний: месенджери й соцмережі відносних адрес не розуміють і просто
+ * не покажуть прев'ю.
+ */
 export const metadata: Metadata = {
-  title: "StarBoard · Дошка зірок",
-  description: "Gamification dashboard для учнів 7-х класів",
+  metadataBase: new URL("https://www.starboard.co.ua"),
+  title: {
+    default: "StarBoard · Дошка зірок для класу",
+    template: "%s · StarBoard",
+  },
+  description:
+    "Журнал, зірки за роботу на уроці, нагороди й рейтинг класу. Безкоштовний інструмент для вчителя.",
+  applicationName: "StarBoard",
+  openGraph: {
+    type: "website",
+    siteName: "StarBoard",
+    locale: "uk_UA",
+    url: "https://www.starboard.co.ua",
+    title: "StarBoard · Дошка зірок для класу",
+    description:
+      "Журнал, зірки за роботу на уроці, нагороди й рейтинг класу. Безкоштовний інструмент для вчителя.",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "StarBoard, дошка зірок для класу",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "StarBoard · Дошка зірок для класу",
+    description:
+      "Журнал, зірки за роботу на уроці, нагороди й рейтинг класу. Безкоштовний інструмент для вчителя.",
+    images: ["/og.png"],
+  },
 };
 
 /**

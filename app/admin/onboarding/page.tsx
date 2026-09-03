@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Spin } from "antd";
 import OnboardingWizard from "@/components/Admin/Onboarding/OnboardingWizard";
+
+export const metadata: Metadata = {
+  title: "Новий клас",
+};
 
 export const dynamic = "force-dynamic";
 
