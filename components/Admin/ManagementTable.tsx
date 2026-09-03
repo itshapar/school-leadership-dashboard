@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Table, Select, Spin, message, Checkbox, Alert } from "antd";
+import { Table, Select, Spin, message, Checkbox, Alert, Tooltip } from "antd";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import dayjs from "dayjs";
@@ -275,33 +275,60 @@ export default function ManagementTable({
       )
     },
     ...prizes.map((prize) => {
+      /**
+       * Учень зібрав достатньо зірок, але нагороду ще не отримав — клітинка
+       * підсвічується зеленим (живий фідбек): вчителю треба бачити «кому вже
+       * можна видати» одним поглядом по колонці, а не звіряти суму зірок із
+       * порогом у голові. Поріг рахується від СУМИ зароблених зірок, як і на
+       * дашборді учня (PersonalDashboardClient): видана нагорода зірки не
+       * «витрачає».
+       *
+       * В архіві підсвітки немає: клітинка там некликабельна, і зелений
+       * заклик до дії, який нічого не зробить, тільки обманює.
+       */
+      const isEligible = (record: Student) =>
+        !readOnly &&
+        (totalStars[record.id] ?? 0) >= prize.stars_required &&
+        !(givenPrizes[record.id]?.[prize.id] ?? false);
+
       return {
         title: <div style={{ fontSize: "0.8rem", fontWeight: 900, whiteSpace: "nowrap" }} title={prize.name}>{prize.name}</div>,
         key: `prize_${prize.id}`,
         width: 100,
         align: "center" as const,
-        onCell: () => ({ style: { padding: 0 } }),
+        onCell: (record: Student) => ({
+          style: { padding: 0 },
+          className: isEligible(record) ? "prize-cell prize-cell-eligible" : "prize-cell",
+        }),
         render: (_value: unknown, record: Student) => {
-          const isUnlocked = (totalStars[record.id] ?? 0) >= prize.stars_required;
           const isGiven = givenPrizes[record.id]?.[prize.id] ?? false;
+          const eligible = isEligible(record);
           return (
-            <div style={{
-              height: "100%",
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "transparent",
-              transition: "all 0.2s"
-            }}>
-              <Checkbox
-                checked={isGiven}
-                disabled={readOnly}
-                onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
-                className={isUnlocked && !isGiven ? "prize-checkbox prize-eligible" : "prize-checkbox"}
-                style={{ transform: "scale(1.15)" }}
-              />
-            </div>
+            <Tooltip
+              title={
+                eligible
+                  ? `Зібрано ${totalStars[record.id] ?? 0} з ${prize.stars_required} зірок, нагороду можна видати`
+                  : ""
+              }
+            >
+              <div style={{
+                height: "100%",
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "transparent",
+                transition: "all 0.2s"
+              }}>
+                <Checkbox
+                  checked={isGiven}
+                  disabled={readOnly}
+                  onChange={(e) => handlePrizeToggle(record.id, prize.id, e.target.checked)}
+                  className={eligible ? "prize-checkbox prize-eligible" : "prize-checkbox"}
+                  style={{ transform: "scale(1.15)" }}
+                />
+              </div>
+            </Tooltip>
           );
 
         }
@@ -545,17 +572,22 @@ export default function ManagementTable({
           background-color: #20C31A !important;
           border-color: #20C31A !important;
         }
-        /* MORE ROBUST PRIZE ELIGIBILITY */
+        /* НАГОРОДУ ВЖЕ МОЖНА ВИДАТИ: зірок зібрано достатньо, чекбокс порожній.
+           Підсвічується вся клітинка, а не тільки рамка чекбокса (живий
+           фідбек): рамка 22×22 губилась серед десятка таких самих порожніх
+           квадратиків, і вчитель її просто не помічав. Зелену ж клітинку
+           видно по колонці згори донизу. Правило на hover — окремо: antd
+           перефарбовує td при наведенні на рядок і затирав би підсвітку. */
+        .management-grid td.prize-cell-eligible,
+        .management-grid .ant-table-tbody > tr.ant-table-row:hover > td.prize-cell-eligible {
+          background: #e6f9e4 !important;
+          box-shadow: inset 3px 0 0 #20C31A;
+        }
         .prize-checkbox.prize-eligible .ant-checkbox-inner {
           border-color: #20C31A !important;
           border-width: 3px !important;
-          box-shadow: 0 0 8px rgba(43,138,62,0.6) !important;
+          box-shadow: 0 0 0 3px rgba(32,195,26,0.25) !important;
           background-color: #ffffff !important;
-        }
-        .prize-checkbox.prize-eligible.ant-checkbox-wrapper-checked .ant-checkbox-inner {
-          background-color: #20C31A !important;
-          border-width: 2px !important;
-          box-shadow: none !important;
         }
         .score-select .ant-select-selection-item {
           font-size: 2rem !important;
