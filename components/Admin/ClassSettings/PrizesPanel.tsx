@@ -12,6 +12,7 @@ import {
   type IndividualPrize,
 } from "@/lib/admin/classConfig";
 import StarIcon from "@/components/StarIcon";
+import EmojiPicker from "@/components/EmojiPicker";
 
 /**
  * Нагороди класу — і індивідуальні, і класові, одним компонентом.
@@ -101,7 +102,7 @@ export default function PrizesPanel({
     setSaving(true);
     const payload: Record<string, unknown> = {
       name: values.name.trim(),
-      emoji: values.emoji.trim() || (isIndividual ? "🎁" : "🏆"),
+      emoji: (values.emoji ?? "").trim() || (isIndividual ? "🎁" : "🏆"),
       [thresholdColumn]: values.threshold,
     };
 
@@ -280,7 +281,7 @@ export default function PrizesPanel({
             label={<span style={{ fontWeight: 600 }}>Емодзі</span>}
             rules={[{ max: 16, message: "Занадто довго" }]}
           >
-            <Input size="large" style={{ fontSize: "1.4rem", width: 120 }} />
+            <EmojiPicker />
           </Form.Item>
 
           <Form.Item

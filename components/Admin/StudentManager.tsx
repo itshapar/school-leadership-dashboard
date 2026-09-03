@@ -15,6 +15,7 @@ import {
   fullNameRule,
 } from "@/lib/students/fullName";
 import BackButton from "@/components/BackButton";
+import EmojiPicker from "@/components/EmojiPicker";
 
 /**
  * Список учнів класу.
@@ -388,7 +389,7 @@ export default function StudentManager({
             name="avatar_emoji"
             rules={[{ required: true, message: "Оберіть емодзі" }]}
           >
-            <Input placeholder="🦁" size="large" style={{ fontSize: "1.5rem", width: 120 }} />
+            <EmojiPicker />
           </Form.Item>
         </Form>
       </Modal>

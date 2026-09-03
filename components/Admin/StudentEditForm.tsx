@@ -6,6 +6,7 @@ import { UserOutlined, SmileOutlined, SaveOutlined, ArrowLeftOutlined } from "@a
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
+import EmojiPicker from "@/components/EmojiPicker";
 import {
   FULL_NAME_COMBINED_HINT,
   FULL_NAME_LABEL,
@@ -108,7 +109,7 @@ export default function StudentEditForm({
             name="avatar_emoji"
             rules={[{ required: true, message: "Оберіть емодзі" }]}
           >
-            <Input placeholder="Наприклад: 🦁" style={{ fontSize: "1.5rem" }} />
+            <EmojiPicker />
           </Form.Item>
 
           <Form.Item style={{ marginTop: "32px", marginBottom: 0 }}>
