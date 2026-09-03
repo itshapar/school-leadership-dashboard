@@ -11,7 +11,7 @@
  * Каталог і український пошук — у lib/emojiCatalog.ts.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Input, Popover } from "antd";
 import { EMOJI_CATEGORIES, searchEmoji } from "@/lib/emojiCatalog";
 
@@ -58,6 +58,8 @@ export default function EmojiPicker({
   const [categoryId, setCategoryId] = useState(EMOJI_CATEGORIES[0].id);
   const [recent, setRecent] = useState<string[]>([]);
   const searchRef = useRef<import("antd").InputRef>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const detachWheel = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -67,6 +69,37 @@ export default function EmojiPicker({
       window.setTimeout(() => searchRef.current?.focus(), 50);
     }
   }, [open]);
+
+  /**
+   * Колесо миші над попапом не має гортати те, що під ним (живий фідбек:
+   * замість сітки їхала сторінка й модалка). CSS overscroll-behavior сам
+   * не рятує: над пошуком, вкладками чи полем "своє емодзі" прокручувати
+   * нічого, і браузер віддає подію батькам. Тому глушимо колесо всюди в
+   * панелі, крім випадку, коли сітці справді є куди їхати.
+   *
+   * Слухач вішається вручну, бо onWheel у React пасивний і preventDefault
+   * у ньому не працює. І саме callback-ref, а не useEffect на open: antd
+   * монтує вміст попапа пізніше за перемикання прапорця, тож ефект бачив
+   * би ref ще порожнім і не чіплявся б узагалі.
+   */
+  const panelRef = useCallback((node: HTMLDivElement | null) => {
+    detachWheel.current?.();
+    detachWheel.current = null;
+    if (!node) return;
+
+    const onWheel = (e: WheelEvent) => {
+      const grid = gridRef.current;
+      if (grid && grid.contains(e.target as Node)) {
+        const atTop = grid.scrollTop <= 0;
+        const atBottom = grid.scrollTop + grid.clientHeight >= grid.scrollHeight - 1;
+        if ((e.deltaY < 0 && !atTop) || (e.deltaY > 0 && !atBottom)) return;
+      }
+      e.preventDefault();
+    };
+
+    node.addEventListener("wheel", onWheel, { passive: false });
+    detachWheel.current = () => node.removeEventListener("wheel", onWheel);
+  }, []);
 
   const results = useMemo(() => searchEmoji(query), [query]);
   const searching = query.trim().length > 0;
@@ -99,7 +132,18 @@ export default function EmojiPicker({
   const content = (
     // На вузькому екрані попап не має впиратися в краї: інакше antd
     // притискає його до самого борту вікна.
-    <div style={{ width: "min(316px, calc(100vw - 88px))" }}>
+    //
+    // overflow + overscroll-behavior на самій обгортці — проти scroll
+    // chaining (живий фідбек): коли сітка догорнута до краю, або коли
+    // курсор просто над пошуком чи вкладками, колесо йшло далі й
+    // прокручувало сторінку та модалку під попапом. overflow: hidden
+    // робить обгортку скрол-контейнером (сама вона нікуди не їде), а
+    // contain забороняє передавати прокрутку батькам.
+    <div
+      ref={panelRef}
+      className="emoji-panel"
+      style={{ width: "min(316px, calc(100vw - 88px))" }}
+    >
       <Input
         ref={searchRef}
         allowClear
@@ -118,6 +162,8 @@ export default function EmojiPicker({
             borderBottom: "2px solid #f1f3f5",
             paddingBottom: 6,
             overflowX: "auto",
+            overscrollBehavior: "contain",
+            touchAction: "pan-x",
           }}
         >
           {EMOJI_CATEGORIES.map((c) => (
@@ -153,7 +199,8 @@ export default function EmojiPicker({
           якщо він вищий за вільне місце, antd перевертає його вгору і верх
           (пошук, вкладки) виїжджає за екран. */}
       <div
-        className="emoji-grid"
+        ref={gridRef}
+        className="emoji-grid emoji-grid-scroll"
         style={{ maxHeight: !searching && recent.length > 0 ? 106 : 140, overflowY: "auto" }}
       >
         {shown.map((e, i) => cell(e, `${searching ? "q" : category.id}-${i}-${e}`))}
@@ -177,10 +224,22 @@ export default function EmojiPicker({
       </div>
 
       <style jsx global>{`
+        /* touch-action — та сама історія, що й зі слухачем колеса, тільки
+           для пальця: тягнути сторінку крізь попап не можна, а всередині
+           сітки вертикальний свайп лишається робочим. */
+        .emoji-panel {
+          overflow: hidden;
+          overscroll-behavior: contain;
+          touch-action: none;
+        }
         .emoji-grid {
           display: grid;
           grid-template-columns: repeat(9, 1fr);
           gap: 2px;
+        }
+        .emoji-grid-scroll {
+          overscroll-behavior: contain;
+          touch-action: pan-y;
         }
         .emoji-cell {
           font-size: 1.25rem;
