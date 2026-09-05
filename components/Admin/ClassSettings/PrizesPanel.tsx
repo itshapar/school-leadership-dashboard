@@ -12,6 +12,7 @@ import {
   type IndividualPrize,
 } from "@/lib/admin/classConfig";
 import StarIcon from "@/components/StarIcon";
+import { sortPrizesByCost } from "@/lib/prizeOrder";
 import EmojiPicker from "@/components/EmojiPicker";
 
 /**
@@ -69,19 +70,23 @@ export default function PrizesPanel({
   const thresholdColumn = isIndividual ? "stars_required" : "threshold";
   const limit = isIndividual ? CLASS_LIMITS.individualPrizes : CLASS_LIMITS.classPrizes;
 
-  const rows: Row[] = isIndividual
-    ? individualPrizes.map((p) => ({
-        id: p.id,
-        name: p.name,
-        emoji: p.emoji,
-        threshold: p.stars_required,
-      }))
-    : classPrizes.map((p) => ({
-        id: p.id,
-        name: p.name,
-        emoji: p.emoji,
-        threshold: p.threshold,
-      }));
+  // Список нагород скрізь іде за зростанням ціни, а не в порядку створення.
+  const rows: Row[] = sortPrizesByCost(
+    isIndividual
+      ? individualPrizes.map((p) => ({
+          id: p.id,
+          name: p.name,
+          emoji: p.emoji,
+          threshold: p.stars_required,
+        }))
+      : classPrizes.map((p) => ({
+          id: p.id,
+          name: p.name,
+          emoji: p.emoji,
+          threshold: p.threshold,
+        })),
+    (p) => p.threshold
+  );
 
   const atLimit = rows.length >= limit;
 

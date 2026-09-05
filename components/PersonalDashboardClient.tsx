@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { uk } from "date-fns/locale";
 import { CheckCircleFilled, HistoryOutlined, LockOutlined, TrophyOutlined } from "@ant-design/icons";
 import StarIcon from "@/components/StarIcon";
+import { sortIndividualPrizes } from "@/lib/prizeOrder";
 
 interface Prize {
   id: string;
@@ -205,7 +206,9 @@ export default function PersonalDashboardClient({
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {prizes.map((p, idx) => {
+          {/* Від найдешевшої нагороди до найдорожчої: учень має бачити
+              найближчу мету першою, а не ту, яку вчитель завів раніше. */}
+          {sortIndividualPrizes(prizes).map((p, idx) => {
             const pct = Math.min(100, Math.round((individualStars / p.stars_required) * 100));
             const hasThreshold = individualStars >= p.stars_required;
             const isGiven = givenPrizes[p.id] || false;

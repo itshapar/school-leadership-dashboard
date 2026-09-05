@@ -1,5 +1,6 @@
 import { Progress } from "antd";
 import type { PublicClassPrize } from "@/lib/public/classData";
+import { sortClassPrizes } from "@/lib/prizeOrder";
 
 /**
  * Прогрес класу до кожного класового призу.
@@ -7,7 +8,7 @@ import type { PublicClassPrize } from "@/lib/public/classData";
  * Раніше було рівно два зашиті рядки — Game Day і Pizza Day — бо пороги
  * жили двома стовпцями в `classes`. Тепер призи класу конфігуровані
  * (class_prizes, міграція 016), тож компонент рендерить стільки смуг,
- * скільки їх завів учитель, у його ж порядку.
+ * скільки їх завів учитель, від найдешевшої до найдорожчої.
  */
 export default function ClassProgressBars({
   totalStars,
@@ -26,7 +27,7 @@ export default function ClassProgressBars({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      {prizes.map((prize) => {
+      {sortClassPrizes(prizes).map((prize) => {
         const percent =
           prize.threshold > 0
             ? Math.min(100, Math.round((totalStars / prize.threshold) * 100))

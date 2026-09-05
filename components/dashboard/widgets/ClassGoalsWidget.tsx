@@ -4,14 +4,15 @@ import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import type { ClassPrizeLite } from "@/lib/analytics";
 import StarIcon from "@/components/StarIcon";
+import { sortClassPrizes } from "@/lib/prizeOrder";
 
 /**
  * «Епічні цілі класу» — прогрес до кожного класового призу.
  *
  * Раніше два зашиті пончики Game Day / Pizza Day читали
  * classInfo.game_day_threshold та .pizza_day_threshold. Тепер цілі
- * конфігуровані (class_prizes, міграція 016), тож віджет рендерить перші
- * чотири призи вчителя — далі пончики стають нечитабельними, і решту
+ * конфігуровані (class_prizes, міграція 016), тож віджет рендерить чотири
+ * найдешевші призи вчителя — далі пончики стають нечитабельними, і решту
  * видно на публічній сторінці класу.
  */
 
@@ -37,7 +38,9 @@ export default function ClassGoalsWidget({
   leaderboard: LeaderboardRow[];
 }) {
   const totalStars = leaderboard.reduce((sum, s) => sum + s.totalStars, 0);
-  const prizes = (classInfo?.class_prizes ?? []).slice(0, MAX_GOALS);
+  // Спершу найдешевші цілі: у віджет влазять чотири, і корисніші саме ті,
+  // до яких клас найближче.
+  const prizes = sortClassPrizes(classInfo?.class_prizes ?? []).slice(0, MAX_GOALS);
   const hiddenCount = (classInfo?.class_prizes?.length ?? 0) - prizes.length;
 
   const renderChart = (prize: ClassPrizeLite, color: string) => {

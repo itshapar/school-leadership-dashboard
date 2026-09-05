@@ -13,6 +13,8 @@ import {
   type ManagementJournalPrize,
 } from "@/lib/admin/managementJournalData";
 import type { EntryType } from "@/lib/admin/classConfig";
+import { sortIndividualPrizes } from "@/lib/prizeOrder";
+import StarIcon from "@/components/StarIcon";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 
 type Student = ManagementJournalStudent;
@@ -57,7 +59,9 @@ function toState(data: ManagementJournalData): JournalState {
   return {
     students: data.students,
     lessons: data.lessons,
-    prizes: data.prizes,
+    // Колонки нагород — від найдешевшої до найдорожчої, а не в порядку
+    // створення: так вчитель читає їх зліва направо як шкалу.
+    prizes: sortIndividualPrizes(data.prizes),
     entryTypes: data.entryTypes,
     lessonType: data.lessonType,
     entries: data.entries,
@@ -292,7 +296,16 @@ export default function ManagementTable({
         !(givenPrizes[record.id]?.[prize.id] ?? false);
 
       return {
-        title: <div style={{ fontSize: "0.8rem", fontWeight: 900, whiteSpace: "nowrap" }} title={prize.name}>{prize.name}</div>,
+        title: (
+          <div style={{ fontSize: "0.8rem", fontWeight: 900, whiteSpace: "nowrap" }} title={`${prize.name}, ${prize.stars_required} зірок`}>
+            <div style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{prize.name}</div>
+            {/* Ціна нагороди прямо в шапці: інакше вчитель звіряє поріг
+                з налаштуваннями класу, щоб зрозуміти колонку. */}
+            <div style={{ fontWeight: 600, color: "var(--color-text-muted)" }}>
+              {prize.stars_required} <StarIcon />
+            </div>
+          </div>
+        ),
         key: `prize_${prize.id}`,
         width: 100,
         align: "center" as const,
