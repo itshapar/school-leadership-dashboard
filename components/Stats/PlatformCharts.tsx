@@ -46,8 +46,10 @@ function Panel({ title, hint, children }: { title: string; hint?: string; childr
 
 export default function PlatformCharts({ stats }: { stats: PlatformStats }) {
   const weekly = stats.weekly ?? [];
-  const prizes = stats.prizes?.top_given ?? [];
+  const daily = stats.daily ?? [];
   const types = stats.entry_types ?? [];
+  const individualPrizes = stats.prizes?.individual_list ?? [];
+  const classPrizes = stats.prizes?.class_list ?? [];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -74,11 +76,11 @@ export default function PlatformCharts({ stats }: { stats: PlatformStats }) {
         </ResponsiveContainer>
       </Panel>
 
-      <Panel title="Нові вчителі по тижнях" hint="Скільки акаунтів реєструється щотижня.">
+      <Panel title="Нові вчителі по днях" hint="Скільки акаунтів реєструється щодня, за останні 30 днів.">
         <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={weekly} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
+          <BarChart data={daily} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" vertical={false} />
-            <XAxis dataKey="week_label" tick={{ fontWeight: 700, fontSize: 12 }} />
+            <XAxis dataKey="day_label" interval={2} tick={{ fontWeight: 700, fontSize: 11 }} />
             <YAxis allowDecimals={false} tick={{ fontWeight: 700, fontSize: 12 }} />
             <Tooltip {...TOOLTIP} />
             <Bar dataKey="teachers" name="Нових вчителів" fill="#20C31A" radius={[4, 4, 0, 0]} />
@@ -86,91 +88,87 @@ export default function PlatformCharts({ stats }: { stats: PlatformStats }) {
         </ResponsiveContainer>
       </Panel>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-        <Panel title="Які нагороди видають" hint="Скільки разів нагороду реально вручили учням.">
-          {prizes.length === 0 ? (
-            <Empty />
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {prizes.map((p, i) => {
-                const max = prizes[0].given || 1;
-                return (
-                  <div key={`${p.name}-${i}`}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 800, fontSize: "0.9rem" }}>
-                      <span>
-                        {p.emoji} {p.name}
-                      </span>
-                      <span>{p.given}</span>
-                    </div>
-                    <div style={{ height: 10, background: "#f1f3f5", borderRadius: 6, marginTop: 4, overflow: "hidden" }}>
-                      <div
-                        style={{
-                          width: `${Math.max(4, (p.given / max) * 100)}%`,
-                          height: "100%",
-                          background: "var(--color-star)",
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Panel>
+      <Panel title="Демо по днях" hint="Скільки разів запускали демо-пісочницю, за останні 30 днів.">
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={daily} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" vertical={false} />
+            <XAxis dataKey="day_label" interval={2} tick={{ fontWeight: 700, fontSize: 11 }} />
+            <YAxis allowDecimals={false} tick={{ fontWeight: 700, fontSize: 12 }} />
+            <Tooltip {...TOOLTIP} />
+            <Bar dataKey="demos" name="Запусків демо" fill="#7048e8" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </Panel>
 
-        <Panel title="За що нараховують" hint="Типи нарахувань і скільки зірок вони принесли.">
-          {types.length === 0 ? (
-            <Empty />
-          ) : (
-            <ResponsiveContainer width="100%" height={Math.max(160, types.length * 46)}>
-              <BarChart data={types} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 10 }}>
-                <XAxis type="number" hide />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  width={90}
-                  tick={{ fontWeight: 700, fontSize: 12 }}
-                />
-                <Tooltip {...TOOLTIP} />
-                <Bar dataKey="uses" name="Нарахувань" radius={[0, 6, 6, 0]}>
-                  {types.map((t, i) => (
-                    <Cell key={t.name} fill={t.stars < 0 ? "#fa5252" : i === 0 ? "#000000" : "#F08C00"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </Panel>
-      </div>
-
-      <Panel title="Найпопулярніші нагороди в налаштуваннях" hint="Скільки класів завели таку нагороду і за скільки зірок у середньому.">
-        {stats.prizes.top_defined.length === 0 ? (
+      <Panel title="За що нараховують" hint="Типи нарахувань і скільки зірок вони принесли.">
+        {types.length === 0 ? (
           <Empty />
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
-              <thead>
-                <tr style={{ textAlign: "left", fontWeight: 900, textTransform: "uppercase", fontSize: "0.75rem" }}>
-                  <th style={{ padding: "8px 6px" }}>Нагорода</th>
-                  <th style={{ padding: "8px 6px" }}>Класів</th>
-                  <th style={{ padding: "8px 6px" }}>Поріг, зірок</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.prizes.top_defined.map((p, i) => (
-                  <tr key={`${p.name}-${i}`} style={{ borderTop: "2px solid #f1f3f5", fontWeight: 700 }}>
-                    <td style={{ padding: "8px 6px" }}>
-                      {p.emoji} {p.name}
-                    </td>
-                    <td style={{ padding: "8px 6px" }}>{p.classes}</td>
-                    <td style={{ padding: "8px 6px" }}>{p.avg_stars}</td>
-                  </tr>
+          <ResponsiveContainer width="100%" height={Math.max(160, types.length * 46)}>
+            <BarChart data={types} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 10 }}>
+              <XAxis type="number" hide />
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={90}
+                tick={{ fontWeight: 700, fontSize: 12 }}
+              />
+              <Tooltip {...TOOLTIP} />
+              <Bar dataKey="uses" name="Нарахувань" radius={[0, 6, 6, 0]}>
+                {types.map((t, i) => (
+                  <Cell key={t.name} fill={t.stars < 0 ? "#fa5252" : i === 0 ? "#000000" : "#F08C00"} />
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         )}
       </Panel>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
+        <Panel
+          title="Індивідуальні нагороди"
+          hint={`${individualPrizes.length} різних назв у класах вчителів.`}
+        >
+          <PrizeList items={individualPrizes} />
+        </Panel>
+
+        <Panel
+          title="Нагороди для всього класу"
+          hint={`${classPrizes.length} різних назв у класах вчителів.`}
+        >
+          <PrizeList items={classPrizes} />
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Перелік нагород, а не рейтинг: вчителі називають нагороди надто по-різному,
+ * щоб «топ» щось означав. Тут видно, чим люди справді мотивують дітей.
+ */
+function PrizeList({ items }: { items: Array<{ emoji: string | null; name: string }> }) {
+  if (items.length === 0) return <Empty />;
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, maxHeight: 320, overflowY: "auto" }}>
+      {items.map((p, i) => (
+        <span
+          key={`${p.name}-${i}`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            border: "2px solid #000",
+            borderRadius: 8,
+            padding: "5px 10px",
+            fontWeight: 600,
+            fontSize: "0.85rem",
+          }}
+        >
+          <span aria-hidden>{p.emoji || "⭐"}</span>
+          {p.name}
+        </span>
+      ))}
     </div>
   );
 }

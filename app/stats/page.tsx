@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 /**
  * Статистика платформи: скільки вчителів приходить, як вони користуються
- * продуктом, що нараховують і які нагороди видають.
+ * продуктом, що нараховують і які нагороди заводять у класах.
  *
  * Доступ закритий подвійно, і це навмисно:
  *   • сторінка вимагає ролі platform_role=admin у app_metadata (міграція
@@ -50,8 +50,20 @@ export default async function PlatformStatsPage() {
     { label: "Зірок роздано", value: stats.activity.stars_total, hint: `${stats.activity.entries_total} нарахувань`, accent: "#F08C00" },
     { label: "Нагород вручено", value: stats.prizes.given_total, hint: `${stats.prizes.individual_defined} заведено в класах`, accent: "#F08C00" },
     { label: "Уроків проведено", value: stats.activity.lessons, hint: `${stats.activity.entries_7d} нарахувань за тиждень`, accent: "#000000" },
-    { label: "Демо за добу", value: stats.demo.sessions_24h, hint: `${stats.demo.sessions_7d} за тиждень`, accent: "#7048e8" },
+    {
+      label: "Демо за добу",
+      value: stats.demo.sessions_24h,
+      hint: `${stats.demo.sessions_7d} за тиждень · ${stats.demo.live_now} зараз у демо`,
+      accent: "#7048e8",
+    },
   ];
+
+  // Журнал запусків демо завели в міграції 046, і до неї історії не існувало:
+  // анонімні сесії прибирає pg_cron через 6 годин. Поки журналу менше тижня,
+  // числа «за тиждень» і «за місяць» неповні, і про це чесніше сказати.
+  const demoTrackedSince = stats.demo.tracking_since ? new Date(stats.demo.tracking_since) : null;
+  const demoTrackingIsYoung =
+    !demoTrackedSince || Date.now() - demoTrackedSince.getTime() < 7 * 24 * 60 * 60 * 1000;
 
   return (
     <div className="page-container" style={{ maxWidth: "1000px", paddingBottom: "60px" }}>
@@ -72,7 +84,8 @@ export default async function PlatformStatsPage() {
           Статистика платформи
         </h1>
         <div style={{ marginTop: 6, color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.85rem" }}>
-          Оновлено {new Date(stats.generated_at).toLocaleString("uk-UA")} · демо-гості й демо-класи в числа не входять
+          Оновлено {new Date(stats.generated_at).toLocaleString("uk-UA")} · демо-гості, демо-класи і
+          службові акаунти в числа не входять
         </div>
       </div>
 
@@ -107,6 +120,18 @@ export default async function PlatformStatsPage() {
       </div>
 
       <PlatformCharts stats={stats} />
+
+      {demoTrackingIsYoung && (
+        <div
+          className="star-card"
+          style={{ marginTop: 16, padding: 18, fontSize: "0.85rem", fontWeight: 600, lineHeight: 1.6 }}
+        >
+          Запуски демо рахуються з{" "}
+          {demoTrackedSince ? demoTrackedSince.toLocaleDateString("uk-UA") : "моменту, коли з'явиться перший гість"}
+          . Раніше сліду не лишалося: анонімні сесії прибираються через 6 годин, тож усе, що було до
+          цієї дати, не відновити.
+        </div>
+      )}
 
       <div className="star-card" style={{ marginTop: 16, padding: 18, fontSize: "0.85rem", fontWeight: 600, lineHeight: 1.6 }}>
         Тут немає жодного імені учня, нікнейма чи нотатки: сторінка бачить лише лічильники й назви

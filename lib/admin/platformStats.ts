@@ -3,15 +3,16 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 /**
  * Статистика платформи для власника продукту.
  *
- * Дані бере RPC platform_stats_full (міграція 044), і він доступний ЛИШЕ
+ * Дані бере RPC platform_stats_full (міграція 046), і він доступний ЛИШЕ
  * ролі service_role: ані anon, ані звичайний залогінений вчитель викликати
  * його не можуть, навіть знаючи назву. Тобто захист стоїть у базі, а не лише
  * в тому, що сторінку важко вгадати.
  *
- * Скрізь у числах виключені анонімні гості демо і демо-класи: інакше кожен
- * перегляд туторіала виглядав би як новий вчитель із класом на 12 учнів.
+ * У числа не входять: анонімні гості демо, демо-класи і службові акаунти
+ * (platform_role=admin або internal_account=true в app_metadata). Інакше
+ * власний акаунт і тестовий важили б у статистиці більше за десяток
+ * справжніх вчителів. Демо рахується окремим блоком, по журналу запусків.
  */
-
 export interface PlatformStats {
   generated_at: string;
   teachers: {
@@ -34,12 +35,20 @@ export interface PlatformStats {
     individual_defined: number;
     class_defined: number;
     given_total: number;
-    top_given: Array<{ emoji: string; name: string; given: number }>;
-    top_defined: Array<{ emoji: string; name: string; classes: number; avg_stars: number }>;
+    individual_list: Array<{ emoji: string | null; name: string }>;
+    class_list: Array<{ emoji: string | null; name: string }>;
   };
   entry_types: Array<{ icon: string; name: string; uses: number; stars: number }>;
-  weekly: Array<{ week_label: string; teachers: number; entries: number; stars: number }>;
-  demo: { sessions_24h: number; sessions_7d: number; live_now: number };
+  weekly: Array<{ week_label: string; entries: number; stars: number }>;
+  daily: Array<{ day_label: string; teachers: number; demos: number }>;
+  demo: {
+    sessions_24h: number;
+    sessions_7d: number;
+    sessions_30d: number;
+    total: number;
+    tracking_since: string | null;
+    live_now: number;
+  };
 }
 
 export async function getPlatformStats(): Promise<PlatformStats | null> {
