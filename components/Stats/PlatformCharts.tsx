@@ -5,8 +5,6 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Line,
-  ComposedChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -45,7 +43,6 @@ function Panel({ title, hint, children }: { title: string; hint?: string; childr
 }
 
 export default function PlatformCharts({ stats }: { stats: PlatformStats }) {
-  const weekly = stats.weekly ?? [];
   const daily = stats.daily ?? [];
   const types = stats.entry_types ?? [];
   const individualPrizes = stats.prizes?.individual_list ?? [];
@@ -53,29 +50,6 @@ export default function PlatformCharts({ stats }: { stats: PlatformStats }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <Panel
-        title="Активність по тижнях"
-        hint="Стовпчики, нарахування. Лінія, скільки зірок роздано за тиждень."
-      >
-        <ResponsiveContainer width="100%" height={260}>
-          <ComposedChart data={weekly} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" vertical={false} />
-            <XAxis dataKey="week_label" tick={{ fontWeight: 700, fontSize: 12 }} />
-            <YAxis tick={{ fontWeight: 700, fontSize: 12 }} />
-            <Tooltip {...TOOLTIP} />
-            <Bar dataKey="entries" name="Нарахувань" fill="#000000" radius={[4, 4, 0, 0]} />
-            <Line
-              type="monotone"
-              dataKey="stars"
-              name="Зірок"
-              stroke="#F08C00"
-              strokeWidth={3}
-              dot={{ r: 3 }}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </Panel>
-
       <Panel title="Нові вчителі по днях" hint="Скільки акаунтів реєструється щодня, за останні 30 днів.">
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={daily} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>

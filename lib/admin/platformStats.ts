@@ -3,7 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 /**
  * Статистика платформи для власника продукту.
  *
- * Дані бере RPC platform_stats_full (міграція 046), і він доступний ЛИШЕ
+ * Дані бере RPC platform_stats_full (міграція 047), і він доступний ЛИШЕ
  * ролі service_role: ані anon, ані звичайний залогінений вчитель викликати
  * його не можуть, навіть знаючи назву. Тобто захист стоїть у базі, а не лише
  * в тому, що сторінку важко вгадати.
@@ -39,7 +39,6 @@ export interface PlatformStats {
     class_list: Array<{ emoji: string | null; name: string }>;
   };
   entry_types: Array<{ icon: string; name: string; uses: number; stars: number }>;
-  weekly: Array<{ week_label: string; entries: number; stars: number }>;
   daily: Array<{ day_label: string; teachers: number; demos: number }>;
   demo: {
     sessions_24h: number;

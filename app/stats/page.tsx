@@ -58,12 +58,12 @@ export default async function PlatformStatsPage() {
     },
   ];
 
-  // Журнал запусків демо завели в міграції 046, і до неї історії не існувало:
-  // анонімні сесії прибирає pg_cron через 6 годин. Поки журналу менше тижня,
-  // числа «за тиждень» і «за місяць» неповні, і про це чесніше сказати.
+  // Історію демо до 5 вересня 2026 відновлено з логів авторизації Supabase
+  // (міграція 047), далі лік веде власний журнал. Поки історії менше місяця,
+  // чесніше показати, з якої дати вона взагалі є.
   const demoTrackedSince = stats.demo.tracking_since ? new Date(stats.demo.tracking_since) : null;
   const demoTrackingIsYoung =
-    !demoTrackedSince || Date.now() - demoTrackedSince.getTime() < 7 * 24 * 60 * 60 * 1000;
+    !demoTrackedSince || Date.now() - demoTrackedSince.getTime() < 30 * 24 * 60 * 60 * 1000;
 
   return (
     <div className="page-container" style={{ maxWidth: "1000px", paddingBottom: "60px" }}>
@@ -128,8 +128,8 @@ export default async function PlatformStatsPage() {
         >
           Запуски демо рахуються з{" "}
           {demoTrackedSince ? demoTrackedSince.toLocaleDateString("uk-UA") : "моменту, коли з'явиться перший гість"}
-          . Раніше сліду не лишалося: анонімні сесії прибираються через 6 годин, тож усе, що було до
-          цієї дати, не відновити.
+          , від самого початку демо. Історію до 5 вересня відновлено з логів авторизації, далі лік
+          веде власний журнал.
         </div>
       )}
 
