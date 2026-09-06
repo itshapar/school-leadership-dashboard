@@ -4,7 +4,7 @@ import Link from "next/link";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
 import { ChartLineUp } from "@phosphor-icons/react/dist/ssr";
 import { formatClassCode } from "@/lib/classCodes";
-import { loadParallels } from "@/lib/admin/parallels";
+import { loadParallels, loadParallelsEnabled } from "@/lib/admin/parallels";
 import { firstAvailablePeriod, type PeriodCode } from "@/lib/admin/periods";
 import { getOnboardingProgressBatch } from "@/lib/admin/onboarding";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
@@ -29,7 +29,7 @@ export default async function AdminPage() {
   // реєструвалися до появи чекбоксів (Етап 5, п. 9).
   const termsAccepted = await hasAcceptedCurrentTerms(supabase);
 
-  const [{ data: classes }, parallels, { data: auth }] = await Promise.all([
+  const [{ data: classes }, parallels, parallelsEnabled, { data: auth }] = await Promise.all([
     supabase
       .from("classes")
       .select("id, name, public_code, parallel_id, period_code, archived_at, is_demo")
@@ -40,6 +40,7 @@ export default async function AdminPage() {
       .is("deleted_at", null)
       .order("name"),
     loadParallels(supabase),
+    loadParallelsEnabled(supabase),
     supabase.auth.getUser(),
   ]);
 
@@ -192,6 +193,7 @@ export default async function AdminPage() {
       <AdminClassList
         classes={cards}
         parallels={parallels}
+        parallelsEnabled={parallelsEnabled}
         firstPeriod={firstPeriod}
       >
         {/* Дашборд стоїть ПІД дивайдером, усередині обраного періоду
@@ -217,7 +219,11 @@ export default async function AdminPage() {
               }}>
                 <div>
                   <div style={{ fontSize: "1.5rem", fontWeight: 900, textTransform: "uppercase" }}>Загальний дашборд</div>
-                  <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>За паралеллю, розширена статистика, цілі та графіки</div>
+                  <div style={{ opacity: 0.8, fontSize: "0.9rem", fontWeight: 600 }}>
+                    {parallelsEnabled
+                      ? "За паралеллю, розширена статистика, цілі та графіки"
+                      : "За класами, розширена статистика, цілі та графіки"}
+                  </div>
                 </div>
                 <ChartLineUp weight="bold" style={{ fontSize: "2.5rem", color: "#000" }} />
               </div>

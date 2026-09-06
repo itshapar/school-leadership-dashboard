@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Form, Input, InputNumber, Modal, Popconfirm, Table, message } from "antd";
-import { PencilSimple, Plus, Trash } from "@phosphor-icons/react";
+import { Copy, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
   CLASS_LIMITS,
@@ -14,6 +14,7 @@ import {
 import StarIcon from "@/components/StarIcon";
 import { sortPrizesByCost } from "@/lib/prizeOrder";
 import EmojiPicker from "@/components/EmojiPicker";
+import CopyPrizesModal from "@/components/Admin/ClassSettings/CopyPrizesModal";
 
 /**
  * Нагороди класу — і індивідуальні, і класові, одним компонентом.
@@ -60,6 +61,7 @@ export default function PrizesPanel({
   readOnly = false,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
   const [editing, setEditing] = useState<Row | null>(null);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm<FormValues>();
@@ -218,16 +220,28 @@ export default function PrizesPanel({
             ? "Учень отримує нагороду, коли набирає потрібну кількість власних зірок"
             : "Нагороду отримує весь клас, коли зірки класу сягають потрібної кількості"}
         </span>
-        <Button
-          type="primary"
-          icon={<Plus />}
-          onClick={openCreate}
-          disabled={atLimit || readOnly}
-          className="btn-primary"
-          style={{ flexShrink: 0 }}
-        >
-          ДОДАТИ НАГОРОДУ
-        </Button>
+        {/* Дві дії поруч: завести нагороду з нуля або взяти готову з іншого
+            свого класу (живий фідбек). Копія другорядна лише візуально,
+            саме нею вчитель із кількома класами користується найчастіше. */}
+        <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
+          <Button
+            icon={<Copy />}
+            onClick={() => setCopyOpen(true)}
+            disabled={atLimit || readOnly}
+            className="btn-secondary"
+          >
+            СКОПІЮВАТИ
+          </Button>
+          <Button
+            type="primary"
+            icon={<Plus />}
+            onClick={openCreate}
+            disabled={atLimit || readOnly}
+            className="btn-primary"
+          >
+            ДОДАТИ НАГОРОДУ
+          </Button>
+        </div>
       </div>
 
       <Table
@@ -302,6 +316,17 @@ export default function PrizesPanel({
           </Form.Item>
         </Form>
       </Modal>
+
+      <CopyPrizesModal
+        open={copyOpen}
+        classId={classId}
+        kind={kind}
+        existingNames={rows.map((r) => r.name)}
+        remaining={Math.max(0, limit - rows.length)}
+        nextSortOrder={rows.length + 1}
+        onClose={() => setCopyOpen(false)}
+        onCopied={onChanged}
+      />
     </div>
   );
 }

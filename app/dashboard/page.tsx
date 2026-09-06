@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getDashboardData } from "@/lib/analytics";
-import { loadParallels } from "@/lib/admin/parallels";
+import { loadParallels, loadParallelsEnabled } from "@/lib/admin/parallels";
 import BentoGrid from "@/components/dashboard/BentoGrid";
 import Link from "next/link";
 import "./dashboard.css";
@@ -49,10 +49,15 @@ export default async function DashboardPage({
   // перед "2" за звичайним рядковим порядком з БД. Паралель — легкий тег
   // без CRUD-екрана: рядок лишається в таблиці, навіть коли жоден клас на
   // неї вже не посилається — такі порожні паралелі ховаємо з чипів.
+  // Вимикач паралелей у профілі вчителя (міграція 048): у закладах без
+  // паралелей ряду чипів тут немає взагалі, лишається фільтр за класами.
+  const parallelsEnabled = await loadParallelsEnabled(supabase);
   const classesWithParallel = new Set(data.classes.map((c: any) => c.parallel_id).filter(Boolean));
-  const parallels = (await loadParallels(supabase))
-    .filter((p) => classesWithParallel.has(p.id))
-    .sort((a, b) => Number(a.name) - Number(b.name));
+  const parallels = parallelsEnabled
+    ? (await loadParallels(supabase))
+        .filter((p) => classesWithParallel.has(p.id))
+        .sort((a, b) => Number(a.name) - Number(b.name))
+    : [];
 
   // Common styles for the KPI cards
   const kpiCardStyle = {

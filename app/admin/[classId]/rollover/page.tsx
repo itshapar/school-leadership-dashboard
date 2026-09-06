@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolveOwnedClass } from "@/lib/admin/resolveClass";
-import { loadParallels } from "@/lib/admin/parallels";
+import { loadParallels, loadParallelsEnabled } from "@/lib/admin/parallels";
 import type { PeriodCode } from "@/lib/admin/periods";
 import RolloverClient, {
   type RolloverStudent,
@@ -33,7 +33,7 @@ export default async function ClassRolloverPage({ params }: Props) {
   if (!cls) return notFound();
   if (cls.archived_at) redirect(`/admin/${cls.public_code}/settings`);
 
-  const [{ data: meta }, { data: students }, parallels] = await Promise.all([
+  const [{ data: meta }, { data: students }, parallels, parallelsEnabled] = await Promise.all([
     supabase
       .from("classes")
       .select("parallel_id, period_code")
@@ -46,6 +46,7 @@ export default async function ClassRolloverPage({ params }: Props) {
       .is("deleted_at", null)
       .order("full_name"),
     loadParallels(supabase),
+    loadParallelsEnabled(supabase),
   ]);
 
   // Назву паралелі беремо зі списку, а не вкладеним select-ом: зв'язок
@@ -62,6 +63,7 @@ export default async function ClassRolloverPage({ params }: Props) {
         className={cls.name}
         periodCode={meta?.period_code as PeriodCode}
         parallelName={parallelName}
+        parallelsEnabled={parallelsEnabled}
         students={(students ?? []) as RolloverStudent[]}
       />
     </div>

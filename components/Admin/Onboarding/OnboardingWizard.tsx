@@ -96,7 +96,11 @@ interface StudentLite {
   nickname: string | null;
 }
 
-export default function OnboardingWizard() {
+/**
+ * @param parallelsEnabled вимикач паралелей із профілю вчителя (міграція 048):
+ *   у закладах без паралелей крок «Клас» питає лише назву.
+ */
+export default function OnboardingWizard({ parallelsEnabled }: { parallelsEnabled: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = getSupabaseClient();
@@ -237,7 +241,9 @@ export default function OnboardingWizard() {
   }
 
   async function createClass(values: { name: string }) {
-    if (!parallelId) {
+    // Паралель обов'язкова лише там, де вона взагалі є: з вимкненими
+    // паралелями клас створюється з parallel_id = null.
+    if (parallelsEnabled && !parallelId) {
       setParallelTouched(true);
       message.error("Оберіть паралель");
       return;
@@ -378,7 +384,11 @@ export default function OnboardingWizard() {
           <div>
             <StepHeader
               title="Створіть клас"
-              hint="Паралель (номер 1–12) і назва класу обов'язкові, наприклад «7-А» або «ПМ2»."
+              hint={
+                parallelsEnabled
+                  ? "Паралель (номер 1–12) і назва класу обов'язкові, наприклад «7-А» або «ПМ2»."
+                  : "Назва класу обов'язкова, наприклад «7-А» або «ПМ2»."
+              }
             />
 
             {cls ? (
@@ -406,22 +416,27 @@ export default function OnboardingWizard() {
                   <span style={{ color: "#868e96" }}> ({periodRangeLabel(period)})</span>
                 </div>
 
-                <Form.Item
-                  label={<span style={{ fontWeight: 600 }}>Паралель</span>}
-                  required
-                  validateStatus={parallelTouched && !parallelId ? "error" : undefined}
-                  help={parallelTouched && !parallelId ? "Оберіть паралель" : undefined}
-                >
-                  <Select
-                    size="large"
-                    loading={resolvingGrade}
-                    placeholder="Клас (1–12)"
-                    value={selectedGrade}
-                    onChange={onGradeChange}
-                    onBlur={() => setParallelTouched(true)}
-                    options={GRADE_OPTIONS}
-                  />
-                </Form.Item>
+                {/* Паралелі вимикаються в профілі вчителя: у закладах без
+                    паралелей (студії, курси, гуртки) поле беззмістовне, і
+                    клас заводиться самою лише назвою. */}
+                {parallelsEnabled && (
+                  <Form.Item
+                    label={<span style={{ fontWeight: 600 }}>Паралель</span>}
+                    required
+                    validateStatus={parallelTouched && !parallelId ? "error" : undefined}
+                    help={parallelTouched && !parallelId ? "Оберіть паралель" : undefined}
+                  >
+                    <Select
+                      size="large"
+                      loading={resolvingGrade}
+                      placeholder="Клас (1–12)"
+                      value={selectedGrade}
+                      onChange={onGradeChange}
+                      onBlur={() => setParallelTouched(true)}
+                      options={GRADE_OPTIONS}
+                    />
+                  </Form.Item>
+                )}
 
                 <Form.Item
                   name="name"

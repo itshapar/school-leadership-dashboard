@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Spin } from "antd";
 import OnboardingWizard from "@/components/Admin/Onboarding/OnboardingWizard";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { loadParallelsEnabled } from "@/lib/admin/parallels";
 
 export const metadata: Metadata = {
   title: "Новий клас",
@@ -14,7 +16,10 @@ export const dynamic = "force-dynamic";
  * useSearchParams (classId, step), і без нього Next.js вимагає
  * client-side bailout на етапі збірки.
  */
-export default function OnboardingPage() {
+export default async function OnboardingPage() {
+  const supabase = await createSupabaseServerClient();
+  const parallelsEnabled = await loadParallelsEnabled(supabase);
+
   return (
     <div style={{ background: "var(--bg-primary)", minHeight: "100vh" }}>
       <Suspense
@@ -24,7 +29,7 @@ export default function OnboardingPage() {
           </div>
         }
       >
-        <OnboardingWizard />
+        <OnboardingWizard parallelsEnabled={parallelsEnabled} />
       </Suspense>
     </div>
   );

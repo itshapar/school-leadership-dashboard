@@ -52,6 +52,8 @@ interface Props {
   firstPeriod: PeriodCode;
   archived: boolean;
   parallels: Parallel[];
+  /** Вимикач паралелей у профілі вчителя (міграція 048). */
+  parallelsEnabled: boolean;
 }
 
 export default function ClassSettingsClient({
@@ -64,6 +66,7 @@ export default function ClassSettingsClient({
   firstPeriod,
   archived,
   parallels,
+  parallelsEnabled,
 }: Props) {
   const supabase = getSupabaseClient();
   const router = useRouter();
@@ -318,38 +321,43 @@ export default function ClassSettingsClient({
         </div>
       </div>
 
-      <div
-        style={{
-          background: "#fff",
-          border: "3px solid #000",
-          boxShadow: "4px 4px 0px #000",
-          borderRadius: 12,
-          padding: "16px 20px",
-          marginBottom: 20,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Паралель</div>
-          <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2 }}>
-            Для фільтра в списку класів і в рейтингу.
+      {/* Паралелі вимикаються в профілі вчителя: у закладах без паралелей
+          картка тільки заважає, а прив'язка класу лишається в базі й
+          повернеться, якщо опцію ввімкнути назад. */}
+      {parallelsEnabled && (
+        <div
+          style={{
+            background: "#fff",
+            border: "3px solid #000",
+            boxShadow: "4px 4px 0px #000",
+            borderRadius: 12,
+            padding: "16px 20px",
+            marginBottom: 20,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>Паралель</div>
+            <div style={{ color: "#868e96", fontSize: "0.8rem", marginTop: 2 }}>
+              Для фільтра в списку класів і в рейтингу.
+            </div>
           </div>
+          <Select
+            style={{ width: 160 }}
+            allowClear
+            loading={savingParallel}
+            disabled={savingParallel}
+            placeholder="Клас (1–12)"
+            value={parallels.find((p) => p.id === parallelId)?.name}
+            onChange={onGradeChange}
+            options={GRADE_OPTIONS}
+          />
         </div>
-        <Select
-          style={{ width: 160 }}
-          allowClear
-          loading={savingParallel}
-          disabled={savingParallel}
-          placeholder="Клас (1–12)"
-          value={parallels.find((p) => p.id === parallelId)?.name}
-          onChange={onGradeChange}
-          options={GRADE_OPTIONS}
-        />
-      </div>
+      )}
 
       {/* Блок PIN-ів прибрано (живий фідбек): друк і перегенерація живуть
           у списку учнів, поряд із самими PIN-ами, і дублювати їх тут не

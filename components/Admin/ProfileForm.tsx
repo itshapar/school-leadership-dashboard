@@ -5,6 +5,7 @@ import { Button, Form, Input, Modal, message } from "antd";
 import { EnvelopeSimple, Lock, Trash } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
+import ParallelsPreference from "@/components/Admin/ParallelsPreference";
 
 /**
  * Профіль вчителя: зміна email, зміна пароля, видалення акаунту. Ім'я й
@@ -26,7 +27,14 @@ const sectionStyle: React.CSSProperties = {
   marginBottom: 16,
 };
 
-export default function ProfileForm({ currentEmail }: { currentEmail: string }) {
+export default function ProfileForm({
+  currentEmail,
+  parallelsEnabled,
+}: {
+  currentEmail: string;
+  /** Вимикач паралелей: налаштування акаунта, живе поруч з рештою профілю. */
+  parallelsEnabled: boolean;
+}) {
   const supabase = getSupabaseClient();
 
   const [emailForm] = Form.useForm<{ email: string }>();
@@ -148,6 +156,8 @@ export default function ProfileForm({ currentEmail }: { currentEmail: string }) 
           </Button>
         </Form>
       </div>
+
+      <ParallelsPreference initialEnabled={parallelsEnabled} />
 
       <div
         style={{

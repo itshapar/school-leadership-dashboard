@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { loadParallels } from "@/lib/admin/parallels";
+import { loadParallels, loadParallelsEnabled } from "@/lib/admin/parallels";
 import TotalDashboardClient from "@/components/Admin/TotalDashboardClient";
 
 export const metadata: Metadata = {
@@ -17,6 +17,7 @@ export default async function TotalDashboardPage() {
     { data: students, error: stError },
     { data: classes, error: clError },
     parallels,
+    parallelsEnabled,
   ] = await Promise.all([
     // Фільтри deleted_at додала міграція 018 — цей рейтинг тоді не оновили,
     // тож видалені учні й видалені класи лишалися у видачі.
@@ -35,6 +36,7 @@ export default async function TotalDashboardPage() {
       .is("deleted_at", null)
       .is("archived_at", null),
     loadParallels(supabase),
+    loadParallelsEnabled(supabase),
   ]);
 
   if (stError || clError) {
@@ -109,6 +111,12 @@ export default async function TotalDashboardPage() {
       totalStars: starTotals[st.id] ?? 0,
     }));
 
-  return <TotalDashboardClient initialData={formattedData} parallels={parallels} />;
+  return (
+    <TotalDashboardClient
+      initialData={formattedData}
+      parallels={parallels}
+      parallelsEnabled={parallelsEnabled}
+    />
+  );
 }
 

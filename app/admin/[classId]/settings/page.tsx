@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolveOwnedClass } from "@/lib/admin/resolveClass";
-import { loadParallels } from "@/lib/admin/parallels";
+import { loadParallels, loadParallelsEnabled } from "@/lib/admin/parallels";
 import { firstAvailablePeriod, type PeriodCode } from "@/lib/admin/periods";
 import ClassSettingsClient from "@/components/Admin/ClassSettings/ClassSettingsClient";
 
@@ -23,17 +23,23 @@ export default async function ClassSettingsPage({ params }: Props) {
   const cls = await resolveOwnedClass(supabase, classParam);
   if (!cls) return notFound();
 
-  const [{ data: visibility }, parallels, { data: auth }, { data: ownClasses }] =
-    await Promise.all([
-      supabase
-        .from("classes")
-        .select("show_classmate_stars, parallel_id, period_code")
-        .eq("id", cls.id)
-        .single(),
-      loadParallels(supabase),
-      supabase.auth.getUser(),
-      supabase.from("classes").select("period_code").is("deleted_at", null),
-    ]);
+  const [
+    { data: visibility },
+    parallels,
+    parallelsEnabled,
+    { data: auth },
+    { data: ownClasses },
+  ] = await Promise.all([
+    supabase
+      .from("classes")
+      .select("show_classmate_stars, parallel_id, period_code")
+      .eq("id", cls.id)
+      .single(),
+    loadParallels(supabase),
+    loadParallelsEnabled(supabase),
+    supabase.auth.getUser(),
+    supabase.from("classes").select("period_code").is("deleted_at", null),
+  ]);
 
   const firstPeriod = firstAvailablePeriod(
     auth?.user?.created_at,
@@ -52,6 +58,7 @@ export default async function ClassSettingsPage({ params }: Props) {
         firstPeriod={firstPeriod}
         archived={Boolean(cls.archived_at)}
         parallels={parallels}
+        parallelsEnabled={parallelsEnabled}
       />
     </div>
   );

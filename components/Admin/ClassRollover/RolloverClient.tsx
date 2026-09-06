@@ -36,6 +36,8 @@ interface Props {
   /** Період, у якому клас живе зараз. Ціль переходу з нього й виводиться. */
   periodCode: PeriodCode;
   parallelName: string | null;
+  /** Вимикач паралелей у профілі вчителя (міграція 048). */
+  parallelsEnabled: boolean;
   students: RolloverStudent[];
 }
 
@@ -57,6 +59,7 @@ export default function RolloverClient({
   className,
   periodCode,
   parallelName,
+  parallelsEnabled,
   students,
 }: Props) {
   const supabase = getSupabaseClient();
@@ -86,7 +89,7 @@ export default function RolloverClient({
 
     // Паралель, як і в майстрі створення класу, заводиться на льоту за назвою.
     let parallelId: string | null = null;
-    if (grade) {
+    if (parallelsEnabled && grade) {
       const res = await upsertParallelByName(supabase, grade);
       if (res.error) {
         setSubmitting(false);
@@ -192,14 +195,17 @@ export default function RolloverClient({
           hint="Назву підставлено на клас старше, змініть, якщо у вас інакше."
         >
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-            <Select
-              style={{ width: 160 }}
-              allowClear
-              placeholder="Клас (1–12)"
-              value={grade}
-              onChange={setGrade}
-              options={GRADE_OPTIONS}
-            />
+            {/* Паралель питаємо, лише якщо вчитель нею користується. */}
+            {parallelsEnabled && (
+              <Select
+                style={{ width: 160 }}
+                allowClear
+                placeholder="Клас (1–12)"
+                value={grade}
+                onChange={setGrade}
+                options={GRADE_OPTIONS}
+              />
+            )}
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}

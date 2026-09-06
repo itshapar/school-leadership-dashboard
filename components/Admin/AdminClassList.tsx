@@ -63,11 +63,14 @@ export interface AdminClassCard {
 export default function AdminClassList({
   classes,
   parallels,
+  parallelsEnabled,
   firstPeriod,
   children,
 }: {
   classes: AdminClassCard[];
   parallels: Parallel[];
+  /** Вимикач паралелей у профілі вчителя (міграція 048). */
+  parallelsEnabled: boolean;
   /** Найраніший період, доступний цьому вчителю (див. firstAvailablePeriod). */
   firstPeriod: PeriodCode;
   /**
@@ -128,11 +131,14 @@ export default function AdminClassList({
   // Порожні паралелі ховаємо з навігації чипів, а не показуємо як мертві
   // кнопки. Рахуємо їх від класів ВИДИМОГО періоду: торік паралелі були інші.
   const sortedParallels = useMemo(() => {
+    // Паралелі вимкнені в профілі: чипів немає взагалі, навіть якщо в класах
+    // ще стоять старі прив'язки.
+    if (!parallelsEnabled) return [];
     const withClasses = new Set(bySemester.map((c) => c.parallel_id).filter(Boolean));
     return [...parallels]
       .filter((p) => withClasses.has(p.id))
       .sort((a, b) => Number(a.name) - Number(b.name));
-  }, [parallels, bySemester]);
+  }, [parallels, bySemester, parallelsEnabled]);
 
   const visibleClasses =
     parallelFilter === ALL

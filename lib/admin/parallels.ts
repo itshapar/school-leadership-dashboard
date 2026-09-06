@@ -67,3 +67,47 @@ export async function setClassParallel(
     .eq("id", classId);
   return { error: error?.message };
 }
+
+// ---------------------------------------------------------------------------
+// Вимикач паралелей (міграція 048)
+// ---------------------------------------------------------------------------
+
+/**
+ * Чи користується вчитель паралелями взагалі.
+ *
+ * Паралель має сенс у школі. У закладах без паралелей (студії, курси, гуртки,
+ * там просто групи) поле лише заважає, тому вчитель вимикає його в профілі, і
+ * тоді зникає і поле при створенні класу, і фільтри за паралеллю.
+ *
+ * Дефолт — true: і для нових акаунтів, і для будь-якої помилки читання. Немає
+ * профілю чи впав запит, це не привід ховати від людини наявні фільтри.
+ */
+export async function loadParallelsEnabled(supabase: SupabaseClient): Promise<boolean> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return true;
+
+  const { data } = await supabase
+    .from("teacher_profiles")
+    .select("parallels_enabled")
+    .eq("id", user.id)
+    .maybeSingle();
+  return data?.parallels_enabled ?? true;
+}
+
+export async function setParallelsEnabled(
+  supabase: SupabaseClient,
+  enabled: boolean
+): Promise<{ error?: string }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Сесія завершилась" };
+
+  const { error } = await supabase
+    .from("teacher_profiles")
+    .update({ parallels_enabled: enabled })
+    .eq("id", user.id);
+  return { error: error?.message };
+}

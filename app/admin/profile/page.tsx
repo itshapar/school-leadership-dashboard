@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/Admin/ProfileForm";
+import { loadParallelsEnabled } from "@/lib/admin/parallels";
 import BackButton from "@/components/BackButton";
 
 export const metadata: Metadata = {
@@ -22,6 +23,8 @@ export default async function ProfilePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/admin/login");
 
+  const parallelsEnabled = await loadParallelsEnabled(supabase);
+
   return (
     <div className="page-container" style={{ maxWidth: "560px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "16px 0 24px" }}>
@@ -37,7 +40,7 @@ export default async function ProfilePage() {
           Профіль вчителя
         </h1>
       </div>
-      <ProfileForm currentEmail={user.email ?? ""} />
+      <ProfileForm currentEmail={user.email ?? ""} parallelsEnabled={parallelsEnabled} />
     </div>
   );
 }
