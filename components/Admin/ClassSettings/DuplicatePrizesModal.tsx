@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Modal, Spin, Table, Tag, message } from "antd";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import {
-  copyPrizesToClass,
+  duplicatePrizesToClass,
   loadPrizeLibrary,
   type PrizeKind,
   type PrizeTemplate,
@@ -12,7 +12,7 @@ import {
 import StarIcon from "@/components/StarIcon";
 
 /**
- * «Скопіювати нагороду»: вибір із нагород, які вчитель уже завів в інших своїх
+ * «Дублювати нагороду»: вибір із нагород, які вчитель уже завів в інших своїх
  * класах (живий фідбек).
  *
  * Раніше кожен новий клас починався з порожнього списку, і ті самі «Кіндер» чи
@@ -32,19 +32,19 @@ interface Props {
   /** Скільки нагород ще влазить у ліміт класу. */
   remaining: number;
   onClose: () => void;
-  onCopied: () => void;
-  /** Наступний sort_order: копії стають у кінець списку. */
+  onDuplicated: () => void;
+  /** Наступний sort_order: дублі стають у кінець списку. */
   nextSortOrder: number;
 }
 
-export default function CopyPrizesModal({
+export default function DuplicatePrizesModal({
   open,
   classId,
   kind,
   existingNames,
   remaining,
   onClose,
-  onCopied,
+  onDuplicated,
   nextSortOrder,
 }: Props) {
   const supabase = getSupabaseClient();
@@ -59,7 +59,7 @@ export default function CopyPrizesModal({
    * Назви нагород класу читаємо через ref, а не із замикання: батько віддає
    * новий масив на кожен рендер, у залежностях load він смикав би запит без
    * потреби, а без нього замикання застигало на першому значенні, і щойно
-   * скопійовані нагороди не позначались як «уже в класі».
+   * продубльовані нагороди не позначались як «уже в класі».
    */
   const existingRef = useRef(existingNames);
   useEffect(() => {
@@ -86,7 +86,7 @@ export default function CopyPrizesModal({
   async function onOk() {
     const chosen = templates.filter((t) => selectedKeys.includes(t.key));
     if (chosen.length === 0) {
-      message.info("Оберіть, які нагороди скопіювати");
+      message.info("Оберіть, які нагороди дублювати");
       return;
     }
     if (chosen.length > remaining) {
@@ -95,7 +95,7 @@ export default function CopyPrizesModal({
     }
 
     setSaving(true);
-    const { error, code } = await copyPrizesToClass(
+    const { error, code } = await duplicatePrizesToClass(
       supabase,
       kind,
       classId,
@@ -110,16 +110,16 @@ export default function CopyPrizesModal({
           ? "Нагорода з такою назвою вже є в класі"
           : error.includes("Досягнуто ліміт")
           ? "Досягнуто ліміт нагород на клас"
-          : "Не вдалося скопіювати нагороди"
+          : "Не вдалося дублювати нагороди"
       );
       return;
     }
 
     message.success(
-      chosen.length === 1 ? "Нагороду скопійовано" : `Скопійовано нагород: ${chosen.length}`
+      chosen.length === 1 ? "Нагороду продубльовано" : `Продубльовано нагород: ${chosen.length}`
     );
     onClose();
-    onCopied();
+    onDuplicated();
   }
 
   const columns = [
@@ -163,13 +163,13 @@ export default function CopyPrizesModal({
   return (
     <Modal
       title={
-        <div style={{ fontWeight: 900, textTransform: "uppercase" }}>Скопіювати нагороду</div>
+        <div style={{ fontWeight: 900, textTransform: "uppercase" }}>Дублювати нагороду</div>
       }
       open={open}
       onOk={onOk}
       onCancel={onClose}
       confirmLoading={saving}
-      okText="Скопіювати"
+      okText="Дублювати"
       cancelText="Скасувати"
       okButtonProps={{ className: "btn-primary", disabled: loading || selectedKeys.length === 0 }}
       cancelButtonProps={{ className: "btn-secondary" }}

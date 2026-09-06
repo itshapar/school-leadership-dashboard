@@ -14,7 +14,7 @@ import {
 import StarIcon from "@/components/StarIcon";
 import { sortPrizesByCost } from "@/lib/prizeOrder";
 import EmojiPicker from "@/components/EmojiPicker";
-import CopyPrizesModal from "@/components/Admin/ClassSettings/CopyPrizesModal";
+import DuplicatePrizesModal from "@/components/Admin/ClassSettings/DuplicatePrizesModal";
 
 /**
  * Нагороди класу — і індивідуальні, і класові, одним компонентом.
@@ -61,7 +61,7 @@ export default function PrizesPanel({
   readOnly = false,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [copyOpen, setCopyOpen] = useState(false);
+  const [duplicateOpen, setDuplicateOpen] = useState(false);
   const [editing, setEditing] = useState<Row | null>(null);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm<FormValues>();
@@ -220,17 +220,18 @@ export default function PrizesPanel({
             ? "Учень отримує нагороду, коли набирає потрібну кількість власних зірок"
             : "Нагороду отримує весь клас, коли зірки класу сягають потрібної кількості"}
         </span>
-        {/* Дві дії поруч: завести нагороду з нуля або взяти готову з іншого
-            свого класу (живий фідбек). Копія другорядна лише візуально,
-            саме нею вчитель із кількома класами користується найчастіше. */}
+        {/* Дві дії поруч: завести нагороду з нуля або продублювати готову з
+            іншого свого класу (живий фідбек). Дубль другорядний лише
+            візуально, саме ним вчитель із кількома класами користується
+            найчастіше. */}
         <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
           <Button
             icon={<Copy />}
-            onClick={() => setCopyOpen(true)}
+            onClick={() => setDuplicateOpen(true)}
             disabled={atLimit || readOnly}
             className="btn-secondary"
           >
-            СКОПІЮВАТИ
+            ДУБЛЮВАТИ
           </Button>
           <Button
             type="primary"
@@ -317,15 +318,15 @@ export default function PrizesPanel({
         </Form>
       </Modal>
 
-      <CopyPrizesModal
-        open={copyOpen}
+      <DuplicatePrizesModal
+        open={duplicateOpen}
         classId={classId}
         kind={kind}
         existingNames={rows.map((r) => r.name)}
         remaining={Math.max(0, limit - rows.length)}
         nextSortOrder={rows.length + 1}
-        onClose={() => setCopyOpen(false)}
-        onCopied={onChanged}
+        onClose={() => setDuplicateOpen(false)}
+        onDuplicated={onChanged}
       />
     </div>
   );
