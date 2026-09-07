@@ -16,6 +16,7 @@ interface StudentRow {
 interface StarEntryRow {
   student_id: string | null;
   amount: number;
+  is_absent: boolean;
   created_at: string;
   entry_type_id: string | null;
 }
@@ -136,7 +137,7 @@ export async function getDashboardData(
   const starEntries = await fetchAllRows<StarEntryRow>(() => {
     const q = supabase
       .from("star_entries")
-      .select("student_id, amount, created_at, entry_type_id");
+      .select("student_id, amount, is_absent, created_at, entry_type_id");
     return Array.isArray(effectiveClassFilter)
       ? q.in("class_id", effectiveClassFilter)
       : q.eq("class_id", effectiveClassFilter);
@@ -197,7 +198,7 @@ export async function getDashboardData(
       if (entry.amount > 0) {
         attendedCount++;
         studentLessons.set(entry.student_id, (studentLessons.get(entry.student_id) ?? 0) + 1);
-      } else if (entry.amount === -1) {
+      } else if (entry.is_absent) {
         absenceCount++;
       }
     }

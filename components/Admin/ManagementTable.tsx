@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 import {
   loadManagementJournalData,
   type ManagementJournalData,
+  type JournalCellValue,
   type ManagementJournalStudent,
   type ManagementJournalLesson,
   type ManagementJournalPrize,
@@ -17,13 +18,18 @@ import { sortIndividualPrizes } from "@/lib/prizeOrder";
 import StarIcon from "@/components/StarIcon";
 import { adminApiFetch } from "@/lib/admin/adminApiFetch";
 
+const ABSENT = "absent" as const;
+
 type Student = ManagementJournalStudent;
 type Lesson = ManagementJournalLesson;
 type Prize = ManagementJournalPrize;
 
+// «Н» — рядкове значення, а не -1: пропуск це не мінус одна зірка
+// (міграція 050). Число в клітинці тепер завжди означає рівно те, що
+// в ньому написано.
 const STAR_OPTIONS = [
   { value: 0, label: "0" },
-  { value: -1, label: "Н" },
+  { value: ABSENT, label: "Н" },
   { value: 1, label: "1" },
   { value: 2, label: "2" },
   { value: 3, label: "3" },
@@ -35,7 +41,7 @@ interface JournalState {
   prizes: Prize[];
   entryTypes: EntryType[];
   lessonType: EntryType | null;
-  entries: Record<string, Record<string, number>>;
+  entries: Record<string, Record<string, JournalCellValue>>;
   givenPrizes: Record<string, Record<string, boolean>>;
   totalStars: Record<string, number>;
 }
@@ -129,22 +135,29 @@ export default function ManagementTable({
   }, [initialData]);
 
   // Auto-save star amount (через API з серверною сесією — RLS у Supabase для запису)
-  const handleStarChange = async (studentId: string, lessonId: string, amount: number) => {
+  const handleStarChange = async (
+    studentId: string,
+    lessonId: string,
+    value: JournalCellValue
+  ) => {
     if (!lessonType) {
       message.error("У класі немає типу нарахування, прив'язаного до уроку");
       return;
     }
 
-    const oldAmount = entries[studentId]?.[lessonId] ?? 0;
-    // «Н» (-1) і «0» дають нуль зірок, тому в підсумок іде лише додатнє.
-    const getStarsVal = (v: number) => (v > 0 ? v : 0);
-    const diff = getStarsVal(amount) - getStarsVal(oldAmount);
+    const absent = value === ABSENT;
+    const amount = absent ? 0 : value;
+
+    const oldValue = entries[studentId]?.[lessonId] ?? 0;
+    // «Н» і «0» дають нуль зірок, тому в підсумок іде лише додатнє.
+    const getStarsVal = (v: JournalCellValue) => (typeof v === "number" && v > 0 ? v : 0);
+    const diff = getStarsVal(value) - getStarsVal(oldValue);
 
     setState((prev) => ({
       ...prev,
       entries: {
         ...prev.entries,
-        [studentId]: { ...(prev.entries[studentId] || {}), [lessonId]: amount },
+        [studentId]: { ...(prev.entries[studentId] || {}), [lessonId]: value },
       },
       totalStars: {
         ...prev.totalStars,
@@ -165,6 +178,7 @@ export default function ManagementTable({
           class_id: classId,
           entry_type_id: lessonType.id,
           amount,
+          absent,
         }),
       });
       const json = await res.json().catch(() => ({}));
@@ -178,7 +192,7 @@ export default function ManagementTable({
         ...prev,
         entries: {
           ...prev.entries,
-          [studentId]: { ...(prev.entries[studentId] || {}), [lessonId]: oldAmount },
+          [studentId]: { ...(prev.entries[studentId] || {}), [lessonId]: oldValue },
         },
         totalStars: {
           ...prev.totalStars,
@@ -381,6 +395,7 @@ export default function ManagementTable({
         }),
         render: (_value: unknown, record: Student) => {
           const score = entries[record.id]?.[lesson.id] ?? 0;
+          const isAbsent = score === ABSENT;
           return (
             <Select
               value={score}
@@ -391,7 +406,7 @@ export default function ManagementTable({
               style={{
                 width: "100%",
                 fontWeight: 900,
-                color: score > 0 ? "#000000" : (score < 0 ? "#fa5252" : "#adb5bd")
+                color: isAbsent ? "#fa5252" : score > 0 ? "#000000" : "#adb5bd",
               }}
               options={STAR_OPTIONS}
             />
@@ -463,7 +478,7 @@ export default function ManagementTable({
                   {lessons.map((lesson, i) => {
                     const lessonTotal = students.reduce((sum, st) => {
                       const val = entries[st.id]?.[lesson.id] ?? 0;
-                      return sum + (val > 0 ? val : 0);
+                      return sum + (typeof val === "number" && val > 0 ? val : 0);
                     }, 0);
                     return (
                       <Table.Summary.Cell key={lesson.id} index={3 + prizes.length + i} className="sticky-summary-cell">

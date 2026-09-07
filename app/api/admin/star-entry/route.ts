@@ -23,6 +23,15 @@ const StarEntrySchema = z.object({
   class_id: uuidLike,
   entry_type_id: uuidLike,
   amount: z.number().int().min(-100).max(100),
+  /**
+   * «Н»: учня не було. Окреме поле, а не amount = -1 (міграція 050) —
+   * пропуск це не штраф на одну зірку, і в базі він тепер так і лежить.
+   *
+   * Поле необов'язкове, бо під час викочування ще живі вкладки зі старим
+   * JS, які шлють -1. Такий запис БД нормалізує тригером у ту саму
+   * відсутність, тож нічого не ламається.
+   */
+  absent: z.boolean().optional(),
 });
 
 export async function POST(request: Request) {
@@ -43,6 +52,7 @@ export async function POST(request: Request) {
   }
 
   const { student_id, lesson_id, class_id, entry_type_id, amount } = body;
+  const absent = body.absent ?? amount < 0;
 
   // Клас має належати цьому вчителю (без винятку для teacher_id IS NULL)
   const claim = await assertClassOwnership(supabaseForRls, class_id, user.id);
@@ -67,8 +77,8 @@ export async function POST(request: Request) {
 
   // amount === 0 — це «прибрати оцінку», а не «поставити нуль»: інакше журнал
   // заповнився б рядками-порожняками, які довелося б фільтрувати в кожній
-  // агрегації.
-  if (amount === 0) {
+  // агрегації. «Н» сюди не потрапляє: у неї власний прапорець.
+  if (amount === 0 && !absent) {
     const { error } = await supabaseForRls
       .from("star_entries")
       .delete()
@@ -89,7 +99,8 @@ export async function POST(request: Request) {
       lesson_id,
       class_id,
       entry_type_id,
-      amount,
+      amount: absent ? 0 : amount,
+      is_absent: absent,
       scope: "student",
     },
     { onConflict: "student_id,lesson_id,entry_type_id" }

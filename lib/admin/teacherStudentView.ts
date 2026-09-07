@@ -55,6 +55,7 @@ export interface TeacherStudentView {
 interface EntryRow {
   student_id: string | null;
   amount: number;
+  is_absent: boolean;
   note: string | null;
   created_at: string;
   entry_type_id: string;
@@ -93,7 +94,7 @@ export async function loadTeacherStudentView(
         .is("deleted_at", null),
       supabase
         .from("star_entries")
-        .select("student_id, amount, note, created_at, entry_type_id, lesson_id")
+        .select("student_id, amount, is_absent, note, created_at, entry_type_id, lesson_id")
         .eq("class_id", classId)
         .order("created_at", { ascending: false }),
       supabase
@@ -177,7 +178,10 @@ export async function loadTeacherStudentView(
     // Сортування — за тією ж датою, якою запис підписаний: інакше три уроки,
     // внесені одним заходом, шикувались у зворотному до дат порядку.
     history: rows
-      .filter((e) => e.student_id === studentId)
+      // Пропуски в історію не йдуть: вчитель бачить їх у клітинці журналу,
+      // а тут вони раніше показувались рядками «-1 Урок» — мінусом, якого
+      // насправді не було (міграція 050).
+      .filter((e) => e.student_id === studentId && !e.is_absent)
       .map((e) => ({
         amount: e.amount,
         type_name: typeById.get(e.entry_type_id)?.name ?? null,

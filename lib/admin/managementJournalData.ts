@@ -37,6 +37,15 @@ export interface ManagementJournalPrize {
   stars_required: number;
 }
 
+/**
+ * Значення клітинки журналу: кількість зірок або відсутність.
+ *
+ * `"absent"`, а не -1: пропуск це не штраф на одну зірку (міграція 050).
+ * Раніше «Н» їхало через усю систему числом, і кожне місце, яке рахувало
+ * зірки, мусило пам'ятати, що цей конкретний мінус насправді нуль.
+ */
+export type JournalCellValue = number | "absent";
+
 export interface ManagementJournalData {
   students: ManagementJournalStudent[];
   lessons: ManagementJournalLesson[];
@@ -45,7 +54,7 @@ export interface ManagementJournalData {
   entryTypes: EntryType[];
   /** Тип, яким журнал заповнює клітинки. null → клас без типу для уроків. */
   lessonType: EntryType | null;
-  entries: Record<string, Record<string, number>>;
+  entries: Record<string, Record<string, JournalCellValue>>;
   givenPrizes: Record<string, Record<string, boolean>>;
   totalStars: Record<string, number>;
 }
@@ -54,6 +63,7 @@ interface StarEntryRow {
   student_id: string | null;
   lesson_id: string | null;
   amount: number;
+  is_absent: boolean;
   entry_type_id: string;
 }
 
@@ -91,7 +101,7 @@ export async function loadManagementJournalData(
       .order("date", { ascending: true }),
     supabase
       .from("star_entries")
-      .select("student_id, lesson_id, amount, entry_type_id")
+      .select("student_id, lesson_id, amount, is_absent, entry_type_id")
       .eq("class_id", classId),
     supabase
       .from("prizes_individual")
@@ -121,7 +131,7 @@ export async function loadManagementJournalData(
     gvData = data as PrizeGivenRow[] | null;
   }
 
-  const entryMap: Record<string, Record<string, number>> = {};
+  const entryMap: Record<string, Record<string, JournalCellValue>> = {};
   const totals: Record<string, number> = {};
 
   const entries = (enData as StarEntryRow[] | null) ?? [];
@@ -138,7 +148,7 @@ export async function loadManagementJournalData(
     // Клітинка журналу — лише запис типу, яким журнал і заповнюється.
     if (lessonType && e.entry_type_id === lessonType.id && e.lesson_id) {
       if (!entryMap[e.student_id]) entryMap[e.student_id] = {};
-      entryMap[e.student_id][e.lesson_id] = e.amount;
+      entryMap[e.student_id][e.lesson_id] = e.is_absent ? "absent" : e.amount;
     }
   });
 

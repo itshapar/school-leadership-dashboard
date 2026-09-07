@@ -37,9 +37,14 @@ interface Student {
   avatar_emoji: string;
 }
 
+// «Н» — рядкове значення, а не -1: пропуск це не мінус одна зірка
+// (міграція 050).
+const ABSENT = "absent" as const;
+type CellValue = number | typeof ABSENT;
+
 const STAR_OPTIONS = [
   { value: 0, label: "Не нараховувати" },
-  { value: -1, label: "Н (не був)" },
+  { value: ABSENT, label: "Н (не був)" },
   { value: 1, label: <><StarIcon /> 1 зірка</> },
   { value: 2, label: <><StarIcon /><StarIcon /> 2 зірки</> },
   { value: 3, label: <><StarIcon /><StarIcon /><StarIcon /> 3 зірки</> },
@@ -56,7 +61,7 @@ export default function AddLessonPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [lessonTypes, setLessonTypes] = useState<EntryType[]>([]);
   const [typeId, setTypeId] = useState<string | null>(null);
-  const [starValues, setStarValues] = useState<Record<string, number>>({});
+  const [starValues, setStarValues] = useState<Record<string, CellValue>>({});
   const [date, setDate] = useState<dayjs.Dayjs>(dayjs());
   const [loading, setLoading] = useState(false);
   const [initialising, setInitialising] = useState(true);
@@ -164,12 +169,13 @@ export default function AddLessonPage() {
 
       const entries = Object.entries(starValues)
         .filter(([, v]) => v !== 0)
-        .map(([studentId, amount]) => ({
+        .map(([studentId, value]) => ({
           student_id: studentId,
           class_id: classId,
           lesson_id: lessonId,
           entry_type_id: typeId,
-          amount,
+          amount: value === ABSENT ? 0 : value,
+          is_absent: value === ABSENT,
           scope: "student",
         }));
 
