@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import type { PlatformStats } from "@/lib/admin/platformStats";
+import PrizeUsageTable from "./PrizeUsageTable";
 
 /**
  * Графіки статистики платформи.
@@ -98,51 +99,19 @@ export default function PlatformCharts({ stats }: { stats: PlatformStats }) {
         )}
       </Panel>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-        <Panel
-          title="Індивідуальні нагороди"
-          hint={`${individualPrizes.length} різних назв у класах вчителів.`}
-        >
-          <PrizeList items={individualPrizes} />
-        </Panel>
+      <Panel
+        title="Індивідуальні нагороди"
+        hint={`${individualPrizes.length} різних назв у класах вчителів. Де поріг по класах різний, показано діапазон. Колонки сортуються, натисніть на заголовок.`}
+      >
+        <PrizeUsageTable rows={individualPrizes} kind="individual" />
+      </Panel>
 
-        <Panel
-          title="Нагороди для всього класу"
-          hint={`${classPrizes.length} різних назв у класах вчителів.`}
-        >
-          <PrizeList items={classPrizes} />
-        </Panel>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Перелік нагород, а не рейтинг: вчителі називають нагороди надто по-різному,
- * щоб «топ» щось означав. Тут видно, чим люди справді мотивують дітей.
- */
-function PrizeList({ items }: { items: Array<{ emoji: string | null; name: string }> }) {
-  if (items.length === 0) return <Empty />;
-  return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, maxHeight: 320, overflowY: "auto" }}>
-      {items.map((p, i) => (
-        <span
-          key={`${p.name}-${i}`}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            border: "2px solid #000",
-            borderRadius: 8,
-            padding: "5px 10px",
-            fontWeight: 600,
-            fontSize: "0.85rem",
-          }}
-        >
-          <span aria-hidden>{p.emoji || "⭐"}</span>
-          {p.name}
-        </span>
-      ))}
+      <Panel
+        title="Нагороди для всього класу"
+        hint={`${classPrizes.length} різних назв у класах вчителів. «Назбирали», це класи, які вже дотягнули до порогу.`}
+      >
+        <PrizeUsageTable rows={classPrizes} kind="class" />
+      </Panel>
     </div>
   );
 }

@@ -35,8 +35,8 @@ export interface PlatformStats {
     individual_defined: number;
     class_defined: number;
     given_total: number;
-    individual_list: Array<{ emoji: string | null; name: string }>;
-    class_list: Array<{ emoji: string | null; name: string }>;
+    individual_list: PrizeUsageRow[];
+    class_list: PrizeUsageRow[];
   };
   entry_types: Array<{ icon: string; name: string; uses: number; stars: number }>;
   daily: Array<{ day_label: string; teachers: number; demos: number }>;
@@ -48,6 +48,28 @@ export interface PlatformStats {
     tracking_since: string | null;
     live_now: number;
   };
+}
+
+/**
+ * Рядок таблиці нагород: одна назва, зібрана по всіх класах (міграція 051).
+ *
+ * Числові поля позначені необов'язковими навмисно: сторінка може приїхати
+ * на прод раніше за міграцію, і тоді RPC ще віддає старий формат, самі лише
+ * emoji з назвою. Хай у клітинці стоїть прочерк, ніж сторінка впаде.
+ */
+export interface PrizeUsageRow {
+  emoji: string | null;
+  name: string;
+  /** У скількох класах заведена нагорода з такою назвою. */
+  classes?: number;
+  /** Поріг у зірках: два числа, бо по класах він різний. */
+  stars_min?: number;
+  stars_max?: number;
+  /** Індивідуальні: скільки учнів уже отримали. */
+  given?: number;
+  /** Класові: скільки класів назбирало, і найкращий прогрес серед класів, %. */
+  reached?: number;
+  best_progress?: number;
 }
 
 export async function getPlatformStats(): Promise<PlatformStats | null> {
