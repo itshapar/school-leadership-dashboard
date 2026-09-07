@@ -314,15 +314,22 @@ export default function ManagementTable({
         !(givenPrizes[record.id]?.[prize.id] ?? false);
 
       return {
+        /* Назва переноситься на три рядки в межах фіксованої ширини, а не
+           тягнеться одним рядком (живий фідбек): у класі з десятком нагород
+           із довгими назвами колонки розсовували журнал так, що уроки
+           виїжджали за екран і заповнювати таблицю було нереально.
+           Повна назва лишається доступною в підказці на шапці. */
         title: (
-          <div style={{ fontSize: "0.8rem", fontWeight: 900, whiteSpace: "nowrap" }} title={`${prize.name}, ${prize.stars_required} зірок`}>
-            <div style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{prize.name}</div>
-            {/* Ціна нагороди прямо в шапці: інакше вчитель звіряє поріг
-                з налаштуваннями класу, щоб зрозуміти колонку. */}
-            <div style={{ fontWeight: 600, color: "var(--color-text-muted)" }}>
-              {prize.stars_required} <StarIcon />
+          <Tooltip title={`${prize.name}, ${prize.stars_required} зірок`}>
+            <div className="prize-head">
+              <div className="prize-head-name">{prize.name}</div>
+              {/* Ціна нагороди прямо в шапці: інакше вчитель звіряє поріг
+                  з налаштуваннями класу, щоб зрозуміти колонку. */}
+              <div className="prize-head-cost">
+                {prize.stars_required} <StarIcon />
+              </div>
             </div>
-          </div>
+          </Tooltip>
         ),
         key: `prize_${prize.id}`,
         width: 100,
@@ -614,6 +621,30 @@ export default function ManagementTable({
         .management-grid .ant-table-tbody > tr.ant-table-row:hover > td.prize-cell-eligible {
           background: #e6f9e4 !important;
           box-shadow: inset 3px 0 0 #20C31A;
+        }
+        /* Шапка колонки нагороди: ширина зафіксована, назва переноситься
+           й обрізається на третьому рядку. Ширина трохи більша за саму
+           колонку (100), щоб два слова влазили в рядок і назва читалась. */
+        .management-grid .prize-head {
+          width: 110px;
+          font-size: 0.8rem;
+          font-weight: 900;
+          line-height: 1.2;
+          cursor: help;
+        }
+        .management-grid .prize-head-name {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          overflow-wrap: anywhere;
+          white-space: normal;
+        }
+        .management-grid .prize-head-cost {
+          margin-top: 4px;
+          font-weight: 600;
+          white-space: nowrap;
+          color: var(--color-text-muted);
         }
         .prize-checkbox.prize-eligible .ant-checkbox-inner {
           border-color: #20C31A !important;
