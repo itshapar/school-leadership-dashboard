@@ -40,9 +40,26 @@ COMMENT ON COLUMN public.star_entries.is_absent IS
 -- не пройде.
 ALTER TABLE public.star_entries DROP CONSTRAINT IF EXISTS star_entries_amount_check;
 
+/*
+ * Два тригери на час бекфілу вимкнені, і обидва навмисно:
+ *
+ *  - archive_guard_trg боронить записи видалених і архівних класів від
+ *    правок. Це правило для вчителя, а не для міграції: сім рядків «Н»
+ *    лежать у видаленому класі, і лишити їх у старому форматі не можна,
+ *    інакше вони не пройдуть новий CHECK.
+ *  - audit_trg пише в audit_log, хто що змінив. У міграції auth.uid()
+ *    порожній, і 408 рядків «невідомий актор» тільки засмітили б журнал,
+ *    у якому шукають дії людей.
+ */
+ALTER TABLE public.star_entries DISABLE TRIGGER archive_guard_trg;
+ALTER TABLE public.star_entries DISABLE TRIGGER audit_trg;
+
 UPDATE public.star_entries
 SET is_absent = true, amount = 0
 WHERE amount < 0 AND lesson_id IS NOT NULL;
+
+ALTER TABLE public.star_entries ENABLE TRIGGER audit_trg;
+ALTER TABLE public.star_entries ENABLE TRIGGER archive_guard_trg;
 
 -- ---------------------------------------------------------------------------
 -- 2. Нові правила цілісності.
