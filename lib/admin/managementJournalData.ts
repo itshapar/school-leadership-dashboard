@@ -6,6 +6,7 @@ import {
   type ClassGroup,
   type EntryType,
 } from "@/lib/admin/classConfig";
+import { loadStudentStarBalances } from "@/lib/stars/balances";
 
 /**
  * Дані журналу класу — спільні для SSR і клієнтського ManagementTable.
@@ -72,6 +73,9 @@ export async function loadManagementJournalData(
     { data: przData },
     entryTypes,
     groups,
+    // Підсумок зірок — з в'юхи балансів (міграція 049), а не сумою тут:
+    // «Н» у журналі не штраф, а штраф не опускає учня нижче нуля.
+    balances,
   ] = await Promise.all([
     supabase
       .from("students")
@@ -97,6 +101,7 @@ export async function loadManagementJournalData(
       .order("sort_order"),
     loadEntryTypes(supabase, classId),
     loadClassGroups(supabase, classId),
+    loadStudentStarBalances(supabase, [classId]),
   ]);
 
   const stList = (stData ?? []) as ManagementJournalStudent[];
@@ -121,14 +126,14 @@ export async function loadManagementJournalData(
 
   const entries = (enData as StarEntryRow[] | null) ?? [];
 
-  entries.forEach((e) => {
-    // Класові нарахування (student_id IS NULL) свідомо не додаються до
-    // індивідуальних сум — та сама семантика, що на публічному дашборді.
-    if (!e.student_id) return;
+  stList.forEach((s) => {
+    // Класові нарахування (student_id IS NULL) свідомо не входять в
+    // індивідуальні суми — та сама семантика, що на публічному дашборді.
+    totals[s.id] = balances.get(s.id) ?? 0;
+  });
 
-    if (e.amount > 0) {
-      totals[e.student_id] = (totals[e.student_id] ?? 0) + e.amount;
-    }
+  entries.forEach((e) => {
+    if (!e.student_id) return;
 
     // Клітинка журналу — лише запис типу, яким журнал і заповнюється.
     if (lessonType && e.entry_type_id === lessonType.id && e.lesson_id) {

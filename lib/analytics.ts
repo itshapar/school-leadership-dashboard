@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
+import { loadStudentStarBalances } from "@/lib/stars/balances";
 
 /** Учень у вибірці дашборда — рівно ті поля, які потрібні рейтингу. */
 interface StudentRow {
@@ -141,12 +142,17 @@ export async function getDashboardData(
       : q.eq("class_id", effectiveClassFilter);
   });
 
+  // 3b. Підсумки зірок — єдине джерело правди на всю платформу.
+  const studentStars = await loadStudentStarBalances(
+    supabase,
+    Array.isArray(effectiveClassFilter) ? effectiveClassFilter : [effectiveClassFilter]
+  );
+
   // 4. Calculate Basic Stats
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  const studentStars = new Map<string, number>();
   const studentStarsLast30 = new Map<string, number>();
   const studentStarsLast7 = new Map<string, number>();
   const studentLessons = new Map<string, number>();
@@ -173,10 +179,11 @@ export async function getDashboardData(
 
     if (!entry.student_id) continue;
 
-    // Student Total Stars
+    // Підсумок зірок сюди не рахується: він приходить із в'юхи балансів
+    // (міграція 049), бо «Н» не штраф, а штраф не опускає нижче нуля.
+    // Вікна за 30 і 7 днів — навпаки, це ПОТІК зароблених зірок за період,
+    // а не баланс, тож лишаються сумою додатних нарахувань.
     if (entry.amount > 0) {
-      studentStars.set(entry.student_id, (studentStars.get(entry.student_id) ?? 0) + entry.amount);
-      
       if (entryDate >= thirtyDaysAgo) {
         studentStarsLast30.set(entry.student_id, (studentStarsLast30.get(entry.student_id) ?? 0) + entry.amount);
       }
@@ -258,7 +265,7 @@ export async function getDashboardData(
 
   // Additional KPIs
   const totalStudents = students?.length ?? 0;
-  const totalClassStars = starEntries.reduce((sum, e) => sum + (e.amount > 0 ? e.amount : 0), 0); // approx
+  const totalClassStars = Array.from(studentStars.values()).reduce((sum, n) => sum + n, 0);
   
   // To get exact total lessons, we should really fetch from lessons table, but let's approximate by unique dates in starEntries of type lesson, or just count maximum lessons attended by any student
   const totalLessons = studentLessons.size > 0 ? Math.max(...Array.from(studentLessons.values())) : 0;

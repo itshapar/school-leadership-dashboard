@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadParallels, loadParallelsEnabled } from "@/lib/admin/parallels";
+import { loadStudentStarBalances } from "@/lib/stars/balances";
 import TotalDashboardClient from "@/components/Admin/TotalDashboardClient";
 
 export const metadata: Metadata = {
@@ -44,33 +45,10 @@ export default async function TotalDashboardPage() {
     throw new Error("Failed to load dashboard data");
   }
 
-  // Fetch all star entries in pages of 1000 to bypass default query limits
-  let allEntries: { student_id: string | null; amount: number }[] = [];
-  let from = 0;
-  const limit = 1000;
-  let hasMore = true;
-
-  while (hasMore) {
-    const { data: chunk, error: enError } = await supabase
-      .from("star_entries")
-      .select("student_id, amount")
-      .range(from, from + limit - 1);
-
-    if (enError) {
-      console.error("Database error in TotalDashboard star_entries fetch:", enError);
-      throw new Error("Failed to load dashboard data");
-    }
-
-    if (chunk && chunk.length > 0) {
-      allEntries = allEntries.concat(chunk);
-      from += limit;
-      if (chunk.length < limit) {
-        hasMore = false;
-      }
-    } else {
-      hasMore = false;
-    }
-  }
+  // Підсумки — з в'юхи балансів (міграція 049): «Н» у журналі не штраф,
+  // штраф віднімається, нижче нуля не опускає. Раніше рейтинг сумував тут
+  // усі star_entries сам, рядком `amount > 0`, і штрафів просто не бачив.
+  const starTotals = await loadStudentStarBalances(supabase);
 
   // Map class names for quick lookup
   const classMap: Record<string, string> = {};
@@ -88,14 +66,6 @@ export default async function TotalDashboardPage() {
     parallelIdByClass[c.id] = c.parallel_id;
   });
 
-  // Aggregate star totals
-  const starTotals: Record<string, number> = {};
-  allEntries.forEach((entry) => {
-    if (entry.student_id && entry.amount > 0) {
-      starTotals[entry.student_id] = (starTotals[entry.student_id] ?? 0) + entry.amount;
-    }
-  });
-
   // Format data for the client component — лише учні класів зі списку вище
   // (демо-клас туди вже не входить, students-запит його не фільтрував).
   const formattedData = (students ?? [])
@@ -108,7 +78,7 @@ export default async function TotalDashboardPage() {
       className: classMap[st.class_id],
       classCode: codeMap[st.class_id] ?? st.class_id,
       parallelId: parallelIdByClass[st.class_id] ?? null,
-      totalStars: starTotals[st.id] ?? 0,
+      totalStars: starTotals.get(st.id) ?? 0,
     }));
 
   return (

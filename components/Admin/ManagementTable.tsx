@@ -136,6 +136,7 @@ export default function ManagementTable({
     }
 
     const oldAmount = entries[studentId]?.[lessonId] ?? 0;
+    // «Н» (-1) і «0» дають нуль зірок, тому в підсумок іде лише додатнє.
     const getStarsVal = (v: number) => (v > 0 ? v : 0);
     const diff = getStarsVal(amount) - getStarsVal(oldAmount);
 
@@ -147,7 +148,10 @@ export default function ManagementTable({
       },
       totalStars: {
         ...prev.totalStars,
-        [studentId]: (prev.totalStars[studentId] ?? 0) + diff,
+        // Не нижче нуля: сервер рахує так само (міграція 049), і без цього
+        // зняття зірки в учня, чий баланс уже впертий у нуль штрафами,
+        // малювало б мінус до першого перезавантаження.
+        [studentId]: Math.max(0, (prev.totalStars[studentId] ?? 0) + diff),
       },
     }));
 

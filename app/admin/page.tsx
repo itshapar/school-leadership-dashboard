@@ -8,6 +8,10 @@ import { loadParallels, loadParallelsEnabled } from "@/lib/admin/parallels";
 import { firstAvailablePeriod, type PeriodCode } from "@/lib/admin/periods";
 import { getOnboardingProgressBatch } from "@/lib/admin/onboarding";
 import { fetchAllRows } from "@/lib/supabase/fetchAll";
+import {
+  loadClassStarBalances,
+  loadStudentStarTotalsByClass,
+} from "@/lib/stars/balances";
 import AdminClassList, {
   type AdminClassCard,
 } from "@/components/Admin/AdminClassList";
@@ -60,10 +64,9 @@ export default async function AdminPage() {
   // це кабінет власника, дані беруться під його ж RLS.
   //
   // Через fetchAllRows, а не одним select: PostgREST мовчки ріже видачу на
-  // 1000 рядків, і star_entries цю межу вже перетнули (1374 на проді). Без
-  // пагінації суми зірок у списку класів були б просто заниженими, без
-  // жодної помилки.
-  const [allStudents, allLessons, allEntries] = classIds.length
+  // 1000 рядків. Зірки читаються з в'юх балансів (міграція 049), і там
+  // пагінація потрібна так само: рядок на учня, а учнів уже сотні.
+  const [allStudents, allLessons, studentTotalsByClass, classBalances] = classIds.length
     ? await Promise.all([
         fetchAllRows<{ class_id: string }>(() =>
           supabase
@@ -79,15 +82,10 @@ export default async function AdminPage() {
             .in("class_id", classIds)
             .is("deleted_at", null)
         ),
-        fetchAllRows<{ class_id: string; student_id: string | null; amount: number }>(
-          () =>
-            supabase
-              .from("star_entries")
-              .select("class_id, student_id, amount")
-              .in("class_id", classIds)
-        ),
+        loadStudentStarTotalsByClass(supabase, classIds),
+        loadClassStarBalances(supabase, classIds),
       ])
-    : [[], [], []];
+    : [[], [], new Map<string, number>(), new Map<string, number>()];
 
   const countBy = (rows: Array<{ class_id: string }>) => {
     const map = new Map<string, number>();
@@ -98,12 +96,12 @@ export default async function AdminPage() {
   const studentCounts = countBy(allStudents);
   const lessonCounts = countBy(allLessons);
 
-  const starTotals = new Map<string, number>();
-  allEntries.forEach((e) => {
-    // Індивідуальні записи рахуємо лише в плюс (як на дашборді),
-    // класові — цілком, разом зі штрафами.
-    const delta = e.student_id ? (e.amount > 0 ? e.amount : 0) : e.amount;
-    starTotals.set(e.class_id, (starTotals.get(e.class_id) ?? 0) + delta);
+  // Зірки класу — сума балансів його учнів плюс класові нарахування
+  // (міграція 049). Обидва доданки вже обрізані знизу нулем кожен окремо,
+  // тож і картка класу нижче нуля не опускається.
+  const starTotals = new Map(studentTotalsByClass);
+  classBalances.forEach((stars, classId) => {
+    starTotals.set(classId, (starTotals.get(classId) ?? 0) + stars);
   });
 
   const cards: AdminClassCard[] = classList.map((cls) => ({

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { loadStudentStarBalances } from "@/lib/stars/balances";
 import { splitFullName } from "@/lib/students/fullName";
 
 /**
@@ -119,15 +120,13 @@ export async function loadTeacherStudentView(
     (entryTypes ?? []).map((t) => [t.id as string, { name: t.name as string, icon: t.icon as string | null }])
   );
 
-  // Та сама семантика, що й у журналі та на публічному дашборді: у суму
-  // йдуть лише додатні індивідуальні нарахування, класові (student_id
-  // IS NULL) не рахуються особистими.
-  const totals = new Map<string, number>();
   const rows = (entries ?? []) as EntryRow[];
-  rows.forEach((e) => {
-    if (!e.student_id || e.amount <= 0) return;
-    totals.set(e.student_id, (totals.get(e.student_id) ?? 0) + e.amount);
-  });
+
+  // Та сама семантика, що й у журналі та на публічному дашборді: класові
+  // нарахування (student_id IS NULL) не рахуються особистими, «Н» не
+  // штраф, а штраф не опускає учня нижче нуля. Правило одне на всіх —
+  // в'юха student_star_balances (міграція 049).
+  const totals = await loadStudentStarBalances(supabase, [classId]);
 
   const totalStars = totals.get(studentId) ?? 0;
   let ahead = 0;
