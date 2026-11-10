@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 /**
@@ -73,6 +74,9 @@ export interface PrizeUsageRow {
 }
 
 export async function getPlatformStats(): Promise<PlatformStats | null> {
+  // Без цього Data Cache Next.js тримав відповідь RPC (POST через supabase-js)
+  // між деплоями, і цифри застигали на часі першого виклику (10.11.2026).
+  noStore();
   const admin = createSupabaseAdminClient();
   if (!admin) return null;
 
